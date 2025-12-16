@@ -1,0 +1,19 @@
+# --- .NET Core ---
+bin/
+obj/
+.vs/
+*.user
+[Dd]ebug/
+[Rr]elease/
+*.suo
+appsettings.Development.json
+
+# --- Angular ---
+node_modules/
+dist/
+.angular/
+*.log
+.sass-cache/
+connect.lock
+coverage/
+lib/
