@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Domain.Models;
+using Domain.Models; // تأكد من الـ Namespace
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -14,29 +10,44 @@ namespace Infrastructure.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-        // --- 2. Knowledge Base ---
-        public DbSet<PlantInfo> PlantInfos { get; set; }
-        public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
 
-        // --- 3. Farming & Traceability ---
-        public DbSet<Farm> Farms { get; set; }
+        // =========================================================
+        // 1. SaaS & Organizations Module
+        // =========================================================
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<OrganizationMember> OrganizationMembers { get; set; }
+        public DbSet<OrganizationRole> OrganizationRoles { get; set; }
+        public DbSet<OrganizationRolePermission> OrganizationRolePermissions { get; set; }
+
+        // =========================================================
+        // 2. Market & Products Module
+        // =========================================================
+        public DbSet<MarketItem> MarketItems { get; set; }
         public DbSet<Crop> Crops { get; set; }
+        public DbSet<Product> Products { get; set; }
         public DbSet<CropActivityLog> CropActivityLogs { get; set; }
 
-        // --- 4. Auctions ---
+        // =========================================================
+        // 3. Commerce & Auctions Module
+        // =========================================================
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Bid> Bids { get; set; }
 
-        // --- 5. Orders (Direct Sale) ---
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderItem> OrderItems { get; set; }
-
-        // --- 6. Reviews ---
+        // =========================================================
+        // 4. Knowledge Base & Reviews
+        // =========================================================
+        public DbSet<PlantInfo> PlantInfos { get; set; }
+        public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
+        public DbSet<Chat> Chats { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // --- 1. Security Schema ---
             modelBuilder.Entity<ApplicationUser>().ToTable("Users", "security");
             modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles", "security");
             modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "security");
@@ -44,66 +55,101 @@ namespace Infrastructure.Data
             modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", "security");
             modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "security");
             modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "security");
-            // === 1. ضبط التعامل مع الأموال (Decimal Precision) ===
-            // SQL Server يحتاج تحديد الدقة للأرقام العشرية لتجنب الأخطاء
-            modelBuilder.Entity<Auction>()
-                .Property(a => a.StartPrice).HasColumnType("decimal(18,2)");
 
-            modelBuilder.Entity<Auction>()
-                .Property(a => a.CurrentHighestBid).HasColumnType("decimal(18,2)");
+            // --- 2. Inheritance (TPH) ---
+            modelBuilder.Entity<MarketItem>()
+                .ToTable("MarketItems")
+                .HasDiscriminator<string>("ItemType")
+                .HasValue<Crop>("Crop")
+                .HasValue<Product>("Product");
 
-            modelBuilder.Entity<Bid>()
-                .Property(b => b.Amount).HasColumnType("decimal(18,2)");
+            // منع حذف المؤسسة إذا كان لديها منتجات
+            modelBuilder.Entity<MarketItem>()
+                .HasOne(m => m.Organization)
+                .WithMany()
+                .HasForeignKey(m => m.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Crop>()
-                .Property(c => c.DirectSalePrice).HasColumnType("decimal(18,2)");
+            // --- 3. Dynamic Roles Relationships ---
 
-            modelBuilder.Entity<Order>()
-                .Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
+            // OrganizationMember -> OrganizationRole
+            modelBuilder.Entity<OrganizationMember>()
+                .HasOne(m => m.OrganizationRole)
+                .WithMany()
+                .HasForeignKey(m => m.OrganizationRoleId)
+                .OnDelete(DeleteBehavior.SetNull); // لو الرول اتمسحت، الموظف يفضل موجود
 
+            // OrganizationRole -> Permissions
+            modelBuilder.Entity<OrganizationRole>()
+                .HasMany(r => r.Permissions)
+                .WithOne(p => p.OrganizationRole) // تأكد أن الاسم في الكلاس OrganizationRole
+                .HasForeignKey(p => p.OrganizationRoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // --- 4. Decimal Precision ---
+            var decimalProps = new[]
+            {
+                (typeof(Auction), "StartPrice"),
+                (typeof(Auction), "CurrentHighestBid"),
+                (typeof(Bid), "Amount"),
+                (typeof(Order), "TotalAmount"),
+                (typeof(OrderItem), "UnitPrice"),
+                (typeof(MarketItem), "Price")
+            };
+
+            foreach (var prop in decimalProps)
+            {
+                modelBuilder.Entity(prop.Item1).Property(prop.Item2).HasColumnType("decimal(18,2)");
+            }
+
+            // --- 5. Fixes for OrderItem Relationship ---
+
+            // ✅ التصحيح هنا: HasOne تأخذ الـ Navigation Property (الكائن) وليس الـ Id
             modelBuilder.Entity<OrderItem>()
-                .Property(oi => oi.UnitPrice).HasColumnType("decimal(18,2)");
+                .HasOne(oi => oi.MarketItem)  // الكائن
+                .WithMany()
+                .HasForeignKey(oi => oi.MarketItemId) // الـ ID
+                .OnDelete(DeleteBehavior.Restrict);
 
 
-            // === 2. ضبط العلاقات المعقدة (Relationships) ===
-
-            // علاقة التقييمات (Reviews)
-            // المستخدم يمكن أن يكون "مُقَيِّم" (Reviewer) أو "مُقَيَّم" (Target)
+            // --- 6. Other Relationships ---
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Reviewer)
-                .WithMany() // المستخدم الواحد كتب تقييمات كتير
+                .WithMany()
                 .HasForeignKey(r => r.ReviewerId)
-                .OnDelete(DeleteBehavior.Restrict); // ممنوع حذف المستخدم إذا كان له تقييمات كتبها (لحفظ التاريخ)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.TargetUser)
-                .WithMany() // المستخدم الواحد استقبل تقييمات كتير
+                .WithMany()
                 .HasForeignKey(r => r.TargetUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // علاقة المزايدات (Bids)
-            // إذا حذفنا المزاد، تحذف المزايدات (Cascade)
-            // لكن إذا حذفنا المستخدم، لا نحذف المزايدات لكي لا يخرب تاريخ المزاد
             modelBuilder.Entity<Bid>()
                 .HasOne(b => b.Bidder)
-                .WithMany(u => u.Bids)
+                .WithMany() // تأكد من وجود ICollection<Bid> في ApplicationUser أو اتركها فارغة
                 .HasForeignKey(b => b.BidderId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // علاقة المزارع والمحاصيل
-            modelBuilder.Entity<Farm>()
-                .HasMany(f => f.Crops)
-                .WithOne(c => c.Farm)
-                .HasForeignKey(c => c.FarmId)
-                .OnDelete(DeleteBehavior.Cascade); // لو المزرعة اتمسحت، المحاصيل تتمسح
-
-            // علاقة الطلبات (Orders)
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Buyer)
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Sender)
                 .WithMany()
-                .HasForeignKey(o => o.BuyerId)
-                .OnDelete(DeleteBehavior.Restrict); // لا تحذف الطلب بحذف المستخدم
+                .HasForeignKey(c => c.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Receiver)
+                .WithMany()
+                .HasForeignKey(c => c.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<OrganizationMember>()
+                .HasOne(om=>om.Organization)
+                .WithMany(om=>om.Members)
+                .HasForeignKey(om=>om.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<OrganizationMember>()
+                .HasOne(om=>om.User)
+                .WithMany()
+                .HasForeignKey(om=>om.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
-
     }
 }

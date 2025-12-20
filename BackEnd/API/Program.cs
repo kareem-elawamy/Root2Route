@@ -1,4 +1,3 @@
-using Application;
 using Domain.Models;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -41,7 +40,6 @@ builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddApplication();
 
 var app = builder.Build();
 

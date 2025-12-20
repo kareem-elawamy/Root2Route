@@ -5,24 +5,16 @@ using System.Threading.Tasks;
 
 namespace Domain.Models
 {
-    public class Crop : BaseEntity
+    public class Crop : MarketItem
     {
+
         public string? BatchNumber { get; set; } // رقم التشغيلة (للتتبع)
-        public DateTime PlantedDate { get; set; }
-        public DateTime? HarvestDate { get; set; }
         public CropStatus Status { get; set; }
-
-        public bool IsForAuction { get; set; } // هل معروض للمزاد؟
-        public bool IsForDirectSale { get; set; } // هل معروض للبيع المباشر؟
-
-        public decimal? DirectSalePrice { get; set; } // السعر في حالة البيع المباشر
         public int AvailableQuantity { get; set; } // الكمية المتاحة بالكيلو/الطن
-
-        public string? ImageUrl { get; set; } // صورة المحصول
         public Guid PlantInfoId { get; set; }
         public PlantInfo? PlantInfo { get; set; }
-        public Guid FarmId { get; set; }
-        public Farm? Farm { get; set; }
+        public Guid OrganizationId { get; set; }
+        public Organization? Organization { get; set; }
         public ICollection<CropActivityLog>? Activities { get; set; }
 
     }
