@@ -17,6 +17,11 @@ namespace Domain.MetaData
             public const string Prefix = rule + "authentication/";
             public const string Regsiter = Prefix + "regsiter";
         }
+        public static class PlantInfo
+        {
+            public const string Prefix = rule + "plantinfo/";
+            public const string GetAllPlantInfos = Prefix + "getallplantinfos";
+        }
 
     }
 }

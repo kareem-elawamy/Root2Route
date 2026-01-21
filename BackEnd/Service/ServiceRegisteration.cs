@@ -6,6 +6,8 @@ using Domain.Models;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Service.Abstract;
+using Service.Implementations;
 
 namespace Service
 {
@@ -36,7 +38,7 @@ namespace Service
 
             }).AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
-
+                services.AddScoped<IPlantInfoService, PlantInfoService>();
             return services;
         }
     }
