@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repos
+namespace Infrastructure.Repositories.PlantGuideStepRepository
 {
-    public class PlantGuideStepRepo : GenericRepositoryAsync<PlantGuideStep>, IPlantGuideStepRepo
+    public class PlantGuideStepRepository : GenericRepositoryAsync<PlantGuideStep>, IPlantGuideStepRepository
     {
         private readonly DbSet<PlantGuideStep> _plantGuideSteps;
-        public PlantGuideStepRepo(ApplicationDbContext dbContext) : base(dbContext)
+        public PlantGuideStepRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
             _plantGuideSteps = dbContext.Set<PlantGuideStep>();
         }

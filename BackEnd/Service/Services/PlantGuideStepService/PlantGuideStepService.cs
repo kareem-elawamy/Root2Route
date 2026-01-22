@@ -1,14 +1,15 @@
+using Infrastructure.Repositories.PlantGuideStepRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Service.Implementations
+namespace Service.Services.PlantGuideStepService
 {
     public class PlantGuideStepService : IPlantGuideStepService
     {
-        private readonly IPlantGuideStepRepo _plantGuideStepRepo;
-        public PlantGuideStepService(IPlantGuideStepRepo plantGuideStepRepo)
+        private readonly IPlantGuideStepRepository _plantGuideStepRepo;
+        public PlantGuideStepService(IPlantGuideStepRepository plantGuideStepRepo)
         {
             _plantGuideStepRepo = plantGuideStepRepo;
         }

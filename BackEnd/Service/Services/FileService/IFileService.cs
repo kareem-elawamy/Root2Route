@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Service.Abstract
+namespace Service.Services.FileService
 {
     public interface IFileService
     {

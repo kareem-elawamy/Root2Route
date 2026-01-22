@@ -8,9 +8,8 @@ namespace Infrastructure.Base
 {
     public interface IGenericRepositoryAsync<T> where T : class
     {
-        // Actions
         Task DeleteRangeAsync(ICollection<T> entities);
-        Task<T> GetByIdAsync(object id);
+        Task<T?> GetByIdAsync(Guid id);
         Task SaveChangesAsync();
         IDbContextTransaction BeginTransaction();
         void Commit();
@@ -23,4 +22,5 @@ namespace Infrastructure.Base
         Task UpdateRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
     }
+
 }

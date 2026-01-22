@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Models;
-using Infrastructure.Abstract;
 using Infrastructure.Base;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repos
+namespace Infrastructure.Repositories.PlantInfoRepository
 {
-    public class PlantInfoRepo : GenericRepositoryAsync<PlantInfo>, IPlantInfoRepo
+    public class PlantInfoRepository : GenericRepositoryAsync<PlantInfo>, IPlantInfoRepository
     {
         private readonly DbSet<PlantInfo> _plantInfos;
-        public PlantInfoRepo(ApplicationDbContext dbContext) : base(dbContext)
+        public PlantInfoRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
             _plantInfos = dbContext.Set<PlantInfo>();
         }

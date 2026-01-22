@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Models;
-using Infrastructure.Abstract;
+using Infrastructure.Repositories.PlantInfoRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Service.Abstract;
+using Service.Services.FileService;
 
-namespace Service.Implementations
+namespace Service.Services.PlantInfoService
 {
     public class PlantInfoService : IPlantInfoService
     {
-        private readonly IPlantInfoRepo _plantInfoRepo;
+        private readonly IPlantInfoRepository _plantInfoRepo;
         private readonly IFileService _fileService;
-        public PlantInfoService(IFileService fileService, IPlantInfoRepo plantInfoRepo)
+        public PlantInfoService(IFileService fileService, IPlantInfoRepository plantInfoRepo)
         {
             _fileService = fileService;
             _plantInfoRepo = plantInfoRepo;

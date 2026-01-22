@@ -31,8 +31,8 @@ namespace Domain.Models
 
 
         // المالك (مين اللي بيبيع؟)
-        [ForeignKey("OrganizationId")]
         public Guid OrganizationId { get; set; }
+        [ForeignKey(nameof(OrganizationId))] // تأكد من وجود هذا
         public Organization? Organization { get; set; }
     }
 }

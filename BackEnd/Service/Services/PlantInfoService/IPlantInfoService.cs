@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 
-namespace Service.Abstract
+namespace Service.Services.PlantInfoService
 {
     public interface IPlantInfoService
     {

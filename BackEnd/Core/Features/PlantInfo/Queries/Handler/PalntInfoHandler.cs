@@ -7,7 +7,7 @@ using Core.Base;
 using Core.Features.PlantInfo.Queries.Models;
 using Core.Features.PlantInfo.Queries.Result;
 using MediatR;
-using Service.Abstract;
+using Service.Services.PlantInfoService;
 
 namespace Core.Features.PlantInfo.Queries.Handler
 {

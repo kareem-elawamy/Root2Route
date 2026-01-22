@@ -1,6 +1,7 @@
-﻿using Infrastructure.Abstract;
-using Infrastructure.Base;
-using Infrastructure.Repos;
+﻿using Infrastructure.Base;
+using Infrastructure.Repositories.OrganizationRepository;
+using Infrastructure.Repositories.PlantGuideStepRepository;
+using Infrastructure.Repositories.PlantInfoRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -11,8 +12,9 @@ public static class ModuleInfrastructureDependencies
     {
         // Register infrastructure services here if needed
         services.AddScoped(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
-        services.AddScoped<IPlantInfoRepo, PlantInfoRepo>();
-        services.AddScoped<IPlantGuideStepRepo, PlantGuideStepRepo>();
+        services.AddScoped<IPlantInfoRepository, PlantInfoRepository>();
+        services.AddScoped<IPlantGuideStepRepository, PlantGuideStepRepository>();
+        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         return services;
     }
 }

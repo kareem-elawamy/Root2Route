@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260102115141_FixMarketItemRelation")]
-    partial class FixMarketItemRelation
+    [Migration("20260122050448_FixCyclesAndShadowPropertiesThree")]
+    partial class FixCyclesAndShadowPropertiesThree
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -689,6 +689,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("IdealSoil")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")

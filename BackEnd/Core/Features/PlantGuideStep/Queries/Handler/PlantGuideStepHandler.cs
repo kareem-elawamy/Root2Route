@@ -6,14 +6,13 @@ using Core.Base;
 using Core.Features.PlantGuideStep.Queries.Models;
 using Core.Features.PlantGuideStep.Queries.Result;
 using MediatR;
-using Service.Abstract;
+using Service.Services.PlantGuideStepService;
 
 namespace Core.Features.PlantGuideStep.Queries.Handler
 {
     public class PlantGuideStepHandler : ResponseHandler,
       IRequestHandler<GetAllPlantGuideStepQuery, Response<List<PlantGuideStepListResponse>>>,
       IRequestHandler<GetPlantGuideStepByIdQuery, Response<PlantGuideStepListResponse>>,
-      // 👇 تم تصحيح النوع هنا من Query إلى Response
       IRequestHandler<GetPlantGuideStepByPlantIdQueries, Response<GetPlantGuideStepByPlantIdResponse>>,
       IRequestHandler<GetPlantGuideStepByPlantNameQuerie, Response<GetPlantGuideStepByPlantIdResponse>>
     {
@@ -56,7 +55,7 @@ namespace Core.Features.PlantGuideStep.Queries.Handler
 
             var response = new GetPlantGuideStepByPlantIdResponse
             {
-                PlantId = plantInfo.Id,
+                PlantId = plantInfo!.Id,
                 PlantInfoName = plantInfo.Name,
                 PlantInfoScientificName = plantInfo.ScientificName,
                 PlantInfoIdealSoil = plantInfo.IdealSoil,
@@ -84,7 +83,7 @@ namespace Core.Features.PlantGuideStep.Queries.Handler
             // 4. بناء الـ Response يدوياً لضمان الدقة
             var response = new GetPlantGuideStepByPlantIdResponse
             {
-                PlantId = plantInfo.Id,
+                PlantId = plantInfo!.Id,
                 PlantInfoName = plantInfo.Name,
                 PlantInfoScientificName = plantInfo.ScientificName,
                 PlantInfoIdealSoil = plantInfo.IdealSoil,

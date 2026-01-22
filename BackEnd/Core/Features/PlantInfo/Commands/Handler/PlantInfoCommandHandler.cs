@@ -7,7 +7,7 @@ using Core.Base;
 using Core.Features.PlantInfo.Commands.Models;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Service.Abstract;
+using Service.Services.PlantInfoService;
 
 namespace Core.Features.PlantInfo.Commands.Handler
 {

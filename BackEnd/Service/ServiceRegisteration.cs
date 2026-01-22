@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
+
 namespace Service
 {
     public static class ServiceRegisteration
@@ -31,9 +32,6 @@ namespace Service
 
             }).AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
-            services.AddScoped<IPlantInfoService, PlantInfoService>();
-            services.AddScoped<IPlantGuideStepService, PlantGuideStepService>();
-            services.AddScoped<IFileService, FileService>();
             return services;
         }
     }

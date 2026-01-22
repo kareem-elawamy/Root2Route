@@ -1,58 +1,99 @@
 using Core;
-using Domain.Models;
 using Infrastructure;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
-using Service;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Service; // ???? ?? ???? ??? Namespace ?????? JwtSettings
+using Service.Services.AuthenticationService;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.WebHost.UseUrls("http://localhost:5000");
-
-#region Db Context Initialization
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)
-);
-
-#endregion
-
-#region Dependencies Initialization
-builder.Services.AddServiceDependencies().AddServiceRegisteration().AddCoreDependencies().AddInfrastructureDependencies();
-#endregion
-//---------------------------------------------------------
-// Identity Configuration is moved to ServiceRegisteration.cs
-//---------------------------------------------------------
-
 // Add services to the container.
-
-// ---------------------------------------------------------
-// 2. التعديل الثاني: لازم نضيف السطر ده عشان الـ API يشتغل
-// ---------------------------------------------------------
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddOpenApi();
-
+// Swagger Config
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Root2Route API", Version = "v1" });
     c.EnableAnnotations();
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
-                        Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\n
-                        Example: 'Bearer eyJhbGciOiJIUzI1NiIsIn...'",
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
 
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// Database Config
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString)
+);
+
+// ==================== FIX STARTS HERE ====================
+
+// 1. ??? ??? Section ??????? ??? ???? IOptions ???? ????????
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+// 2. ??????? ????? ?????????? ??? ???? Program.cs (?????? ??? TokenValidation)
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+
+// ????? ??????: ?????? ?? ?? ????????? ???? ????? ???? ?????? ??? ?????
+if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.Secret))
+{
+    throw new Exception("JWT Settings are not configured correctly in appsettings.json");
+}
+
+// ????? ??? Settings ?? Singleton (??????? ??? ??? ?????? IOptions? ??? ?? ???)
+builder.Services.AddSingleton(jwtSettings);
+
+// ==================== FIX ENDS HERE ====================
+
+// Dependencies
+builder.Services.AddServiceDependencies()
+                .AddServiceRegisteration()
+                .AddCoreDependencies()
+                .AddInfrastructureDependencies();
+
+// Authentication Config
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        // ??????? ????? ???????
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
+    };
 });
 
 var app = builder.Build();
@@ -61,45 +102,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GreenLink API v1"));
 }
-app.UseStaticFiles(); 
 
-// ---------------------------------------------------------
-// تم تعليق التوجيه لـ HTTPS عشان نمنع المشكلة
-// ---------------------------------------------------------
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
-var summaries = new[]
-{
-    "Freezing",
-    "Bracing",
-    "Chilly",
-    "Cool",
-    "Mild",
-    "Warm",
-    "Balmy",
-    "Hot",
-    "Sweltering",
-    "Scorching",
-};
-
-app.MapGet(
-        "/weatherforecast",
-        () =>
-        {
-            var forecast = Enumerable
-                .Range(1, 5)
-                .Select(index => new WeatherForecast(
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-                .ToArray();
-            return forecast;
-        }
-    )
-    .WithName("GetWeatherForecast");
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -107,8 +116,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

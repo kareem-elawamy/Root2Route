@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Domain.Models;
 using Infrastructure.Base;
 
-namespace Infrastructure.Abstract
+namespace Infrastructure.Repositories.PlantInfoRepository
 {
-    public interface IPlantInfoRepo : IGenericRepositoryAsync<PlantInfo>
+    public interface IPlantInfoRepository : IGenericRepositoryAsync<PlantInfo>
     {
         Task<List<PlantInfo>> GetAllPlantInfosAsync();
     }

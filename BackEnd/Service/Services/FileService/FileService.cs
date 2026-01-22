@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Service.Abstract;
 
-namespace Service.Implementation
+namespace Service.Services.FileService
 {
     public class FileService : IFileService
     {

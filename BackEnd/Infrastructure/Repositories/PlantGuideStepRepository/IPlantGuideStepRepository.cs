@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Abstract
+namespace Infrastructure.Repositories.PlantGuideStepRepository
 {
-    public interface IPlantGuideStepRepo : IGenericRepositoryAsync<PlantGuideStep>
+    public interface IPlantGuideStepRepository : IGenericRepositoryAsync<PlantGuideStep>
     {
         Task<List<PlantGuideStep>> GetAllPlantGuideStepsAsync();
         Task<PlantGuideStep> GetPlantGuideStepByIdAsync(Guid id);
