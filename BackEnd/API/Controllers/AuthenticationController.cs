@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.Controllers.Shared;
 using Core.Features.authentication.Commands.Models;
 using Domain.MetaData;
@@ -14,6 +10,12 @@ namespace API.Controllers
     {
         [HttpPost(Router.Authentication.Regsiter)]
         public async Task<IActionResult> Regsiter([FromForm] AddUserCommand command)
+        {
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+        [HttpPost(Router.Authentication.Login)]
+        public async Task<IActionResult> SignIn([FromBody] SignInCommand command)
         {
             var response = await Mediator.Send(command);
             return NewResult(response);

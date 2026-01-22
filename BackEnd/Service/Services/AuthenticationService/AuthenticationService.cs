@@ -3,7 +3,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Domain.Models; // تأكد من هذا الـ Namespace للمودل ApplicationUser
 
 namespace Service.Services.AuthenticationService
 {
@@ -11,13 +10,12 @@ namespace Service.Services.AuthenticationService
     {
         private readonly JwtSettings _jwtSettings;
 
-        // IOptions ستعمل الآن بنجاح لأننا أضفنا builder.Services.Configure في Program.cs
         public AuthenticationService(IOptions<JwtSettings> jwtSettings)
         {
             _jwtSettings = jwtSettings.Value;
         }
 
-        public async Task<JwtAuthResult> GenerateToken(ApplicationUser user)
+        public async Task<JwtAuthResult> GenerateToken(ApplicationUser user, bool isRememberMe = false)
         {
             var claims = new List<Claim>
             {
@@ -29,12 +27,15 @@ namespace Service.Services.AuthenticationService
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expireTime = isRememberMe
+                     ? DateTime.UtcNow.AddDays(15)
+                     : DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpireTime);
 
             var tokenDescriptor = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer, // تم التعديل
+                issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpireTime),
+                expires: expireTime,
                 signingCredentials: creds
             );
 

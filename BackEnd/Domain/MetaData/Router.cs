@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Domain.MetaData
 {
     public static class Router
@@ -17,6 +12,7 @@ namespace Domain.MetaData
         {
             public const string Prefix = rule + "authentication/";
             public const string Regsiter = Prefix + "regsiter";
+            public const string Login = Prefix + "Login";
         }
         public static class PlantInfo
         {
