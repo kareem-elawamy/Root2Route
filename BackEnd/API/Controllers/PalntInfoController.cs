@@ -31,5 +31,22 @@ namespace API.Controllers
 
             return NewResult(response);
         }
+        [HttpPut(Router.PlantInfo.EditPlantInfo)]
+        public async Task<IActionResult> EditPlantInfo([FromForm] EditPlantInfoCommand command)
+        {
+            // if (command.Image == null)
+            // {
+            //     return BadRequest("الملف لم يصل! تأكد من Postman وأن اسم الحقل هو 'Image'");
+            // }
+            var response = await Mediator.Send(command);
+
+            return NewResult(response);
+        }
+        [HttpDelete(Router.PlantInfo.DeletePlantInfo)]
+        public async Task<IActionResult> DeletePlantInfo([FromForm] Guid id)
+        {
+            return NewResult(await Mediator.Send(new DeletePlantInfoCommand(id)));
+
+        }
     }
 }
