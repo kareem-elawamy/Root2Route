@@ -48,5 +48,11 @@ namespace API.Controllers
             return NewResult(await Mediator.Send(new DeletePlantInfoCommand(id)));
 
         }
+        [HttpGet(Router.PlantInfo.Paginated)]
+        public async Task<IActionResult> Paginated([FromQuery] GetPlantInfoPaginatedListQuery query)
+        {
+            var response = await Mediator.Send(query);
+            return Ok(response);
+        }
     }
 }
