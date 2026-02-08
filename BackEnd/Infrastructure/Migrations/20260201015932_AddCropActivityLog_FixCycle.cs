@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FixCyclesAndShadowPropertiesThree : Migration
+    public partial class AddCropActivityLog_FixCycle : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -341,7 +341,7 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Farm",
+                name: "Farms",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -354,9 +354,9 @@ namespace Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Farm", x => x.Id);
+                    table.PrimaryKey("PK_Farms", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Farm_Organizations_OrganizationId",
+                        name: "FK_Farms_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
                         principalColumn: "Id",
@@ -437,8 +437,10 @@ namespace Infrastructure.Migrations
                     PlantedArea = table.Column<double>(type: "float", nullable: false),
                     PlantingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpectedHarvestDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PlantInfoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PlantInfoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     FarmId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ActualYieldQuantity = table.Column<double>(type: "float", nullable: true),
+                    YieldUnit = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -447,17 +449,16 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Crops", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Crops_Farm_FarmId",
+                        name: "FK_Crops_Farms_FarmId",
                         column: x => x.FarmId,
-                        principalTable: "Farm",
+                        principalTable: "Farms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Crops_PlantInfos_PlantInfoId",
                         column: x => x.PlantInfoId,
                         principalTable: "PlantInfos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -589,10 +590,11 @@ namespace Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ActivityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ActivityType = table.Column<int>(type: "int", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ActivityDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CropId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PerformedById = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -606,6 +608,13 @@ namespace Infrastructure.Migrations
                         principalTable: "Crops",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CropActivityLogs_Users_PerformedById",
+                        column: x => x.PerformedById,
+                        principalSchema: "security",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -682,6 +691,11 @@ namespace Infrastructure.Migrations
                 column: "CropId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CropActivityLogs_PerformedById",
+                table: "CropActivityLogs",
+                column: "PerformedById");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Crops_FarmId",
                 table: "Crops",
                 column: "FarmId");
@@ -692,8 +706,8 @@ namespace Infrastructure.Migrations
                 column: "PlantInfoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Farm_OrganizationId",
-                table: "Farm",
+                name: "IX_Farms_OrganizationId",
+                table: "Farms",
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
@@ -885,7 +899,7 @@ namespace Infrastructure.Migrations
                 name: "MarketItems");
 
             migrationBuilder.DropTable(
-                name: "Farm");
+                name: "Farms");
 
             migrationBuilder.DropTable(
                 name: "PlantInfos");

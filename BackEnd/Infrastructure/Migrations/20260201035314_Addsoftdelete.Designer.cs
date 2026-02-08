@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260124231746_EditOrganizationTable")]
-    partial class EditOrganizationTable
+    [Migration("20260201035314_Addsoftdelete")]
+    partial class Addsoftdelete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -254,7 +254,7 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("PlantInfoId")
+                    b.Property<Guid?>("PlantInfoId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("PlantedArea")
@@ -352,7 +352,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Farm");
+                    b.ToTable("Farms");
                 });
 
             modelBuilder.Entity("Domain.Models.MarketItem", b =>
@@ -980,9 +980,7 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Models.PlantInfo", "PlantInfo")
                         .WithMany()
-                        .HasForeignKey("PlantInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PlantInfoId");
 
                     b.Navigation("Farm");
 
@@ -1000,7 +998,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.ApplicationUser", "PerformedBy")
                         .WithMany()
                         .HasForeignKey("PerformedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Crop");

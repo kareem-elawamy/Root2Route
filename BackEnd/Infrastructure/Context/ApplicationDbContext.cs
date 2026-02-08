@@ -1,7 +1,9 @@
-using Domain.Models; // تأكد من الـ Namespace
+using Domain.Common;
+using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions; // مهمة للـ Lambda Expression
 
 namespace Infrastructure.Data
 {
@@ -26,6 +28,7 @@ namespace Infrastructure.Data
         public DbSet<Crop> Crops { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<CropActivityLog> CropActivityLogs { get; set; }
+        public DbSet<Farm> Farms { get; set; }
 
         // =========================================================
         // 3. Commerce & Auctions Module
@@ -40,8 +43,11 @@ namespace Infrastructure.Data
         // =========================================================
         public DbSet<PlantInfo> PlantInfos { get; set; }
         public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
-        public DbSet<Chat> Chats { get; set; }
+        public DbSet<ChatMessage> Chats { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+
         public DbSet<Review> Reviews { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,34 +68,109 @@ namespace Infrastructure.Data
                 .HasDiscriminator<string>("ItemType")
                 .HasValue<Product>("Product");
 
-            // منع حذف المؤسسة إذا كان لديها منتجات
+            // --- 3. Relationships & Constraints ---
+
+            // MarketItem -> Organization
             modelBuilder.Entity<MarketItem>()
                 .HasOne(m => m.Organization)
                 .WithMany()
                 .HasForeignKey(m => m.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // --- 3. Dynamic Roles Relationships ---
-
             // OrganizationMember -> OrganizationRole
             modelBuilder.Entity<OrganizationMember>()
                 .HasOne(m => m.OrganizationRole)
                 .WithMany()
                 .HasForeignKey(m => m.OrganizationRoleId)
-                .OnDelete(DeleteBehavior.SetNull); // لو الرول اتمسحت، الموظف يفضل موجود
+                .OnDelete(DeleteBehavior.SetNull);
 
             // OrganizationRole -> Permissions
             modelBuilder.Entity<OrganizationRole>()
                 .HasMany(r => r.Permissions)
-                .WithOne(p => p.OrganizationRole) // تأكد أن الاسم في الكلاس OrganizationRole
+                .WithOne(p => p.OrganizationRole)
                 .HasForeignKey(p => p.OrganizationRoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // OrderItem -> MarketItem
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.MarketItem)
+                .WithMany()
+                .HasForeignKey(oi => oi.MarketItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Review Relationships
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Reviewer)
+                .WithMany()
+                .HasForeignKey(r => r.ReviewerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.TargetUser)
+                .WithMany()
+                .HasForeignKey(r => r.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Bid Relationships
+            modelBuilder.Entity<Bid>()
+                .HasOne(b => b.Bidder)
+                .WithMany()
+                .HasForeignKey(b => b.BidderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Chat Relationships
+
+            // OrganizationMember Relationships
+            modelBuilder.Entity<OrganizationMember>()
+                .HasOne(om => om.Organization)
+                .WithMany(om => om.Members)
+                .HasForeignKey(om => om.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrganizationMember>()
+                .HasOne(om => om.User)
+                .WithMany()
+                .HasForeignKey(om => om.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CropActivityLog Relationships
+            modelBuilder.Entity<CropActivityLog>()
+                .HasOne(log => log.PerformedBy)
+                .WithMany()
+                .HasForeignKey(log => log.PerformedById)
+                .OnDelete(DeleteBehavior.Restrict);
+            // في OnModelCreating
             modelBuilder.Entity<MarketItem>()
-                    .HasOne(m => m.Organization)          // MarketItem عنده Organization واحدة
-                    .WithMany()                           // (مؤقتاً) Organization عنده items كتير (لو مش ضايف List هناك سيبها فاضية)
-                    .HasForeignKey(m => m.OrganizationId) // ده الأهم: إجبار EF على استخدام OrganizationId اللي أنت عملته
-                    .OnDelete(DeleteBehavior.Restrict);
+                .ToTable("MarketItems")
+                .HasDiscriminator<string>("ItemType")
+                .HasValue<MarketItem>("Base") // اختيار اختياري لو هتستخدم الأب مباشرة
+                .HasValue<Product>("Product");
+
+            modelBuilder.Entity<Product>()
+                .HasOne<Crop>() // علاقة بدون Navigation Property في الـ Crop
+                .WithMany()
+                .HasForeignKey(p => p.SourceCropId)
+                .OnDelete(DeleteBehavior.SetNull); // لو الـ Crop اتمسح، المنتج يفضل موجود بس الـ Source يبقى null
+
+            // Conversation
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.Buyer)
+                .WithMany()
+                .HasForeignKey(c => c.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Conversation>()
+                .HasOne(c => c.Seller)
+                .WithMany()
+                .HasForeignKey(c => c.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ChatMessage
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
             // --- 4. Decimal Precision ---
             var decimalProps = new[]
             {
@@ -105,54 +186,46 @@ namespace Infrastructure.Data
                 modelBuilder.Entity(prop.Item1).Property(prop.Item2).HasColumnType("decimal(18,2)");
             }
 
-            // --- 5. Fixes for OrderItem Relationship ---
+            // =============================================================
+            // 🔥 تطبيق Soft Delete تلقائياً على كل الجداول (Global Query Filter)
+            // =============================================================
+            // =============================================================
+            // 🔥 تطبيق Soft Delete تلقائياً (نسخة مصححة لمشاكل الوراثة)
+            // =============================================================
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                // الشرط الأول: التأكد أن الكلاس يرث من BaseEntity
+                // الشرط الثاني (الجديد): التأكد أن الكلاس هو "الأب" وليس "وارث" (entityType.BaseType == null)
+                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType) && entityType.BaseType == null)
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "x");
+                    var property = Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
+                    var notDeleted = Expression.Not(property);
+                    var lambda = Expression.Lambda(notDeleted, parameter);
 
-            // ✅ التصحيح هنا: HasOne تأخذ الـ Navigation Property (الكائن) وليس الـ Id
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.MarketItem)  // الكائن
-                .WithMany()
-                .HasForeignKey(oi => oi.MarketItemId) // الـ ID
-                .OnDelete(DeleteBehavior.Restrict);
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
+            }
+        }
 
+        // =============================================================
+        // 🔥 تحويل الحذف إلى Soft Delete عند الحفظ
+        // =============================================================
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified; // حوله لتعديل
+                        entry.Entity.IsDeleted = true;      // علم عليه كمحذوف
+                        entry.Entity.UpdatedAt = DateTime.UtcNow; // سجل وقت الحذف
+                        break;
+                }
+            }
 
-            // --- 6. Other Relationships ---
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Reviewer)
-                .WithMany()
-                .HasForeignKey(r => r.ReviewerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.TargetUser)
-                .WithMany()
-                .HasForeignKey(r => r.TargetUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Bid>()
-                .HasOne(b => b.Bidder)
-                .WithMany() // تأكد من وجود ICollection<Bid> في ApplicationUser أو اتركها فارغة
-                .HasForeignKey(b => b.BidderId)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Chat>()
-                .HasOne(c => c.Sender)
-                .WithMany()
-                .HasForeignKey(c => c.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Chat>()
-                .HasOne(c => c.Receiver)
-                .WithMany()
-                .HasForeignKey(c => c.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<OrganizationMember>()
-                .HasOne(om => om.Organization)
-                .WithMany(om => om.Members)
-                .HasForeignKey(om => om.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<OrganizationMember>()
-                .HasOne(om => om.User)
-                .WithMany()
-                .HasForeignKey(om => om.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

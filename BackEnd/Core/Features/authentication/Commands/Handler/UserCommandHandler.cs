@@ -59,7 +59,7 @@ namespace Core.Features.authentication.Commands.Handler
                 // 4. إنشاء المنظمة
                 if (request.UserType != UserType.IndividualUser)
                 {
-                    var organization = new Organization
+                    var organization = new Domain.Models.Organization
                     {
                         Name = request.OrganizationName!,
                         Type = request.OrganizationType ?? OrganizationType.Farm,

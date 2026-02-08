@@ -6,5 +6,6 @@ namespace Infrastructure.Repositories.OrganizationRepository
 {
     public interface IOrganizationRepository : IGenericRepositoryAsync<Organization>
     {
+        Task<List<Organization>> GetAllOrganizationsByOwnerId(Guid ownerId);
     }
 }

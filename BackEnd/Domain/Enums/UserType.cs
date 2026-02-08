@@ -2,8 +2,8 @@ namespace Domain.Enums
 {
     public enum UserType
     {
-        Farmer,     
-        Trader,     
+        Farmer,
+        Trader,
         BusinessOwner, 
         IndividualUser,
         Admin

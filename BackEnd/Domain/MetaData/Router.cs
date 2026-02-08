@@ -32,11 +32,44 @@ namespace Domain.MetaData
             public const string GetPlantGuideStepsByPlantId = Prefix + "getplantguidestepsbyplantid" + singelroute;
             public const string GetPlantGuideStepsByPlantName = Prefix + "getplantguidestepsbyplantname" + plantNameRoute;
         }
+        public static class Product
+        {
+            public const string Prefix = rule + "proudct/";
+            public const string cropInMarket = "list-crop-in-market";
+        }
         public static class OrganizationRole
         {
             public const string Prefix = rule + "organizationrole/";
             public const string CreateOrganizationRole = Prefix + "createorganizationrole";
 
+        }
+        public static class Organization
+        {
+            public const string Prefix = rule + "organizations/";
+            public const string GetAllOwnerOrganizations = Prefix + "getallownerorganizations";
+        }
+        public static class Farm
+        {
+            public const string Prefix = rule + "farm/";
+            public const string CreateFarm = Prefix + "CreateFarm";
+
+        }
+        public static class Crop
+        {
+            public const string Prefix = rule + "crop/";
+
+            // عرض البيانات
+            public const string List = Prefix + "list"; // api/v1/crop/list
+            public const string GetById = Prefix + "getbyid" + singelroute; // api/v1/crop/getbyid/{id}
+            public const string GetByFarmId = Prefix + "getbyfarmid" + singelroute; // api/v1/crop/getbyfarmid/{id}
+
+            // العمليات
+            public const string Create = Prefix + "create";
+            public const string Edit = Prefix + "edit";
+            public const string Delete = Prefix + "delete" + singelroute;
+
+            // عملية خاصة
+            public const string RegisterHarvest = Prefix + "registerharvest";
         }
 
     }

@@ -32,7 +32,7 @@ namespace Domain.Models
 
         // المالك (مين اللي بيبيع؟)
         public Guid OrganizationId { get; set; }
-        [ForeignKey(nameof(OrganizationId))] // تأكد من وجود هذا
+        [ForeignKey(nameof(OrganizationId))] // تأكد أن الاسم يطابق الـ Property بالضبط
         public Organization? Organization { get; set; }
     }
 }

@@ -14,12 +14,12 @@ namespace Domain.Models
 
         public double PlantedArea { get; set; } // بالمتر المربع
         public DateTime PlantingDate { get; set; }
-        public DateTime? ExpectedHarvestDate { get; set; }
+        public DateTime ExpectedHarvestDate { get; set; }
 
         // البيانات المرجعية
         public Guid? PlantInfoId { get; set; }
         public PlantInfo? PlantInfo { get; set; }
-
+        public bool IsConvertedToProduct { get; set; }
         // المكان
         public Guid FarmId { get; set; }
         public Farm? Farm { get; set; }

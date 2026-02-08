@@ -10,7 +10,7 @@ namespace Domain.Models
         [Required, MaxLength(100)]
         public string Name { get; set; } = null!;
         public string? Location { get; set; }
-
+    
         // المزرعة ملك "مؤسسة" (حتى لو فردية)
         public Guid OrganizationId { get; set; }
         public Organization? Organization { get; set; }

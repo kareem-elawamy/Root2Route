@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260122050448_FixCyclesAndShadowPropertiesThree")]
-    partial class FixCyclesAndShadowPropertiesThree
+    [Migration("20260201015932_AddCropActivityLog_FixCycle")]
+    partial class AddCropActivityLog_FixCycle
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -235,6 +235,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<double?>("ActualYieldQuantity")
+                        .HasColumnType("float");
+
                     b.Property<string>("BatchNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -251,7 +254,7 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("PlantInfoId")
+                    b.Property<Guid?>("PlantInfoId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("PlantedArea")
@@ -265,6 +268,9 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("YieldUnit")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -284,10 +290,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("ActivityDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ActivityType")
-                        .IsRequired()
+                    b.Property<int>("ActivityType")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -302,12 +307,17 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CropId");
+
+                    b.HasIndex("PerformedById");
 
                     b.ToTable("CropActivityLogs");
                 });
@@ -342,7 +352,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Farm");
+                    b.ToTable("Farms");
                 });
 
             modelBuilder.Entity("Domain.Models.MarketItem", b =>
@@ -970,9 +980,7 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Models.PlantInfo", "PlantInfo")
                         .WithMany()
-                        .HasForeignKey("PlantInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PlantInfoId");
 
                     b.Navigation("Farm");
 
@@ -987,7 +995,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Models.ApplicationUser", "PerformedBy")
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Crop");
+
+                    b.Navigation("PerformedBy");
                 });
 
             modelBuilder.Entity("Domain.Models.Farm", b =>
