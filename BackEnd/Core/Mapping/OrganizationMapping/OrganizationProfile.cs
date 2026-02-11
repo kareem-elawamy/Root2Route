@@ -11,6 +11,7 @@ namespace Core.Mapping.OrganizationMapping
         public OrganizationProfile()
         {
             GetAllOnwerOrganizationsMapping();
+            CreateOrganizationsMapping();
         }
     }
 }

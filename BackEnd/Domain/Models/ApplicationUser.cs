@@ -10,7 +10,6 @@ namespace Domain.Models
     {
         public string? FullName { get; set; }
         public string? Address { get; set; }
-        public UserType UserType { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
         public ICollection<OrganizationMember>? Memberships { get; set; }

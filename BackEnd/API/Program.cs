@@ -1,4 +1,5 @@
 using Core;
+using Domain.Constants;
 using Infrastructure;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,6 +41,18 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// AddAuthorization
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in OrganizationsPermissions.GetAll())
+    {
+        options.AddPolicy(permission, policy =>
+            policy.RequireClaim("permission", permission));
+    }
+});
+
+
 
 // Database Config
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

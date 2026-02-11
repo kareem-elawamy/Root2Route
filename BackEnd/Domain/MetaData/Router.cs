@@ -41,12 +41,14 @@ namespace Domain.MetaData
         {
             public const string Prefix = rule + "organizationrole/";
             public const string CreateOrganizationRole = Prefix + "createorganizationrole";
+            public const string GetOrganizationRolesByOrganizationId = Prefix + "getorganizationrolesbyorganizationid" + singelroute;
 
         }
         public static class Organization
         {
             public const string Prefix = rule + "organizations/";
             public const string GetAllOwnerOrganizations = Prefix + "getallownerorganizations";
+            public const string CreateOrganization = Prefix + "createorganization";
         }
         public static class Farm
         {

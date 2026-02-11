@@ -2,6 +2,6 @@
 {
     public interface IAuthenticationService
     {
-        Task<JwtAuthResult> GenerateToken(ApplicationUser user, bool isRememberMe = false);
+        Task<JwtAuthResult> GenerateToken( ApplicationUser user,Guid? organizationId = null, bool isRememberMe = false);
     }
 }

@@ -45,7 +45,7 @@ namespace Infrastructure.Data
         public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
         public DbSet<ChatMessage> Chats { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-
+        public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
 

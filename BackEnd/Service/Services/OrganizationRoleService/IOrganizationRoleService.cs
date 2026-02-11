@@ -8,6 +8,10 @@ namespace Service.Services.OrganizationRoleService
     public interface IOrganizationRoleService
     {
         public Task<string> CreateOrganizationRole(OrganizationRole organizationRole);
-        public Task<List<OrganizationRole>> GetOrganizationRolesAsyncByWonerId(Guid WonerId);
+        public Task<List<OrganizationRole>> GetOrganizationRolesAsyncByOrganizationId(Guid OrganizationId);
+        public Task<string> DeleteOrganizationRole(Guid organizationRoleId);
+        public Task<string> UpdateOrganizationRole(OrganizationRole organizationRole);
+        
+        
     }
 }

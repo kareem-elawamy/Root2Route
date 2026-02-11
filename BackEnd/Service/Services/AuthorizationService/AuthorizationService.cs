@@ -19,18 +19,18 @@ namespace Service.Services.AuthorizationService
             _orgRepo = orgRepo;
             _memberRepo = memberRepo;
         }
-        public async Task<bool> HasPermissionAsync(Guid userId, Guid organizationId, string permission)
-        {
-            var isOwner = await _orgRepo.GetTableNoTracking()
-                            .AnyAsync(x => x.Id == organizationId && x.OwnerId == userId);
+        // public async Task<bool> HasPermissionAsync(Guid userId, Guid organizationId, string permission)
+        // {
+        //     var isOwner = await _orgRepo.GetTableNoTracking()
+        //                     .AnyAsync(x => x.Id == organizationId && x.OwnerId == userId);
 
-            if (isOwner) return true;
-            var hasPermission = await _memberRepo.GetTableNoTracking()
-                .Where(m => m.UserId == userId && m.OrganizationId == organizationId) // هات الموظف في الشركة دي
-                .Where(m => m.IsActive) // تأكد إنه مش مفصول (Active)
-                .SelectMany(m => m.OrganizationRole!.Permissions) // ادخل جوه الدور وهات الصلاحيات
-                .AnyAsync(p => p.PermissionsClaim == permission); // هل الصلاحية المطلوبة موجودة؟
-            return hasPermission;
-        }
+        //     if (isOwner) return true;
+        //     var hasPermission = await _memberRepo.GetTableNoTracking()
+        //         .Where(m => m.UserId == userId && m.OrganizationId == organizationId) // هات الموظف في الشركة دي
+        //         .Where(m => m.IsActive) // تأكد إنه مش مفصول (Active)
+        //         .SelectMany(m => m.OrganizationRole!.Permissions) // ادخل جوه الدور وهات الصلاحيات
+        //         .AnyAsync(p => p.PermissionsClaim == permission); // هل الصلاحية المطلوبة موجودة؟
+        //     return hasPermission;
+        // }
     }
 }

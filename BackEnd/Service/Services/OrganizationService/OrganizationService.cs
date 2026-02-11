@@ -1,7 +1,9 @@
 ﻿using Domain.Enums;
 using Infrastructure.Repositories.OrganizationRepository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Service.Services.FileService;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,61 +13,43 @@ namespace Service.Services;
 public class OrganizationService : IOrganizationService
 {
     private readonly IOrganizationRepository _organizationRepository;
+    private readonly IFileService _fileService;
 
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public OrganizationService(IOrganizationRepository organizationRepository, UserManager<ApplicationUser> userManager)
+    public OrganizationService(IOrganizationRepository organizationRepository, UserManager<ApplicationUser> userManager, IFileService fileService)
     {
+        _fileService = fileService;
         _organizationRepository = organizationRepository;
         _userManager = userManager;
     }
-    public async Task<string> CreateOrganizationAsync(Organization organization)
+    // 1. إنشاء منظمة جديدة 
+    public async Task<string> CreateOrganizationAsync(Organization organization, IFormFile? imageFile = null)
     {
         // هنا ممكن تعمل أي Business Logic إضافي
         var user = await _userManager.FindByIdAsync(organization.OwnerId.ToString());
 
         if (user == null) return "User Not Found";
-        if (!IsOrganizationTypeAllowed(user.UserType, organization.Type))
-        {
-            return $"User of type {user.UserType} cannot create an organization of type {organization.Type}.";
-        }
-        var existingOrg = await _organizationRepository.GetTableNoTracking()
-                                .AnyAsync(x => x.OwnerId == organization.OwnerId);
-        if (existingOrg) return "User already has an organization.";
 
+        if (imageFile != null)
+        {
+            var imageUrl = await _fileService.UploadImageAsync("Logo-images", imageFile);
+            organization.LogoUrl = imageUrl;
+        }
         var result = await _organizationRepository.AddAsync(organization);
         return result != null ? "Success" : "Failed";
     }
-    // دالة مساعدة لتنظيم القواعد (Business Rules)
-    public bool IsOrganizationTypeAllowed(UserType userType, OrganizationType orgType)
+    // 2. جلب كل المنظمات التي يملكها مستخدم معين
+    public async Task<List<Organization>> GetAllOnwerOrganizationsAsync(Guid ownerId)
     {
-        switch (userType)
-        {
-            case UserType.Farmer:
-                // المزارع لازم يعمل مزرعة فقط
-                return orgType == OrganizationType.Farm;
+        var Organizations = await _organizationRepository.GetAllOrganizationsByOwnerId(ownerId);
 
-            case UserType.Trader:
-                // التاجر لازم يعمل متجر فقط
-                return orgType == OrganizationType.Store;
-
-            case UserType.BusinessOwner:
-                // صاحب العمل ممكن يعمل مطعم، فندق، أو مصنع
-                return orgType == OrganizationType.Restaurant ||
-                       orgType == OrganizationType.Hotel ||
-                       orgType == OrganizationType.Factory;
-
-            case UserType.Admin:
-                return true; // الأدمن يقدر يعمل أي حاجة
-
-            default:
-                return false; // أي نوع تاني ممنوع يعمل مؤسسة
-        }
+        return Organizations;
     }
-
-    // public async Task<List<Organization>> GetAllOnwerOrganizationsAsync(Guid ownerId)
+    // 3. جلب كل المنظمات التي يشارك فيها مستخدم معين (سواء كمالك أو كعضو)
+    // public async Task<List<Organization>> GetAllOrganizationsByUserIdAsync(Guid userId)
     // {
-    //     var Organizations = await _organizationRepository.GetAllOrganizationsByOwnerId(ownerId);
+    //     var Organizations = await _organizationRepository.GetAllOrganizationsByUserId(userId);
 
     //     return Organizations;
     // }
