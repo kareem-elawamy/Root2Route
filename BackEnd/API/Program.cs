@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Service; // ???? ?? ???? ??? Namespace ?????? JwtSettings
 using Service.Services.AuthenticationService;
+using SixLabors.ImageSharp;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -83,7 +84,7 @@ builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddServiceDependencies()
                 .AddServiceRegisteration()
                 .AddCoreDependencies()
-                .AddInfrastructureDependencies();
+                .AddInfrastructureDependencies().AddModelServiceDependencies(builder.Configuration);
 
 // Authentication Config
 builder.Services.AddAuthentication(options =>

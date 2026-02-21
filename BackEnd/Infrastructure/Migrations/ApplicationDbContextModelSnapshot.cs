@@ -447,6 +447,12 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("OrganizationId1")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<decimal>("StartBiddingPrice")
                         .HasColumnType("decimal(18,2)");
 

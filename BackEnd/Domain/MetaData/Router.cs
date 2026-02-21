@@ -73,6 +73,10 @@ namespace Domain.MetaData
             // عملية خاصة
             public const string RegisterHarvest = Prefix + "registerharvest";
         }
-
+        public static class AnalyzePlants
+        {
+            public const string Prefix = rule + "modelanalysis/";
+            public const string AnalyzePlant = Prefix + "analyze";
+        }
     }
 }
