@@ -8,8 +8,7 @@ namespace Service.Services.ProductService
     public interface IProductService
     {
         Task<string> CreateProductFromCropAsync(Product product);
-
-
+        
     }
 
 }

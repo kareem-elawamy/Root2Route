@@ -28,7 +28,8 @@ namespace Domain.Models
         [Range(0, double.MaxValue)]
         public decimal StartBiddingPrice { get; set; } // سعر فتح المزاد
 
-
+        [Timestamp] // هذا الحقل يتم تحديثه تلقائياً من SQL Server مع كل تعديل
+        public byte[] RowVersion { get; set; }
 
         // المالك (مين اللي بيبيع؟)
         public Guid OrganizationId { get; set; }
