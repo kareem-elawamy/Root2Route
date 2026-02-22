@@ -5,9 +5,7 @@ using Service.Services;
 using Service.Services.AIService;
 using Service.Services.AuthenticationService;
 using Service.Services.AuthorizationService;
-using Service.Services.CropService;
 using Service.Services.Email;
-using Service.Services.FarmService;
 using Service.Services.FileService;
 using Service.Services.ModelService;
 using Service.Services.OrganizationMemberService;
@@ -30,8 +28,7 @@ public static class ModuleServiceDependencies
         services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<IOrganizationRoleService, OrganizationRoleService>();
         services.AddScoped<IOrganizationMemberService, OrganizationMemberService>();
-        services.AddScoped<IFarmService, FarmService>();
-        services.AddScoped<ICropService, CropService>();
+
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IEmailService, EmailService>();
         return services;

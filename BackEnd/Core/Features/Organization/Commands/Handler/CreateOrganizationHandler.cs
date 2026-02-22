@@ -13,7 +13,8 @@ using Service.Services.OrganizationRoleService;
 
 namespace Core.Features.Organization.Commands.Handler
 {
-    public class CreateOrganizationHandler : ResponseHandler, IRequestHandler<CreateOrganizationCommand, Response<string>>
+    public class CreateOrganizationHandler : ResponseHandler, IRequestHandler<CreateOrganizationCommand, Response<string>>,
+    IRequestHandler<UpdateOrganizations, Response<string>>
     {
         private readonly IOrganizationService _organizationService;
         private readonly IMapper _mapper;
@@ -79,6 +80,29 @@ namespace Core.Features.Organization.Commands.Handler
                 // في حالة حدوث أي خطأ، الـ using سيضمن عمل Rollback تلقائياً
                 return BadRequest<string>($"حدث خطأ أثناء إنشاء المنظمة: {ex.Message}");
             }
+        }
+
+        public async Task<Response<string>> Handle(UpdateOrganizations request, CancellationToken cancellationToken)
+        {
+            var organization = await _organizationService.GetByIdAsync(request.OrganizationId);
+
+            if (organization == null)
+                return NotFound<string>("Organization not found");
+
+            // 2️⃣ تحقق إن صاحب الطلب هو المالك
+            var isOwner = await _organizationService
+                .IsOwnerAsync(request.OwnerId, request.OrganizationId);
+            if (!isOwner)
+                return Unauthorized<string>("You are not allowed to update this organization");
+            var mappedOrganization = _mapper.Map<Domain.Models.Organization>(request);
+
+            var result = await _organizationService
+                .UpdateAsync(request.OrganizationId, mappedOrganization);
+
+            if (result == "Not Found")
+                return NotFound<string>("Organization not found");
+
+            return Success("Organization updated successfully");
         }
     }
 }

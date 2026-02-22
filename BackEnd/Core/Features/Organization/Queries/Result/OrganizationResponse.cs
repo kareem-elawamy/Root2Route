@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
 namespace Core.Features.Organization.Queries.Result
@@ -16,6 +17,7 @@ namespace Core.Features.Organization.Queries.Result
         public string? ContactPhone { get; set; }
         public string? LogoUrl { get; set; }
         public OrganizationType Type { get; set; }
+        public OrganizationStatus OrganizationStatus { get; set; }
         // public ICollection<OrganizationMember> Members { get; set; } =
         //    new List<OrganizationMember>();
         // public ICollection<Farm> Farms { get; set; } = new List<Farm>(); // الأصول الثابتة

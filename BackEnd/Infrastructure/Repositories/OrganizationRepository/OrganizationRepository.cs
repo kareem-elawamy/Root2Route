@@ -5,17 +5,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.OrganizationRepository
 {
-    public class OrganizationRepository : GenericRepositoryAsync<Organization> , IOrganizationRepository
+    public class OrganizationRepository : GenericRepositoryAsync<Organization>, IOrganizationRepository
     {
         public OrganizationRepository(ApplicationDbContext context) : base(context)
         {
-            
+
         }
 
         public Task<List<Organization>> GetAllOrganizationsByOwnerId(Guid ownerId)
         {
-            var organizations = _dbContext.Organizations.Where(o=> o.OwnerId == ownerId).ToListAsync();
-            return organizations ;
+            var organizations = _dbContext.Organizations.Where(o => o.OwnerId == ownerId).ToListAsync();
+            return organizations;
+        }
+        public async Task<List<Organization>> GetAllOrganizationsByUserId(Guid userId)
+        {
+            return await _dbContext.Organizations
+               .Where(o =>
+    o.OwnerId == userId ||
+    o.Members.Any(m => m.UserId == userId && m.IsActive))
+                .ToListAsync();
         }
     }
 }

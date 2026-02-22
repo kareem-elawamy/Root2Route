@@ -17,8 +17,5 @@ namespace Core.Features.authentication.Commands.Models
         public string? PhoneNumber { get; set; }
 
 
-        public string? OrganizationName { get; set; }
-        // public OrganizationType? OrganizationType { get; set; }
-        public string? OrganizationAddress { get; set; }
     }
 }
