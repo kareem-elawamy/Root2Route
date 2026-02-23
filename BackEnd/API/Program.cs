@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Service; // ???? ?? ???? ??? Namespace ?????? JwtSettings
-using Service.Services.AuthenticationService;
+using Service; 
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
