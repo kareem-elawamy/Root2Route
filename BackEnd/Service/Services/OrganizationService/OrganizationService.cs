@@ -139,7 +139,7 @@ public class OrganizationService : IOrganizationService
 
     #region Update Organization
 
-    public async Task<string> UpdateAsync(Guid id, Organization updatedData)
+    public async Task<string> UpdateAsync(Guid id, Organization updatedData, IFormFile? newLogo = null)
     {
         var org = await _organizationRepository.GetByIdAsync(id);
         if (org == null || org.IsDeleted)
@@ -150,6 +150,16 @@ public class OrganizationService : IOrganizationService
         org.Address = updatedData.Address;
         org.ContactEmail = updatedData.ContactEmail;
         org.ContactPhone = updatedData.ContactPhone;
+
+        // Fix: Include the missing Type property
+        // org.Type = updatedData.Type; // Uncomment this if 'Type' exists on your Domain.Models.Organization
+
+        // Fix: Handle the Logo upload if a new file was provided
+        if (newLogo != null)
+        {
+            org.LogoUrl = await _fileService.UploadImageAsync("Logo-images", newLogo);
+        }
+
         org.UpdatedAt = DateTime.UtcNow;
 
         await _organizationRepository.UpdateAsync(org);
@@ -158,7 +168,6 @@ public class OrganizationService : IOrganizationService
     }
 
     #endregion
-
     #region Soft Delete
 
     public async Task<string> SoftDeleteAsync(Guid id)

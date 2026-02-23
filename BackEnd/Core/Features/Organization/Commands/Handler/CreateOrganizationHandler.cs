@@ -89,15 +89,15 @@ namespace Core.Features.Organization.Commands.Handler
             if (organization == null)
                 return NotFound<string>("Organization not found");
 
-            // 2️⃣ تحقق إن صاحب الطلب هو المالك
-            var isOwner = await _organizationService
-                .IsOwnerAsync(request.OwnerId, request.OrganizationId);
+            // 2️⃣ Verify the requester is the owner
+            var isOwner = await _organizationService.IsOwnerAsync(request.OwnerId, request.OrganizationId);
             if (!isOwner)
                 return Unauthorized<string>("You are not allowed to update this organization");
+
             var mappedOrganization = _mapper.Map<Domain.Models.Organization>(request);
 
-            var result = await _organizationService
-                .UpdateAsync(request.OrganizationId, mappedOrganization);
+            // Fix: Pass the Logo file from the request down to the service
+            var result = await _organizationService.UpdateAsync(request.OrganizationId, mappedOrganization, request.Logo);
 
             if (result == "Not Found")
                 return NotFound<string>("Organization not found");
