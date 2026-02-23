@@ -3,9 +3,7 @@ using Infrastructure.Repositories.AuctionRepository;
 using Infrastructure.Repositories.BidRepository;
 using Infrastructure.Repositories.ChatMessageRepository;
 using Infrastructure.Repositories.ConversationRepository;
-using Infrastructure.Repositories.CropActivityLogRepository;
-using Infrastructure.Repositories.CropRepository;
-using Infrastructure.Repositories.FarmRepository;
+
 using Infrastructure.Repositories.OrderItemRepository;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.OrganizationInvitationRepository;
@@ -30,9 +28,7 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IBidRepository, BidRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
-        services.AddScoped<ICropActivityLogRepository, CropActivityLogRepository>();
-        services.AddScoped<ICropRepository, CropRepository>();
-        services.AddScoped<IFarmRepository, FarmRepository>();
+
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrganizationInvitationRepository, OrganizationInvitationRepository>();

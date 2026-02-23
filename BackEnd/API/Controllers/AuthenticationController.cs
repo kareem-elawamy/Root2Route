@@ -21,13 +21,13 @@ namespace API.Controllers
             var response = await Mediator.Send(command);
             return NewResult(response);
         }
-        [HttpPost("verify-otp")]
+        [HttpPost(Router.Authentication.verifyOtp)]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpCommand command)
         {
             var response = await Mediator.Send(command);
             return NewResult(response);
         }
-        [HttpPost("resend-otp")]
+        [HttpPost(Router.Authentication.resendOtp)]
         public async Task<IActionResult> ResendOtp([FromBody] ResendOtpCommand command)
         {
             var response = await Mediator.Send(command);

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Infrastructure.Repositories.CropRepository;
 using Infrastructure.Repositories.ProductRepository;
 
 namespace Service.Services.ProductService
@@ -10,10 +9,8 @@ namespace Service.Services.ProductService
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
-        private readonly ICropRepository _cropRepository;
-        public ProductService(IProductRepository productRepository, ICropRepository cropRepository)
+        public ProductService(IProductRepository productRepository)
         {
-            _cropRepository = cropRepository;
             _productRepository = productRepository;
         }
 
@@ -25,11 +22,7 @@ namespace Service.Services.ProductService
                 await _productRepository.AddAsync(product);
 
                 // (اختياري) ممكن هنا تحدث حالة الـ Crop الأصلي إنه خلاص بقى منتج
-                if (product.SourceCropId.HasValue)
-                {
-                    var crop = await _cropRepository.GetByIdAsync(product.SourceCropId.Value);
-                    if (crop != null) { crop.IsConvertedToProduct = true; await _cropRepository.UpdateAsync(crop); }
-                }
+                
 
                 return "Success";
             }

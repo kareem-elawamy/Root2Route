@@ -25,10 +25,8 @@ namespace Infrastructure.Data
         // 2. Market & Products Module
         // =========================================================
         public DbSet<MarketItem> MarketItems { get; set; }
-        public DbSet<Crop> Crops { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<CropActivityLog> CropActivityLogs { get; set; }
-        public DbSet<Farm> Farms { get; set; }
+
 
         // =========================================================
         // 3. Commerce & Auctions Module
@@ -133,12 +131,6 @@ namespace Infrastructure.Data
                 .HasForeignKey(om => om.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // CropActivityLog Relationships
-            modelBuilder.Entity<CropActivityLog>()
-                .HasOne(log => log.PerformedBy)
-                .WithMany()
-                .HasForeignKey(log => log.PerformedById)
-                .OnDelete(DeleteBehavior.Restrict);
             // في OnModelCreating
             modelBuilder.Entity<MarketItem>()
                 .ToTable("MarketItems")
@@ -146,11 +138,6 @@ namespace Infrastructure.Data
                 .HasValue<MarketItem>("Base") // اختيار اختياري لو هتستخدم الأب مباشرة
                 .HasValue<Product>("Product");
 
-            modelBuilder.Entity<Product>()
-                .HasOne<Crop>() // علاقة بدون Navigation Property في الـ Crop
-                .WithMany()
-                .HasForeignKey(p => p.SourceCropId)
-                .OnDelete(DeleteBehavior.SetNull); // لو الـ Crop اتمسح، المنتج يفضل موجود بس الـ Source يبقى null
 
             // Conversation
             modelBuilder.Entity<Conversation>()
