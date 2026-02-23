@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Core.Features.Organization.Commands.Models
 {
     public class UpdateOrganizations : IRequest<Response<string>>
     {
+        [BindNever]
         public Guid OwnerId { get; set; }
+
         public Guid OrganizationId { get; set; }
 
         public UpdateOrganizations() { }

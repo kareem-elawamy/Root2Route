@@ -51,15 +51,13 @@ namespace API.Controllers
             return NewResult(response);
         }
         [HttpPut(Router.Organization.UpdateById)]
-        public async Task<IActionResult> UpdateOrganization([FromForm] UpdateOrganizations update,[FromRoute] Guid organizationId)
+        public async Task<IActionResult> UpdateOrganization([FromForm] UpdateOrganizations update)
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdString == null) return Unauthorized();
-            var ownerId = Guid.Parse(userIdString);
-            var response = await Mediator.Send(new UpdateOrganizations(ownerId,organizationId));
-                        return NewResult(response);
-
-
+            update.OwnerId = Guid.Parse(userIdString);
+            var response = await Mediator.Send(update);
+            return NewResult(response);
         }
 
     }
