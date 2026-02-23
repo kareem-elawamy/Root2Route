@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.Controllers.Shared;
 using Core.Features.PlantInfo.Commands.Models;
 using Core.Features.PlantInfo.Queries.Models;
@@ -47,12 +43,6 @@ namespace API.Controllers
         {
             return NewResult(await Mediator.Send(new DeletePlantInfoCommand(id)));
 
-        }
-        [HttpGet(Router.PlantInfo.Paginated)]
-        public async Task<IActionResult> Paginated([FromQuery] GetPlantInfoPaginatedListQuery query)
-        {
-            var response = await Mediator.Send(query);
-            return Ok(response);
         }
     }
 }
