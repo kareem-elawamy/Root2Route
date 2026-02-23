@@ -20,9 +20,10 @@ namespace Domain.Models
         public OrganizationType Type { get; set; }
         public Guid OwnerId { get; set; }
         public ApplicationUser? Owner { get; set; }
+        public OrganizationStatus OrganizationStatus { get; set; }
         public ICollection<OrganizationMember> Members { get; set; } =
             new List<OrganizationMember>();
-        public ICollection<Farm> Farms { get; set; } = new List<Farm>(); // الأصول الثابتة
+        // public ICollection<Farm> Farms { get; set; } = new List<Farm>(); // الأصول الثابتة
         public ICollection<MarketItem> MarketItems { get; set; } = new List<MarketItem>(); // المنتجات المعروضة
     }
 }

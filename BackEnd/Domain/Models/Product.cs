@@ -11,9 +11,10 @@ namespace Domain.Models
         public DateTime? ExpiryDate { get; set; }
         public WeightUnit? WeightUnit { get; set; }
 
-        // التعديل: ربط المنتج بالمحصول الأصلي (اختياري)
-        // اختياري ليه؟ عشان لو المنتج ده "مبيد حشري" بيبيعه تاجر، مش هيكون ليه CropId
+        // التتبع (Traceability)
         public Guid? SourceCropId { get; set; }
-        // مش لازم Navigation Property (Crop) عشان منعملش Cycle، الـ ID كفاية للتتبع
+
+        // هل المنتج ده مادة خام (محصول) ولا منتج مصنع (مبيد/سماد)؟
+        public ProductType ProductType { get; set; }
     }
 }

@@ -16,6 +16,23 @@ namespace Domain.Constants
         public const string Edit = "Permissions.Farms.Edit";
         public const string Delete = "Permissions.Farms.Delete";
     }
+    public static class OrganizationsPermissions
+    {
+        public const string ManageOrganization = "MANAGE_ORGANIZATION";
+        public const string CreateRole = "CREATE_ROLE";
+        public const string AssignRole = "ASSIGN_ROLE";
+        public const string InviteMember = "INVITE_MEMBER";
+        public const string BidOnProduct = "BID_ON_PRODUCT";
+        public const string CreateAuction = "CREATE_AUCTION";
+        public static List<string> GetAll()
+        {
+            return typeof(OrganizationsPermissions)
+                .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .Select(f => f.GetValue(null)!.ToString()!)
+                .ToList();
+        }
+
+    }
 
     public static class Crops
     {

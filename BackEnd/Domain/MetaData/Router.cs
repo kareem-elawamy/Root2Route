@@ -13,6 +13,8 @@ namespace Domain.MetaData
             public const string Prefix = rule + "authentication/";
             public const string Regsiter = Prefix + "regsiter";
             public const string Login = Prefix + "Login";
+            public const string verifyOtp = Prefix + "verify-otp";
+            public const string resendOtp = Prefix + "resend-otp";
         }
         public static class PlantInfo
         {
@@ -32,12 +34,33 @@ namespace Domain.MetaData
             public const string GetPlantGuideStepsByPlantId = Prefix + "getplantguidestepsbyplantid" + singelroute;
             public const string GetPlantGuideStepsByPlantName = Prefix + "getplantguidestepsbyplantname" + plantNameRoute;
         }
+        public static class Product
+        {
+            public const string Prefix = rule + "proudct/";
+            public const string cropInMarket = "list-crop-in-market";
+        }
         public static class OrganizationRole
         {
             public const string Prefix = rule + "organizationrole/";
             public const string CreateOrganizationRole = Prefix + "createorganizationrole";
+            public const string GetOrganizationRolesByOrganizationId = Prefix + "getorganizationrolesbyorganizationid" + singelroute;
+
+        }
+        public static class Organization
+        {
+            public const string Prefix = rule + "organizations/";
+            public const string GetAllOrganizations = Prefix + "getallorganizations";
+            public const string CreateOrganization = Prefix + "createorganization";
+            public const string GetById = Prefix + "getorganizationbyid" + singelroute;
+            public const string GetMyOrganizations = Prefix + "getmyorganizations";
+            public const string UpdateById = Prefix + "upfatebyid" + singelroute;
 
         }
 
+        public static class AnalyzePlants
+        {
+            public const string Prefix = rule + "modelanalysis/";
+            public const string AnalyzePlant = Prefix + "analyze";
+        }
     }
 }

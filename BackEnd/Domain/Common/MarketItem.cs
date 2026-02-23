@@ -28,11 +28,12 @@ namespace Domain.Models
         [Range(0, double.MaxValue)]
         public decimal StartBiddingPrice { get; set; } // سعر فتح المزاد
 
-
+        [Timestamp] // هذا الحقل يتم تحديثه تلقائياً من SQL Server مع كل تعديل
+        public byte[] RowVersion { get; set; }
 
         // المالك (مين اللي بيبيع؟)
         public Guid OrganizationId { get; set; }
-        [ForeignKey(nameof(OrganizationId))] // تأكد من وجود هذا
+        [ForeignKey(nameof(OrganizationId))] // تأكد أن الاسم يطابق الـ Property بالضبط
         public Organization? Organization { get; set; }
     }
 }

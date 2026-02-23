@@ -7,6 +7,6 @@ namespace Service.Services.AuthorizationService
 {
     public interface IAuthorizationService
     {
-        Task<bool> HasPermissionAsync(Guid userId, Guid organizationId, string permission);
+        // Task<bool> HasPermissionAsync(Guid userId, Guid organizationId, string permission);
     }
 }

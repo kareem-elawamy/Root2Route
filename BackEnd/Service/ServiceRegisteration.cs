@@ -17,7 +17,7 @@ namespace Service
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
-
+                options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
@@ -32,6 +32,10 @@ namespace Service
 
             }).AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromMinutes(15);
+            });
             return services;
         }
     }

@@ -7,6 +7,6 @@ namespace Infrastructure.Repositories.OrganizationMemberRepository
 {
     public interface IOrganizationMemberRepository : IGenericRepositoryAsync<OrganizationMember>
     {
-
+        Task<List<OrganizationMember>> GetOrganizationMembersByOrganizationIdAsync(Guid organizationId);
     }
 }

@@ -34,8 +34,10 @@ namespace Core.Features.authentication.Commands.Handler
 
             if (!signInResult)
                 return BadRequest<JwtAuthResult>("Password is not correct");
+            if (!user.EmailConfirmed)
+                return BadRequest<JwtAuthResult>("Email is not confirmed");
 
-            var accessToken = await _authService.GenerateToken(user, request.IsRememberMe);
+            var accessToken = await _authService.GenerateToken(user, null, request.IsRememberMe);
 
             return Success(accessToken);
         }

@@ -87,9 +87,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("UserType")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -115,8 +112,14 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("CurrentHighestBid")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("HighestBidderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -142,6 +145,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HighestBidderId");
 
                     b.HasIndex("MarketItemId");
 
@@ -172,6 +177,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -189,24 +197,36 @@ namespace Infrastructure.Migrations
                     b.ToTable("Bids");
                 });
 
-            modelBuilder.Entity("Domain.Models.Chat", b =>
+            modelBuilder.Entity("Domain.Models.ChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemMessage")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ReceiverId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
@@ -219,92 +239,43 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
+                    b.HasIndex("ConversationId");
 
                     b.ToTable("Chats");
                 });
 
-            modelBuilder.Entity("Domain.Models.Crop", b =>
+            modelBuilder.Entity("Domain.Models.Conversation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double?>("ActualYieldQuantity")
-                        .HasColumnType("float");
+                    b.Property<Guid>("BuyerId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("BatchNumber")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastMessageContent")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("LastMessageDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("ExpectedHarvestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("FarmId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("PlantInfoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("PlantedArea")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("PlantingDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("YieldUnit")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FarmId");
-
-                    b.HasIndex("PlantInfoId");
-
-                    b.ToTable("Crops");
-                });
-
-            modelBuilder.Entity("Domain.Models.CropActivityLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ActivityDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ActivityType")
-                        .HasMaxLength(100)
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("CropId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("PerformedById")
+                    b.Property<Guid>("SellerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -312,44 +283,13 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CropId");
+                    b.HasIndex("BuyerId");
 
-                    b.HasIndex("PerformedById");
+                    b.HasIndex("ProductId");
 
-                    b.ToTable("CropActivityLogs");
-                });
+                    b.HasIndex("SellerId");
 
-            modelBuilder.Entity("Domain.Models.Farm", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.ToTable("Farm");
+                    b.ToTable("Conversations");
                 });
 
             modelBuilder.Entity("Domain.Models.MarketItem", b =>
@@ -359,6 +299,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -381,8 +324,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("ItemType")
                         .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -394,6 +337,12 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid?>("OrganizationId1")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<decimal>("StartBiddingPrice")
                         .HasColumnType("decimal(18,2)");
@@ -412,7 +361,7 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("MarketItems", (string)null);
 
-                    b.HasDiscriminator<string>("ItemType").HasValue("MarketItem");
+                    b.HasDiscriminator<string>("ItemType").HasValue("Base");
 
                     b.UseTphMappingStrategy();
                 });
@@ -427,6 +376,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
@@ -458,6 +410,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
@@ -505,6 +460,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -518,6 +476,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("OrganizationStatus")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -535,6 +496,56 @@ namespace Infrastructure.Migrations
                     b.ToTable("Organizations");
                 });
 
+            modelBuilder.Entity("Domain.Models.OrganizationInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("OrganizationInvitations");
+                });
+
             modelBuilder.Entity("Domain.Models.OrganizationMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -545,6 +556,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
@@ -590,6 +604,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -625,6 +642,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -652,6 +672,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Instruction")
@@ -688,6 +711,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -738,6 +764,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
@@ -905,6 +934,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("SourceCropId")
                         .HasColumnType("uniqueidentifier");
 
@@ -916,11 +948,17 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Auction", b =>
                 {
+                    b.HasOne("Domain.Models.ApplicationUser", "HighestBidder")
+                        .WithMany()
+                        .HasForeignKey("HighestBidderId");
+
                     b.HasOne("Domain.Models.MarketItem", "MarketItem")
                         .WithMany()
                         .HasForeignKey("MarketItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("HighestBidder");
 
                     b.Navigation("MarketItem");
                 });
@@ -948,72 +986,40 @@ namespace Infrastructure.Migrations
                     b.Navigation("Bidder");
                 });
 
-            modelBuilder.Entity("Domain.Models.Chat", b =>
+            modelBuilder.Entity("Domain.Models.ChatMessage", b =>
                 {
-                    b.HasOne("Domain.Models.ApplicationUser", "Receiver")
+                    b.HasOne("Domain.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
+            modelBuilder.Entity("Domain.Models.Conversation", b =>
+                {
+                    b.HasOne("Domain.Models.ApplicationUser", "Buyer")
                         .WithMany()
-                        .HasForeignKey("ReceiverId")
+                        .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.ApplicationUser", "Sender")
+                    b.HasOne("Domain.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("SenderId")
+                        .HasForeignKey("ProductId");
+
+                    b.HasOne("Domain.Models.ApplicationUser", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Receiver");
+                    b.Navigation("Buyer");
 
-                    b.Navigation("Sender");
-                });
+                    b.Navigation("Product");
 
-            modelBuilder.Entity("Domain.Models.Crop", b =>
-                {
-                    b.HasOne("Domain.Models.Farm", "Farm")
-                        .WithMany("Crops")
-                        .HasForeignKey("FarmId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Models.PlantInfo", "PlantInfo")
-                        .WithMany()
-                        .HasForeignKey("PlantInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Farm");
-
-                    b.Navigation("PlantInfo");
-                });
-
-            modelBuilder.Entity("Domain.Models.CropActivityLog", b =>
-                {
-                    b.HasOne("Domain.Models.Crop", "Crop")
-                        .WithMany("Activities")
-                        .HasForeignKey("CropId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Models.ApplicationUser", "PerformedBy")
-                        .WithMany()
-                        .HasForeignKey("PerformedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Crop");
-
-                    b.Navigation("PerformedBy");
-                });
-
-            modelBuilder.Entity("Domain.Models.Farm", b =>
-                {
-                    b.HasOne("Domain.Models.Organization", "Organization")
-                        .WithMany("Farms")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("Domain.Models.MarketItem", b =>
@@ -1070,6 +1076,25 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Domain.Models.OrganizationInvitation", b =>
+                {
+                    b.HasOne("Domain.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.OrganizationRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Domain.Models.OrganizationMember", b =>
@@ -1219,14 +1244,9 @@ namespace Infrastructure.Migrations
                     b.Navigation("Bids");
                 });
 
-            modelBuilder.Entity("Domain.Models.Crop", b =>
+            modelBuilder.Entity("Domain.Models.Conversation", b =>
                 {
-                    b.Navigation("Activities");
-                });
-
-            modelBuilder.Entity("Domain.Models.Farm", b =>
-                {
-                    b.Navigation("Crops");
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Domain.Models.Order", b =>
@@ -1236,8 +1256,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Organization", b =>
                 {
-                    b.Navigation("Farms");
-
                     b.Navigation("MarketItems");
 
                     b.Navigation("Members");
