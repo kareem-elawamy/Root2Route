@@ -49,11 +49,17 @@ namespace Domain.MetaData
         public static class Organization
         {
             public const string Prefix = rule + "organizations/";
-            public const string GetAllOrganizations = Prefix + "getallorganizations";
-            public const string CreateOrganization = Prefix + "createorganization";
-            public const string GetById = Prefix + "getorganizationbyid" + singelroute;
-            public const string GetMyOrganizations = Prefix + "getmyorganizations";
-            public const string UpdateById = Prefix + "upfatebyid" + singelroute;
+            public const string GetAllOrganizations = Prefix;
+            public const string GetById = Prefix + singelroute;
+            public const string GetMyOrganizations = Prefix + "/my";
+            public const string CreateOrganization = Prefix;
+            public const string UpdateById = Prefix;
+            public const string SoftDelete = Prefix + singelroute;
+            public const string Restore = Prefix + singelroute + "/restore";
+            public const string ChangeOwner = Prefix + singelroute + "/change-owner";
+            public const string UpdateStatus = Prefix + singelroute + "/status";
+            public const string UploadLogo = Prefix + singelroute + "/logo";
+            public const string GetStatistics = Prefix + singelroute + "/statistics";
 
         }
 

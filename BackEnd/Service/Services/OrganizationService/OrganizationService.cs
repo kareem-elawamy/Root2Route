@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Service.Services.FileService;
 using Service.Services;
+using Domain.Constants;
 
 public class OrganizationService : IOrganizationService
 {
@@ -35,23 +36,25 @@ public class OrganizationService : IOrganizationService
     #endregion
     #region Create Organization
 
-    public async Task<string> CreateOrganizationAsync(Organization organization, IFormFile? imageFile = null)
+    public async Task<string> CreateOrganizationAsync(
+Organization organization,
+IFormFile? imageFile = null)
     {
-        var user = await _userManager.FindByIdAsync(organization.OwnerId.ToString());
-        if (user == null)
-            return "Owner Not Found";
-
-        var nameExists = await _organizationRepository
-            .GetTableNoTracking()
-            .AnyAsync(x => x.Name.ToLower() == organization.Name.ToLower());
-
-        if (nameExists)
-            return "Organization Name Already Exists";
-
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
+            var user = await _userManager.FindByIdAsync(organization.OwnerId.ToString());
+            if (user == null)
+                return "Owner Not Found";
+
+            var nameExists = await _organizationRepository
+                .GetTableNoTracking()
+                .AnyAsync(x => x.Name.ToLower() == organization.Name.ToLower());
+
+            if (nameExists)
+                return "Exists";
+
             if (imageFile != null)
                 organization.LogoUrl = await _fileService.UploadImageAsync("Logo-images", imageFile);
 
@@ -61,43 +64,29 @@ public class OrganizationService : IOrganizationService
 
             await _organizationRepository.AddAsync(organization);
 
-            // Create Default Roles
             var ownerRole = new OrganizationRole
             {
                 Id = Guid.NewGuid(),
                 Name = "Owner",
                 OrganizationId = organization.Id,
-                IsSystemDefault = true
+                IsSystemDefault = true,
+                Permissions = OrganizationsPermissions.GetAll()
+                    .Select(p => new OrganizationRolePermission
+                    {
+                        Id = Guid.NewGuid(),
+                        PermissionsClaim = p
+                    }).ToList()
             };
 
-            var adminRole = new OrganizationRole
-            {
-                Id = Guid.NewGuid(),
-                Name = "Admin",
-                OrganizationId = organization.Id,
-                IsSystemDefault = true
-            };
+            await _roleRepository.AddAsync(ownerRole);
 
-            var memberRole = new OrganizationRole
-            {
-                Id = Guid.NewGuid(),
-                Name = "Member",
-                OrganizationId = organization.Id,
-                IsSystemDefault = true
-            };
-
-            await _roleRepository.AddRangeAsync(new List<OrganizationRole>
-            {
-                ownerRole, adminRole, memberRole
-            });
-
-            // Add Owner as Member
             var ownerMember = new OrganizationMember
             {
                 Id = Guid.NewGuid(),
                 OrganizationId = organization.Id,
                 UserId = organization.OwnerId,
-                OrganizationRoleId = ownerRole.Id
+                OrganizationRoleId = ownerRole.Id,
+                IsActive = true
             };
 
             await _memberRepository.AddAsync(ownerMember);
@@ -112,7 +101,6 @@ public class OrganizationService : IOrganizationService
             return "Failed";
         }
     }
-
     #endregion
 
     #region Get Methods
@@ -172,6 +160,7 @@ public class OrganizationService : IOrganizationService
 
     public async Task<string> SoftDeleteAsync(Guid id)
     {
+
         var org = await _organizationRepository.GetByIdAsync(id);
         if (org == null)
             return "Not Found";
