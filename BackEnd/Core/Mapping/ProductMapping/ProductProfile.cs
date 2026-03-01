@@ -10,7 +10,6 @@ namespace Core.Mapping.ProductMapping
     {
         public ProductProfile()
         {
-            CropToProduct();
         }
     }
 }

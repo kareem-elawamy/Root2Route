@@ -14,7 +14,8 @@ namespace Core.Features.Organization.Queries.Handler
     public class OrganizationQueriesHandler : ResponseHandler,
    IRequestHandler<GetOrganizationsById, Response<OrganizationResponse>>,
    IRequestHandler<GetAllOrganizations, Response<List<OrganizationResponse>>>,
-   IRequestHandler<GetAllOrganizationsByUserId, Response<List<OrganizationResponse>>>
+   IRequestHandler<GetAllOrganizationsByUserId, Response<List<OrganizationResponse>>>,
+   IRequestHandler<GetOrganizationStatisticsQuery, Response<object>>
     {
         private readonly IOrganizationService _organizationService;
         private readonly IMapper _mapper;
@@ -55,11 +56,15 @@ namespace Core.Features.Organization.Queries.Handler
             var mapped = _mapper.Map<List<OrganizationResponse>>(organizations);
             return Success(mapped);
         }
-        // public async Task<Response<List<OrganizationResponse>>> Handle(GetAllOwnerOrganizations request, CancellationToken cancellationToken)
-        // {
-        //     var organizations = await _organizationService.GetAllOnwerOrganizationsAsync(request.OwnerId);
-        //     var mappedOrganizations = _mapper.Map<List<OrganizationResponse>>(organizations);
-        //     return Success(mappedOrganizations);
-        // }
+
+        public async Task<Response<object>> Handle(GetOrganizationStatisticsQuery request, CancellationToken cancellationToken)
+        {
+            var stats = await _organizationService
+           .GetStatisticsAsync(request.OrganizationId);
+
+            return Success(stats);
+            throw new NotImplementedException();
+        }
+
     }
 }
