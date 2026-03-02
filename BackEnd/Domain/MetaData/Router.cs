@@ -48,7 +48,7 @@ namespace Domain.MetaData
         }
         public static class Organization
         {
-            public const string Prefix = rule + "organizations/";
+            public const string Prefix = rule + "organizations";
             public const string GetAllOrganizations = Prefix;
             public const string GetById = Prefix + singelroute;
             public const string GetMyOrganizations = Prefix + "/my";
@@ -67,6 +67,15 @@ namespace Domain.MetaData
         {
             public const string Prefix = rule + "modelanalysis/";
             public const string AnalyzePlant = Prefix + "analyze";
+        }
+        public static class OrganizationInvitation
+        {
+            public const string Prefix = rule + "organization-invitations";
+            public const string SendInvitation = Prefix;
+            public const string GetAllInvitationsForUser = Prefix + "/my";
+            public const string AcceptInvitation = Prefix + "/accept";
+            public const string Revoken = Prefix + "/revoken";
+            // public const string OrganizationInvitation = Prefix + "/organizationinvitation";
         }
     }
 }

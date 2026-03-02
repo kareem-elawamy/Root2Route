@@ -7,10 +7,10 @@ namespace Service.Services.OrganizationInvitationService
 {
     public interface IOrganizationInvitationService
     {
-        Task<string> sendInvitation(Guid organizationId, string email);
+        Task<InvitationResult> SendInvitationAsync(OrganizationInvitation invitation);
         Task<List<OrganizationInvitation>> GetInvitationsByOrganizationIdAsync(Guid organizationId);
-        Task<string> RevokeInvitationAsync(Guid invitationId);
-        Task<string> AcceptInvitationAsync(Guid invitationId, Guid userId);
-        Task<string> GetAllInvitationsForUserAsync(Guid userId);
+        Task<InvitationResult> RevokeInvitationAsync(Guid invitationId, Guid userId);
+        Task<InvitationResult> AcceptInvitationAsync(Guid invitationId, Guid userId);
+        Task<List<OrganizationInvitation>> GetAllInvitationsForUserAsync(Guid userId);
     }
 }
