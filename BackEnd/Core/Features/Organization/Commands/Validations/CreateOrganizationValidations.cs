@@ -28,9 +28,7 @@ namespace Core.Features.Organization.Commands.Validations
                 .MaximumLength(15).WithMessage("Contact phone cannot exceed 15 characters.");
             RuleFor(x => x.Type)
             .IsInEnum().WithMessage("Invalid organization type.");
-            RuleFor(x => x.OwnerId)
-                .NotEmpty().WithMessage("OwnerId is required.")
-                .Must(id => Guid.TryParse(id.ToString(), out _)).WithMessage("OwnerId must be a valid GUID.");
+
         }
     }
 }

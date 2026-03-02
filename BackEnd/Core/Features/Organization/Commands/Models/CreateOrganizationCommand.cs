@@ -8,6 +8,7 @@ namespace Core.Features.Organization.Commands.Models
 {
     public class CreateOrganizationCommand : IRequest<Response<string>>
     {
+        public Guid OwnerId { get; set; }
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public string? Address { get; set; }
@@ -15,7 +16,6 @@ namespace Core.Features.Organization.Commands.Models
         public string? ContactPhone { get; set; }
         public FormFile? Logo { get; set; }
         public OrganizationType Type { get; set; }
-        public Guid OwnerId { get; set; }
 
     }
 }

@@ -36,9 +36,7 @@ public class OrganizationService : IOrganizationService
     #endregion
     #region Create Organization
 
-    public async Task<string> CreateOrganizationAsync(
-Organization organization,
-IFormFile? imageFile = null)
+    public async Task<string> CreateOrganizationAsync(Organization organization, IFormFile? imageFile = null)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -102,14 +100,11 @@ IFormFile? imageFile = null)
         }
     }
     #endregion
-
     #region Get Methods
-
     public async Task<Organization?> GetByIdAsync(Guid id)
     {
         return await _organizationRepository.GetByIdAsync(id);
     }
-
     public async Task<List<Organization>> GetAllAsync()
     {
         return await _organizationRepository
@@ -265,6 +260,7 @@ IFormFile? imageFile = null)
     }
 
     #endregion
+    #region IsOwnerAsync
     public async Task<bool> IsOwnerAsync(Guid ownerId, Guid organizationId)
     {
         var organization = await _organizationRepository.GetByIdAsync(organizationId);
@@ -274,5 +270,5 @@ IFormFile? imageFile = null)
 
         return organization.OwnerId == ownerId;
     }
-
+    #endregion
 }

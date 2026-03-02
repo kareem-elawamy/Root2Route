@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using FluentValidation.AspNetCore;
 
 namespace Core;
 
@@ -12,7 +13,7 @@ public static class ModuleCoreDependencies
         // Register infrastructure services here if needed
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
-        
+        services.AddFluentValidation();
         return services;
     }
 }

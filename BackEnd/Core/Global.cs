@@ -3,3 +3,8 @@ global using MediatR;
 global using AutoMapper;
 global using Core.Features.Authentication.Commands.Models;
 global using Domain.Models;
+global using Core.Features.Organization.Commands.Models;
+global using FluentValidation;
+global using Service.Enums;
+global using Service.Services.OrganizationInvitationService;
+global using Core.Features.OrganizationInvitation.Commands.Models;

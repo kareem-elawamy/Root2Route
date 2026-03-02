@@ -24,7 +24,7 @@ namespace Domain.Models
         // كود الدعوة السري (بيتبعت في اللينك)
         public string Token { get; set; } = Guid.NewGuid().ToString();
 
-        public DateTime ExpiryDate { get; set; } = DateTime.UtcNow.AddDays(3);
+        public DateTime ExpiryDate { get; set; } 
 
         public InvitationStatus Status { get; set; } = InvitationStatus.Pending;
     }
