@@ -13,7 +13,7 @@ namespace API.Controllers
     public class ProductController : BaseApiController
     {
         [HttpPost(Router.Product.cropInMarket)]
-        public async Task<IActionResult> ListCropInMarket([FromBody] CreateProductFromCropCommand command)
+        public async Task<IActionResult> ListCropInMarket([FromBody] AddProductCommandHandler command)
         {
             // Mediator بيبعت الـ Command للـ Handler اللي كتبناه
             var response = await Mediator.Send(command);

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Domain.Models
 {
     public class Organization : BaseEntity
@@ -23,7 +18,6 @@ namespace Domain.Models
         public OrganizationStatus OrganizationStatus { get; set; }
         public ICollection<OrganizationMember> Members { get; set; } =
             new List<OrganizationMember>();
-        // public ICollection<Farm> Farms { get; set; } = new List<Farm>(); // الأصول الثابتة
         public ICollection<MarketItem> MarketItems { get; set; } = new List<MarketItem>(); // المنتجات المعروضة
     }
 }
