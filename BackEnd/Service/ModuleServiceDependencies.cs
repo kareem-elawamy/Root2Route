@@ -8,6 +8,7 @@ using Service.Services.AuthorizationService;
 using Service.Services.Email;
 using Service.Services.FileService;
 using Service.Services.ModelService;
+using Service.Services.OrderService;
 using Service.Services.OrganizationInvitationService;
 using Service.Services.OrganizationMemberService;
 using Service.Services.OrganizationRoleService;
@@ -32,6 +33,7 @@ public static class ModuleServiceDependencies
         services.AddScoped<IOrganizationInvitationService, OrganizationInvitationService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IOrderService, OrderService>();
         return services;
     }
     public static IServiceCollection AddModelServiceDependencies(this IServiceCollection services, IConfiguration configuration)

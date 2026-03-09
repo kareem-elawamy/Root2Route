@@ -39,8 +39,8 @@ namespace Domain.MetaData
 
         public static class Product
         {
-            public const string Prefix = rule + "/products";
-            public const string cropInMarket = Prefix + "/market-crops";
+            public const string Prefix = rule + "proudct/";
+            public const string cropInMarket = "list-crop-in-market";
         }
 
         public static class OrganizationRole

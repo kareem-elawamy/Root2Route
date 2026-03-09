@@ -11,8 +11,8 @@ namespace Domain.Models
         public Guid OrderId { get; set; }
         public Order? Order { get; set; }
 
-        public Guid MarketItemId { get; set; }
-        public MarketItem? MarketItem { get; set; }
+        public Guid productid { get; set; }
+        public Product? product { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
     }

@@ -9,5 +9,6 @@ namespace Service.Services.FileService
     public interface IFileService
     {
         Task<string> UploadImageAsync(string location, IFormFile file);
+        Task<List<string>> UploadImagesAsync(string location, List<IFormFile> files);
     }
 }

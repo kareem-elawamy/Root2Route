@@ -3,7 +3,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions; // مهمة للـ Lambda Expression
+using System.Linq.Expressions;
 
 namespace Infrastructure.Data
 {
@@ -20,13 +20,13 @@ namespace Infrastructure.Data
         public DbSet<OrganizationMember> OrganizationMembers { get; set; }
         public DbSet<OrganizationRole> OrganizationRoles { get; set; }
         public DbSet<OrganizationRolePermission> OrganizationRolePermissions { get; set; }
+        public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
 
         // =========================================================
         // 2. Market & Products Module
         // =========================================================
-        public DbSet<MarketItem> MarketItems { get; set; }
         public DbSet<Product> Products { get; set; }
-
+        public DbSet<ProductImage> ProductImages { get; set; } // تم التعديل لحرف P كابيتال
 
         // =========================================================
         // 3. Commerce & Auctions Module
@@ -37,15 +37,13 @@ namespace Infrastructure.Data
         public DbSet<Bid> Bids { get; set; }
 
         // =========================================================
-        // 4. Knowledge Base & Reviews
+        // 4. Knowledge Base & Communication
         // =========================================================
         public DbSet<PlantInfo> PlantInfos { get; set; }
         public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
-        public DbSet<ChatMessage> Chats { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
+        public DbSet<ChatMessage> Chats { get; set; }
         public DbSet<Review> Reviews { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,19 +58,36 @@ namespace Infrastructure.Data
             modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", "security");
             modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", "security");
 
-            // --- 2. Inheritance (TPH) ---
-            modelBuilder.Entity<MarketItem>()
-                .ToTable("MarketItems")
-                .HasDiscriminator<string>("ItemType")
-                .HasValue<Product>("Product");
+            // --- 2. Relationships & Constraints ---
 
-            // --- 3. Relationships & Constraints ---
+            // 🛑 (تم حذف كود الوراثة الخاص بـ MarketItem لأنه لم يعد موجوداً)
 
-            // MarketItem -> Organization
-            modelBuilder.Entity<MarketItem>()
-                .HasOne(m => m.Organization)
+            // Product -> Organization (تم تعديله من MarketItem إلى Product)
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Organization)
+                .WithMany() // لو Organization مفيهاش ICollection<Product>
+                .HasForeignKey(p => p.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ProductImage -> Product (علاقة جديدة)
+            modelBuilder.Entity<ProductImage>()
+                .HasOne(pi => pi.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Cascade); // لو المنتج اتمسح، صوره تتمسح معاه
+
+            // OrderItem -> Product (تم تعديله من MarketItem)
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.product)
                 .WithMany()
-                .HasForeignKey(m => m.OrganizationId)
+                .HasForeignKey(oi => oi.productid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Auction -> Product (تأكد من تعديل الـ FK في كيان الـ Auction ليكون ProductId)
+            modelBuilder.Entity<Auction>()
+                .HasOne(a => a.product)
+                .WithMany()
+                .HasForeignKey(a => a.productid)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // OrganizationMember -> OrganizationRole
@@ -86,13 +101,6 @@ namespace Infrastructure.Data
                 .WithOne(p => p.OrganizationRole)
                 .HasForeignKey(p => p.OrganizationRoleId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // OrderItem -> MarketItem
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.MarketItem)
-                .WithMany()
-                .HasForeignKey(oi => oi.MarketItemId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Review Relationships
             modelBuilder.Entity<Review>()
@@ -110,32 +118,22 @@ namespace Infrastructure.Data
             // Bid Relationships
             modelBuilder.Entity<Bid>()
                 .HasOne(b => b.Bidder)
-                .WithMany()
+                .WithMany(u => u.Bids)
                 .HasForeignKey(b => b.BidderId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // Chat Relationships
 
             // OrganizationMember Relationships
             modelBuilder.Entity<OrganizationMember>()
                 .HasOne(om => om.Organization)
-                .WithMany(om => om.Members)
+                .WithMany(o => o.Members)
                 .HasForeignKey(om => om.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OrganizationMember>()
                 .HasOne(om => om.User)
-                .WithMany()
+                .WithMany(u => u.Memberships)
                 .HasForeignKey(om => om.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // في OnModelCreating
-            modelBuilder.Entity<MarketItem>()
-                .ToTable("MarketItems")
-                .HasDiscriminator<string>("ItemType")
-                .HasValue<MarketItem>("Base") // اختيار اختياري لو هتستخدم الأب مباشرة
-                .HasValue<Product>("Product");
-
 
             // Conversation
             modelBuilder.Entity<Conversation>()
@@ -156,7 +154,8 @@ namespace Infrastructure.Data
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
-            // --- 4. Decimal Precision ---
+
+            // --- 3. Decimal Precision ---
             var decimalProps = new[]
             {
                 (typeof(Auction), "StartPrice"),
@@ -164,6 +163,8 @@ namespace Infrastructure.Data
                 (typeof(Bid), "Amount"),
                 (typeof(Order), "TotalAmount"),
                 (typeof(OrderItem), "UnitPrice"),
+                (typeof(Product), "DirectSalePrice"),   // تم إضافة أسعار المنتج
+                (typeof(Product), "StartBiddingPrice")
             };
 
             foreach (var prop in decimalProps)
@@ -172,15 +173,10 @@ namespace Infrastructure.Data
             }
 
             // =============================================================
-            // 🔥 تطبيق Soft Delete تلقائياً على كل الجداول (Global Query Filter)
-            // =============================================================
-            // =============================================================
             // 🔥 تطبيق Soft Delete تلقائياً (نسخة مصححة لمشاكل الوراثة)
             // =============================================================
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                // الشرط الأول: التأكد أن الكلاس يرث من BaseEntity
-                // الشرط الثاني (الجديد): التأكد أن الكلاس هو "الأب" وليس "وارث" (entityType.BaseType == null)
                 if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType) && entityType.BaseType == null)
                 {
                     var parameter = Expression.Parameter(entityType.ClrType, "x");
