@@ -6,49 +6,54 @@ namespace Domain.MetaData
         public const string singelroute = "/{id}";
         public const string root = "api";
         public const string varsion = "v1";
-        public const string rule = root + "/" + varsion + "/";
+
+        public const string rule = root + "/" + varsion;
 
         public static class Authentication
         {
-            public const string Prefix = rule + "authentication/";
-            public const string Regsiter = Prefix + "regsiter";
-            public const string Login = Prefix + "Login";
-            public const string verifyOtp = Prefix + "verify-otp";
-            public const string resendOtp = Prefix + "resend-otp";
+            public const string Prefix = rule + "/auth";
+            public const string Regsiter = Prefix + "/register"; // تعديل شكل اللينك ليكون أوضح
+            public const string Login = Prefix + "/login";
+            public const string verifyOtp = Prefix + "/verify-otp";
+            public const string resendOtp = Prefix + "/resend-otp";
         }
+
         public static class PlantInfo
         {
-            public const string Prefix = rule + "plantinfo/";
-            public const string GetAllPlantInfos = Prefix + "getallplantinfos";
-            public const string CreatePlantInfo = Prefix + "createplantinfo";
-            public const string EditPlantInfo = Prefix + "editplantinfo";
-            public const string DeletePlantInfo = Prefix + "deleteplantinfo";
-            public const string Paginated = Prefix + "paginated";
-
+            public const string Prefix = rule + "/plant-info";
+            public const string GetAllPlantInfos = Prefix + "/all";
+            public const string CreatePlantInfo = Prefix + "/create";
+            public const string EditPlantInfo = Prefix + "/edit";
+            public const string DeletePlantInfo = Prefix + "/delete";
+            public const string Paginated = Prefix + "/paginated";
         }
+
         public static class PlantGuideStep
         {
-            public const string Prefix = rule + "plantguidestep/";
-            public const string GetAllPlantGuideSteps = Prefix + "getallplantguidesteps";
-            public const string GetPlantGuideStepById = Prefix + "getplantguidestepbyid" + singelroute;
-            public const string GetPlantGuideStepsByPlantId = Prefix + "getplantguidestepsbyplantid" + singelroute;
-            public const string GetPlantGuideStepsByPlantName = Prefix + "getplantguidestepsbyplantname" + plantNameRoute;
+            public const string Prefix = rule + "/plant-guide-steps";
+            public const string GetAllPlantGuideSteps = Prefix + "/all";
+            public const string GetPlantGuideStepById = Prefix + singelroute;
+            public const string GetPlantGuideStepsByPlantId = Prefix + "/by-plant" + singelroute;
+            public const string GetPlantGuideStepsByPlantName = Prefix + "/by-name" + plantNameRoute;
         }
+
         public static class Product
         {
-            public const string Prefix = rule + "proudct/";
-            public const string cropInMarket = "list-crop-in-market";
+            public const string Prefix = rule + "/products";
+            public const string cropInMarket = Prefix + "/market-crops";
         }
+
         public static class OrganizationRole
         {
-            public const string Prefix = rule + "organizationrole/";
-            public const string CreateOrganizationRole = Prefix + "createorganizationrole";
-            public const string GetOrganizationRolesByOrganizationId = Prefix + "getorganizationrolesbyorganizationid" + singelroute;
-
+            public const string Prefix = rule + "/organization-roles";
+            public const string CreateOrganizationRole = Prefix + "/create";
+            public const string GetOrganizationRolesByOrganizationId = Prefix + "/by-organization/{organizationId}"; // تم إصلاح الـ Slash الناقصة هنا
+            public const string GetSystemPermissions = Prefix + "/system-permissions";
         }
+
         public static class Organization
         {
-            public const string Prefix = rule + "organizations";
+            public const string Prefix = rule + "/organizations";
             public const string GetAllOrganizations = Prefix;
             public const string GetById = Prefix + singelroute;
             public const string GetMyOrganizations = Prefix + "/my";
@@ -60,22 +65,29 @@ namespace Domain.MetaData
             public const string UpdateStatus = Prefix + singelroute + "/status";
             public const string UploadLogo = Prefix + singelroute + "/logo";
             public const string GetStatistics = Prefix + singelroute + "/statistics";
+        }
 
+        public static class OrganizationMember
+        {
+            public const string Prefix = rule + "/organization-members";
+            public const string AddOrganizationMember = Prefix + "/add";
+            public const string GetOrganizationMembersByOrganizationId = Prefix + "/by-organization/{organizationId}";
+            public const string RemoveOrganizationMember = Prefix + "/{organizationMemberId}/remove";
         }
 
         public static class AnalyzePlants
         {
-            public const string Prefix = rule + "modelanalysis/";
-            public const string AnalyzePlant = Prefix + "analyze";
+            public const string Prefix = rule + "/model-analysis";
+            public const string AnalyzePlant = Prefix + "/analyze";
         }
+
         public static class OrganizationInvitation
         {
-            public const string Prefix = rule + "organization-invitations";
-            public const string SendInvitation = Prefix;
+            public const string Prefix = rule + "/organization-invitations";
+            public const string SendInvitation = Prefix + "/send";
             public const string GetAllInvitationsForUser = Prefix + "/my";
             public const string AcceptInvitation = Prefix + "/accept";
-            public const string Revoken = Prefix + "/revoken";
-            // public const string OrganizationInvitation = Prefix + "/organizationinvitation";
+            public const string Revoken = Prefix + "/revoke"; // تم تعديل revoken لـ revoke كفعل صحيح
         }
     }
 }

@@ -77,10 +77,8 @@ namespace Infrastructure.Data
 
             // OrganizationMember -> OrganizationRole
             modelBuilder.Entity<OrganizationMember>()
-                .HasOne(m => m.OrganizationRole)
-                .WithMany()
-                .HasForeignKey(m => m.OrganizationRoleId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasMany(m => m.OrganizationRoles)
+                .WithMany();
 
             // OrganizationRole -> Permissions
             modelBuilder.Entity<OrganizationRole>()

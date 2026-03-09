@@ -68,12 +68,12 @@ public class OrganizationService : IOrganizationService
                 Name = "Owner",
                 OrganizationId = organization.Id,
                 IsSystemDefault = true,
-                Permissions = OrganizationsPermissions.GetAll()
-                    .Select(p => new OrganizationRolePermission
-                    {
-                        Id = Guid.NewGuid(),
-                        PermissionsClaim = p
-                    }).ToList()
+                Permissions = Permissions.GetAllPermissions()
+    .Select(p => new OrganizationRolePermission
+    {
+        Id = Guid.NewGuid(),
+        PermissionsClaim = p
+    }).ToList()
             };
 
             await _roleRepository.AddAsync(ownerRole);
@@ -83,7 +83,7 @@ public class OrganizationService : IOrganizationService
                 Id = Guid.NewGuid(),
                 OrganizationId = organization.Id,
                 UserId = organization.OwnerId,
-                OrganizationRoleId = ownerRole.Id,
+                OrganizationRoles = new List<OrganizationRole> { ownerRole },
                 IsActive = true
             };
 

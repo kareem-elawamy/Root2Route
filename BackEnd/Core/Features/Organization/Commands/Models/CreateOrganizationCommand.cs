@@ -14,7 +14,8 @@ namespace Core.Features.Organization.Commands.Models
         public string? Address { get; set; }
         public string? ContactEmail { get; set; }
         public string? ContactPhone { get; set; }
-        public FormFile? Logo { get; set; }
+
+        public IFormFile? Logo { get; set; }
         public OrganizationType Type { get; set; }
 
     }

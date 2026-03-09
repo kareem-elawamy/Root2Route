@@ -52,18 +52,18 @@ namespace Service.Services.AuthenticationService
                 claims.Add(new Claim("organizationId", organizationId.Value.ToString()));
 
                 var membership = await _context.OrganizationMembers
-                    .Include(m => m.OrganizationRole)
-                        .ThenInclude(r => r.Permissions)
+                    .Where(m => m.UserId == user.Id && m.OrganizationId == organizationId.Value)
+                        .Include(r => r.OrganizationRoles).ThenInclude(or => or.Permissions)
                     .FirstOrDefaultAsync(m =>
                         m.UserId == user.Id &&
                         m.OrganizationId == organizationId);
 
-                if (membership?.OrganizationRole != null)
+                if (membership?.OrganizationRoles != null)
                 {
                     claims.Add(new Claim("organizationRole",
-                        membership.OrganizationRole.Name));
+                        membership.OrganizationRoles.FirstOrDefault()?.Name ?? "Member"));
 
-                    foreach (var permission in membership.OrganizationRole.Permissions)
+                    foreach (var permission in membership.OrganizationRoles.SelectMany(r => r.Permissions))
                     {
                         claims.Add(new Claim("permission",
                             permission.PermissionsClaim));

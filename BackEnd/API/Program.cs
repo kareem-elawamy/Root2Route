@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text;
 using Core;
+using Core.Filters;
 using Domain.Constants;
 using Infrastructure;
 using Infrastructure.Data;
@@ -34,7 +35,7 @@ builder.Services.AddSwaggerGen(c =>
             Scheme = "Bearer",
         }
     );
-
+    c.OperationFilter<AddOrganizationHeaderFilter>();
     c.AddSecurityRequirement(
         new OpenApiSecurityRequirement
         {
@@ -53,23 +54,9 @@ builder.Services.AddSwaggerGen(c =>
     );
 });
 
-// AddAuthorization
-builder.Services.AddAuthorization(options =>
-{
-    foreach (var permission in OrganizationsPermissions.GetAll())
-    {
-        options.AddPolicy(permission, policy => policy.RequireClaim("permission", permission));
-    }
-});
 
-// AddAuthorization
-builder.Services.AddAuthorization(options =>
-{
-    foreach (var permission in OrganizationsPermissions.GetAll())
-    {
-        options.AddPolicy(permission, policy => policy.RequireClaim("permission", permission));
-    }
-});
+
+
 
 // Database Config
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -136,6 +123,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GreenLink API v1"));
+    app.UseDeveloperExceptionPage();
+
 }
 
 app.UseHttpsRedirection();
@@ -147,5 +136,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapGet("/", () => "Welcome to Root2Route API - System is Running Successfully! ");
 app.Run();

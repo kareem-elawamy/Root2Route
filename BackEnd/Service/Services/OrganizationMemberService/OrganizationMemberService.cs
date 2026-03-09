@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Infrastructure.Repositories.OrganizationMemberRepository;
+using Infrastructure.Repositories.OrganizationRoleRepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Service.Services.OrganizationMemberService
@@ -10,9 +11,13 @@ namespace Service.Services.OrganizationMemberService
     public class OrganizationMemberService : IOrganizationMemberService
     {
         private readonly IOrganizationMemberRepository _organizationMemberRepository;
+        private readonly IOrganizationRoleRepository _roleRepository;
 
-        public OrganizationMemberService(IOrganizationMemberRepository organizationMemberRepository)
+
+        public OrganizationMemberService(IOrganizationRoleRepository organizationRole
+            , IOrganizationMemberRepository organizationMemberRepository)
         {
+            _roleRepository = organizationRole;
             _organizationMemberRepository = organizationMemberRepository;
         }
 
@@ -24,25 +29,62 @@ namespace Service.Services.OrganizationMemberService
 
         public async Task<List<OrganizationMember>> GetOrganizationMembersByOrganizationIdAsync(Guid organizationId)
         {
-            return await _organizationMemberRepository.GetOrganizationMembersByOrganizationIdAsync(organizationId);
+            var members = await _organizationMemberRepository.GetOrganizationMembersByOrganizationIdAsync(organizationId);
+
+            if (members == null || !members.Any()) return new List<OrganizationMember>();
+            if (members.Count == 1 && members[0].UserId == Guid.Empty) return new List<OrganizationMember>();
+            Console.WriteLine($"Retrieved {members.Count} members for organization {organizationId}");
+            return members;
         }
         public async Task<string> RemoveOrganizationMemberAsync(Guid organizationMemberId)
         {
-            var member = await _organizationMemberRepository.GetByIdAsync(organizationMemberId);
-            if (member == null) return "Failed: Member not found";
-            await _organizationMemberRepository.DeleteAsync(member!);
-
-            return "Success";
+            using var transaction = await _organizationMemberRepository.BeginTransactionAsync();
+            try
+            {
+                // Console.WriteLine($"Attempting to remove organization member with ID: {organizationMemberId}");
+                var member = await _organizationMemberRepository.GetByIdAsync(organizationMemberId);
+                if (member == null) return "Failed: Member not found";
+                if (member.IsDeleted) return "Failed: Member is already deleted";
+                var ownerRoleId = await GetRoleIdByNameAsync(member.OrganizationId, "Owner");
+                if (member.OrganizationRoles.Any(r => r.Id == ownerRoleId))
+                {
+                    return "Failed: Cannot remove an owner. Please transfer ownership before removing.";
+                }
+                member.IsDeleted = true;
+                member.UpdatedAt = DateTime.UtcNow;
+                member.OrganizationRoles.Clear();
+                await _organizationMemberRepository.UpdateAsync(member);
+                await _organizationMemberRepository.UpdateAsync(member!);
+                await transaction.CommitAsync();
+                return "Success";
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return "Failed: An error occurred while removing the organization member";
+            }
         }
         public async Task<string> UpdateOrganizationMemberRoleAsync(Guid organizationMemberId, Guid newRoleId)
         {
-            var member = await _organizationMemberRepository.GetByIdAsync(organizationMemberId);
-            if (member == null) return "Failed: Member not found";
+            using var transaction = await _organizationMemberRepository.BeginTransactionAsync();
+            try
+            {
 
-            member.OrganizationRoleId = newRoleId;
+                var member = await _organizationMemberRepository.GetByIdAsync(organizationMemberId);
+                if (member == null) return "Failed: Member not found";
+                var assignedRole = await _roleRepository.GetByIdAsync(newRoleId);
+                if (assignedRole == null) return "Failed: Role not found";
+                member.OrganizationRoles.Add(assignedRole);
+                await _organizationMemberRepository.UpdateAsync(member);
+                await transaction.CommitAsync();
 
-            await _organizationMemberRepository.UpdateAsync(member);
-            return "Success";
+                return "Success";
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return "Failed: An error occurred while updating the member's role";
+            }
         }
         public async Task<string> DeactivateOrganizationMemberAsync(Guid organizationMemberId)
         {
@@ -70,8 +112,7 @@ namespace Service.Services.OrganizationMemberService
         public async Task<string> TransferOwnershipAsync(Guid organizationId, Guid newOwnerId)
         {
             var currentOwner = await _organizationMemberRepository.GetTableAsTracking()
-                .Include(m => m.OrganizationRole)
-                .FirstOrDefaultAsync(m => m.OrganizationId == organizationId && m.IsActive && m.OrganizationRole.Name == "Owner");
+                .FirstOrDefaultAsync(m => m.OrganizationId == organizationId && m.IsActive);
 
             if (currentOwner == null) return "Failed: Current owner not found";
 
@@ -85,13 +126,8 @@ namespace Service.Services.OrganizationMemberService
             {
                 var ownerRoleId = await GetRoleIdByNameAsync(organizationId, "Owner");
                 var memberRoleId = await GetRoleIdByNameAsync(organizationId, "Member");
-
-                newOwner.OrganizationRoleId = ownerRoleId;
-                currentOwner.OrganizationRoleId = memberRoleId;
-
                 await _organizationMemberRepository.UpdateAsync(currentOwner);
                 await _organizationMemberRepository.UpdateAsync(newOwner);
-
                 await transaction.CommitAsync();
                 return "Success";
             }
@@ -104,12 +140,10 @@ namespace Service.Services.OrganizationMemberService
         private async Task<Guid> GetRoleIdByNameAsync(Guid organizationId, string roleName)
         {
             var roleId = await _organizationMemberRepository.GetTableNoTracking()
-                .Where(m => m.OrganizationId == organizationId && m.OrganizationRole.Name == roleName)
-                .Select(m => m.OrganizationRoleId)
+                .Where(m => m.OrganizationId == organizationId)
                 .FirstOrDefaultAsync();
-
-
-            return roleId ?? Guid.Empty;
+            return
+                roleId != null ? roleId.Id : Guid.Empty;
         }
 
     }

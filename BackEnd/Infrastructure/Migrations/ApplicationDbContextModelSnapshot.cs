@@ -573,9 +573,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("OrganizationRoleId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -587,8 +584,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("OrganizationRoleId");
 
                     b.HasIndex("UserId");
 
@@ -924,6 +919,21 @@ namespace Infrastructure.Migrations
                     b.ToTable("UserTokens", "security");
                 });
 
+            modelBuilder.Entity("OrganizationMemberOrganizationRole", b =>
+                {
+                    b.Property<Guid>("OrganizationMemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrganizationRolesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("OrganizationMemberId", "OrganizationRolesId");
+
+                    b.HasIndex("OrganizationRolesId");
+
+                    b.ToTable("OrganizationMemberOrganizationRole");
+                });
+
             modelBuilder.Entity("Domain.Models.Product", b =>
                 {
                     b.HasBaseType("Domain.Models.MarketItem");
@@ -1109,11 +1119,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.OrganizationRole", "OrganizationRole")
-                        .WithMany()
-                        .HasForeignKey("OrganizationRoleId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Domain.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1121,8 +1126,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Organization");
-
-                    b.Navigation("OrganizationRole");
 
                     b.Navigation("User");
                 });
@@ -1226,6 +1229,21 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OrganizationMemberOrganizationRole", b =>
+                {
+                    b.HasOne("Domain.Models.OrganizationMember", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.OrganizationRole", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationRolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

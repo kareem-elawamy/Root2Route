@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Domain.Enums;
 using Infrastructure.Repositories.OrganizationInvitationRepository;
 using Infrastructure.Repositories.OrganizationMemberRepository;
+using Infrastructure.Repositories.OrganizationRoleRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,16 +15,18 @@ namespace Service.Services.OrganizationInvitationService
     {
         private readonly IOrganizationInvitationRepository _organizationInvitationRepository;
         private readonly IOrganizationMemberRepository _organizationMemberRepository;
+        private readonly IOrganizationRoleRepository _roleRepository;
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _dbContext;
-        public OrganizationInvitationService(IOrganizationInvitationRepository organizationInvitationRepository,
+        public OrganizationInvitationService(IOrganizationRoleRepository organizationRole, IOrganizationInvitationRepository organizationInvitationRepository,
             IOrganizationMemberRepository organizationMemberRepository,
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _roleRepository = organizationRole;
             _organizationMemberRepository = organizationMemberRepository;
             _organizationInvitationRepository = organizationInvitationRepository;
         }
@@ -45,29 +48,63 @@ namespace Service.Services.OrganizationInvitationService
                 !string.Equals(invitation.Email, user.Email, StringComparison.OrdinalIgnoreCase))
                 return InvitationResult.InvalidUser;
 
-
             var isMember = await _organizationMemberRepository.GetTableNoTracking()
-         .AnyAsync(m => m.OrganizationId == invitation.OrganizationId && m.UserId == userId);
+                .AnyAsync(m => m.OrganizationId == invitation.OrganizationId && m.UserId == userId);
 
             if (isMember)
-                return InvitationResult.AlreadyMember;
+            {
+                var member = await _organizationMemberRepository.GetTableNoTracking()
+                     .FirstOrDefaultAsync(m => m.OrganizationId == invitation.OrganizationId && m.UserId == userId);
+                if (member!.IsDeleted || !member.IsActive)
+                {
+                    member.IsActive = true;
+                    member.UpdatedAt = DateTime.UtcNow;
+                    member.IsDeleted = false;
+                    await _organizationMemberRepository.UpdateAsync(member);
+                }
+                invitation.Status = InvitationStatus.Accepted;
+                await _organizationInvitationRepository.UpdateAsync(invitation);
+                return InvitationResult.Success;
+            }
+
+
+
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            await _organizationMemberRepository.AddAsync(new OrganizationMember
+            try
             {
-                Id = Guid.NewGuid(),
-                OrganizationId = invitation.OrganizationId,
-                UserId = userId,
-                OrganizationRoleId = invitation.RoleId,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            });
-            invitation.Status = InvitationStatus.Accepted;
-            await _organizationInvitationRepository.UpdateAsync(invitation);
+                var assignedRole = await _roleRepository.GetByIdAsync(invitation.RoleId);
 
-            await transaction.CommitAsync();
+                if (assignedRole == null)
+                {
+                    await transaction.RollbackAsync();
+                    return InvitationResult.InvalidRole;
+                }
 
-            return InvitationResult.Success;
+                var newMember = new OrganizationMember
+                {
+                    Id = Guid.NewGuid(),
+                    OrganizationId = invitation.OrganizationId,
+                    UserId = userId,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    OrganizationRoles = new List<OrganizationRole> { assignedRole } // التعديل الأهم هنا
+                };
+
+                await _organizationMemberRepository.AddAsync(newMember);
+
+                invitation.Status = InvitationStatus.Accepted;
+                await _organizationInvitationRepository.UpdateAsync(invitation);
+
+                await transaction.CommitAsync();
+
+                return InvitationResult.Success;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return InvitationResult.Failed; // أو أي Error Type بتستخدمه
+            }
         }
         public async Task<InvitationResult> RevokeInvitationAsync(Guid invitationId, Guid userId)
         {

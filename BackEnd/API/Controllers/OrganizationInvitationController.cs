@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using API.Controllers.Shared;
 using Core.Features.OrganizationInvitation.Commands.Models;
 using Core.Features.OrganizationInvitation.Queries.Models;
+using Core.Filters;
+using Domain.Constants;
 using Domain.MetaData;
 using Microsoft.AspNetCore.Mvc;
+using static Domain.Constants.Permissions;
 
 namespace API.Controllers
 {
@@ -58,7 +61,9 @@ namespace API.Controllers
             var result = await Mediator.Send(model);
             return NewResult(result);
         }
+
         [HttpGet(Router.OrganizationInvitation.Prefix)]
+        [HasPermission(Members.Invite)]
         public async Task<IActionResult> OrganizationInvitation(Guid organizationId)
         {
 
