@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Core.Features.Product.Queries.Results;
 
 namespace Core.Features.Product.Queries.Models
 {
-    internal class GetProductByIdQuery
+    public class GetProductByIdQuery : IRequest<Response<ProductResponse>>
     {
+        public Guid Id { get; set; }
+
+        public GetProductByIdQuery(Guid id)
+        {
+            Id = id;
+        }
     }
 }

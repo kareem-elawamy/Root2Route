@@ -14,13 +14,12 @@ namespace Service
         [JsonPropertyName("confidence")]
         public double Confidence { get; set; }
 
-        [JsonPropertyName("leaf_detected")] // هذا هو مفتاح الحل
+        [JsonPropertyName("leaf_detected")] 
         public bool LeafDetected { get; set; }
 
         [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
 
-        // أضف هذا الحقل لتخزين نصيحة جيميني
         public string ExpertAdvice { get; set; } = string.Empty;
     }
 }

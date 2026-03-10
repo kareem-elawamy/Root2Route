@@ -9,7 +9,8 @@ using MediatR;
 
 namespace Core.Features.PlantInfo.Queries.Models
 {
-    public class GetPlantInfoPaginatedListQuery :IRequest<PaginatedResult<GetPlantInfoPaginatedListResponse>>
+    // التعديل هنا: إضافة Core.Wrappers قبل PaginatedResult
+    public class GetPlantInfoPaginatedListQuery : IRequest<Core.Wrappers.PaginatedResult<GetPlantInfoPaginatedListResponse>>
     {
         public int PageNumber { get; set; }
         public int PageSize { get; set; }

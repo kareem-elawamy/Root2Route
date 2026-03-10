@@ -249,7 +249,7 @@ public class OrganizationService : IOrganizationService
             .GetTableNoTracking()
             .CountAsync(x => x.OrganizationId == organizationId);
 
-        var marketItemsCount = await _context.MarketItems
+        var marketItemsCount = await _context.Products
             .CountAsync(x => x.OrganizationId == organizationId);
 
         return new
