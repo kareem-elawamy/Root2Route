@@ -19,19 +19,16 @@ namespace Core.Features.Product.Command.Validations
             RuleFor(x => x.ProductType)
                 .IsInEnum().WithMessage("نوع المنتج غير صحيح");
 
-            // قاعدة: لازم يختار على الأقل طريقة بيع واحدة (يا مباشر يا مزاد يا الاتنين)
             RuleFor(x => x)
                 .Must(x => x.IsAvailableForDirectSale || x.IsAvailableForAuction)
                 .WithMessage("يجب اختيار طريقة بيع واحدة على الأقل (بيع مباشر أو مزاد)");
 
-            // لو اختار بيع مباشر، لازم السعر يكون أكبر من صفر
             When(x => x.IsAvailableForDirectSale, () =>
             {
                 RuleFor(x => x.DirectSalePrice)
                     .GreaterThan(0).WithMessage("سعر البيع المباشر يجب أن يكون أكبر من الصفر");
             });
 
-            // لو اختار مزاد، لازم سعر فتح المزاد يكون أكبر من صفر
             When(x => x.IsAvailableForAuction, () =>
             {
                 RuleFor(x => x.StartBiddingPrice)

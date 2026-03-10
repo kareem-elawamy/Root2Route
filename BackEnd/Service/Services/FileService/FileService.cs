@@ -70,8 +70,6 @@ namespace Service.Services.FileService
             // إرجاع المسار بـ Forward Slashes عشان الـ URL
             return Path.Combine("/", filePath, fileName).Replace("\\", "/");
         }
-
-        // دالة مساعدة للتحقق من الماجيك نمبر (Hex Signature)
         private bool IsValidImageSignature(Stream stream, string extension)
         {
             stream.Position = 0;
@@ -92,6 +90,33 @@ namespace Service.Services.FileService
                     _ => false
                 };
             }
+        }
+        public async Task<List<string>> UploadImagesAsync(string location, List<IFormFile> files)
+        {
+            var uploadedUrls = new List<string>();
+
+            if (files == null || !files.Any())
+            {
+                return uploadedUrls; // هترجع ليستة فاضية لو مفيش صور مرفوعة
+            }
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    // بنستخدم الميثود القديمة عشان نحافظ على كل الـ Security checks اللي أنت عملتها
+                    var fileUrl = await UploadImageAsync(location, file);
+                    uploadedUrls.Add(fileUrl);
+                }
+                catch (ArgumentException ex)
+                {
+                    // تقدر تسجل الإيرور هنا في الـ Logger لو عايز، 
+                    // أو ترمي الإيرور عشان الـ Handler يعرف إن في ملف باظ
+                    throw new ArgumentException($"Failed to upload a file: {ex.Message}");
+                }
+            }
+
+            return uploadedUrls;
         }
     }
 }

@@ -20,8 +20,8 @@ namespace Domain.Models
         public AuctionStatus Status { get; set; }
 
         // ربط المزاد بالمنتج
-        public Guid MarketItemId { get; set; }
-        public MarketItem? MarketItem { get; set; }
+        public Guid productid { get; set; }
+        public Product? product { get; set; }
         public Guid? HighestBidderId { get; set; }
         public ApplicationUser? HighestBidder { get; set; }
         public ICollection<Bid> Bids { get; set; } = new List<Bid>();
