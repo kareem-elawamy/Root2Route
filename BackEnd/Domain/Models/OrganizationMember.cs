@@ -11,8 +11,7 @@ namespace Domain.Models
         public Organization? Organization { get; set; }
         public Guid UserId { get; set; }
         public ApplicationUser? User { get; set; }
-        public Guid? OrganizationRoleId { get; set; }
-        public OrganizationRole? OrganizationRole { get; set; }
+        public ICollection<OrganizationRole> OrganizationRoles { get; set; } = new List<OrganizationRole>();
         public bool IsActive { get; set; } = true;
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }

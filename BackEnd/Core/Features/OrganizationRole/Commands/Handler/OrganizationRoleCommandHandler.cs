@@ -14,11 +14,11 @@ using Service.Services.OrganizationRoleService;
 
 namespace Core.Features.OrganizationRole.Commands.Handler
 {
-    public class OrganizationRoleCommandHandler : ResponseHandler
+    public class OrganizationRoleCommandHandler : ResponseHandler,
+        IRequestHandler<AddOrganizationRoleCommand, Response<string>>
     {
         private readonly IOrganizationRoleService _organizationRoleService;
         private readonly IMapper _mapper;
-        // نفترض وجود خدمة للتحقق من الصلاحيات كما ناقشنا سابقاً
         private readonly IAuthorizationService _authService;
 
         public OrganizationRoleCommandHandler(IAuthorizationService authService, IOrganizationRoleService organizationRoleService, IMapper mapper)
@@ -28,31 +28,28 @@ namespace Core.Features.OrganizationRole.Commands.Handler
             _organizationRoleService = organizationRoleService;
         }
 
-        // public async Task<Response<string>> Handle(AddOrganizationRoleCommand request, CancellationToken cancellationToken)
-        // {
-        //     var isAllowed = await _authService.HasPermissionAsync(
-        //     request.RequesterUserId,
-        //     request.OrganizationId,
-        //     "Permissions.Employees.ManageRoles" // الصلاحية المطلوبة من ملف الثوابت
-        // );
+        public async Task<Response<string>> Handle(AddOrganizationRoleCommand request, CancellationToken cancellationToken)
+        {
 
-        //     if (!isAllowed) return Unauthorized<string>("You are not allowed to add roles to this organization.");
+            var newRole = new Domain.Models.OrganizationRole
+            {
+                Id = Guid.NewGuid(),
+                OrganizationId = request.OrganizationId,
+                Name = request.Name,
+                IsSystemDefault = false,
+                Permissions = request.Permissions.Select(p => new OrganizationRolePermission
+                {
+                    Id = Guid.NewGuid(),
+                    PermissionsClaim = p
+                }).ToList()
+            };
 
+            var result = await _organizationRoleService.CreateOrganizationRole(newRole);
 
+            if (result == "exists")
+                return BadRequest<string>("Failed: A role with this name already exists in your organization.");
 
-        //     // 2. Mapping
-        //     var organizationRole = _mapper.Map<Domain.Models.OrganizationRole>(request);
-
-        //     // 3. Execution
-        //     var result = await _organizationRoleService.CreateOrganizationRole(organizationRole);
-
-        //     if (result == "Exists")
-        //     {
-        //         return BadRequest<string>("Organization Role with the same name already exists.");
-        //     }
-
-        //     return Created(result);
-        // }
-   
+            return Success<string>("Role created successfully");
+        }
     }
 }

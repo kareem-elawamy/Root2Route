@@ -10,7 +10,7 @@ namespace API.Controllers
     public class AuthenticationController : BaseApiController
     {
         [HttpPost(Router.Authentication.Regsiter)]
-        public async Task<IActionResult> Regsiter([FromForm] AddUserCommand command)
+        public async Task<IActionResult> Regsiter([FromBody] AddUserCommand command)
         {
             var response = await Mediator.Send(command);
             return NewResult(response);

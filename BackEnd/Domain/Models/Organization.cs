@@ -18,6 +18,6 @@ namespace Domain.Models
         public OrganizationStatus OrganizationStatus { get; set; }
         public ICollection<OrganizationMember> Members { get; set; } =
             new List<OrganizationMember>();
-        public ICollection<Product> products { get; set; } = new List<Product>(); // المنتجات المعروضة
+        public ICollection<Product> Products { get; set; } = new List<Product>(); // المنتجات المعروضة
     }
 }

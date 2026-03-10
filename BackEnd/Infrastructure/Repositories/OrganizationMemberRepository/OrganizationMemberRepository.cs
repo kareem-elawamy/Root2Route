@@ -13,7 +13,7 @@ namespace Infrastructure.Repositories.OrganizationMemberRepository
         }
         public async Task<List<OrganizationMember>> GetOrganizationMembersByOrganizationIdAsync(Guid organizationId)
         {
-            return await GetTableAsTracking().Where(x => x.OrganizationId == organizationId).ToListAsync();
+            return await GetTableAsTracking().Where(x => x.OrganizationId == organizationId).Include(om => om.User).Include(om => om.OrganizationRoles).ToListAsync();
         }
     }
 }

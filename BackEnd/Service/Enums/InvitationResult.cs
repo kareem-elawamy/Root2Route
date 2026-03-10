@@ -9,6 +9,7 @@ namespace Service.Enums
         AlreadyMember,
         InvalidRole,
         AlreadyInvited,
-        OrganizationNotFound
+        OrganizationNotFound,
+        Failed
     }
 }

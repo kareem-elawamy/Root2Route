@@ -11,7 +11,7 @@ namespace Core.Mapping.OrganizationRole
         public OrganizationRoleProfile()
         {
             CreateOrganizationRole();
-            
+            GetOrganizationRolesByOrganizationIdModelToGetOrganizationRolesByOrganizationIdResult();
         }
     }
 }
