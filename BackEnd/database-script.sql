@@ -1379,3 +1379,387 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Auctions] DROP CONSTRAINT [FK_Auctions_MarketItems_MarketItemId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Bids] DROP CONSTRAINT [FK_Bids_Users_ApplicationUserId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Conversations] DROP CONSTRAINT [FK_Conversations_MarketItems_ProductId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [MarketItems] DROP CONSTRAINT [FK_MarketItems_Organizations_OrganizationId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [MarketItems] DROP CONSTRAINT [FK_MarketItems_Organizations_OrganizationId1];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [OrderItems] DROP CONSTRAINT [FK_OrderItems_MarketItems_MarketItemId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [OrganizationMembers] DROP CONSTRAINT [FK_OrganizationMembers_Users_ApplicationUserId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DROP INDEX [IX_OrganizationMembers_ApplicationUserId] ON [OrganizationMembers];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DROP INDEX [IX_Bids_ApplicationUserId] ON [Bids];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [MarketItems] DROP CONSTRAINT [PK_MarketItems];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DECLARE @var4 nvarchar(max);
+    SELECT @var4 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[OrganizationMembers]') AND [c].[name] = N'ApplicationUserId');
+    IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [OrganizationMembers] DROP CONSTRAINT ' + @var4 + ';');
+    ALTER TABLE [OrganizationMembers] DROP COLUMN [ApplicationUserId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DECLARE @var5 nvarchar(max);
+    SELECT @var5 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Bids]') AND [c].[name] = N'ApplicationUserId');
+    IF @var5 IS NOT NULL EXEC(N'ALTER TABLE [Bids] DROP CONSTRAINT ' + @var5 + ';');
+    ALTER TABLE [Bids] DROP COLUMN [ApplicationUserId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DECLARE @var6 nvarchar(max);
+    SELECT @var6 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[MarketItems]') AND [c].[name] = N'ItemType');
+    IF @var6 IS NOT NULL EXEC(N'ALTER TABLE [MarketItems] DROP CONSTRAINT ' + @var6 + ';');
+    ALTER TABLE [MarketItems] DROP COLUMN [ItemType];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DECLARE @var7 nvarchar(max);
+    SELECT @var7 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[MarketItems]') AND [c].[name] = N'SourceCropId');
+    IF @var7 IS NOT NULL EXEC(N'ALTER TABLE [MarketItems] DROP CONSTRAINT ' + @var7 + ';');
+    ALTER TABLE [MarketItems] DROP COLUMN [SourceCropId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[MarketItems]', N'Products', 'OBJECT';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[OrderItems].[MarketItemId]', N'productid', 'COLUMN';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[OrderItems].[IX_OrderItems_MarketItemId]', N'IX_OrderItems_productid', 'INDEX';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[Auctions].[MarketItemId]', N'productid', 'COLUMN';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[Auctions].[IX_Auctions_MarketItemId]', N'IX_Auctions_productid', 'INDEX';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[Products].[ImageUrl]', N'RejectionReason', 'COLUMN';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[Products].[IX_MarketItems_OrganizationId1]', N'IX_Products_OrganizationId1', 'INDEX';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    EXEC sp_rename N'[Products].[IX_MarketItems_OrganizationId]', N'IX_Products_OrganizationId', 'INDEX';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    DECLARE @var8 nvarchar(max);
+    SELECT @var8 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Products]') AND [c].[name] = N'ProductType');
+    IF @var8 IS NOT NULL EXEC(N'ALTER TABLE [Products] DROP CONSTRAINT ' + @var8 + ';');
+    EXEC(N'UPDATE [Products] SET [ProductType] = 0 WHERE [ProductType] IS NULL');
+    ALTER TABLE [Products] ALTER COLUMN [ProductType] int NOT NULL;
+    ALTER TABLE [Products] ADD DEFAULT 0 FOR [ProductType];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Products] ADD [Status] int NOT NULL DEFAULT 0;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Products] ADD CONSTRAINT [PK_Products] PRIMARY KEY ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    CREATE TABLE [ProductImages] (
+        [Id] uniqueidentifier NOT NULL,
+        [ImageUrl] nvarchar(max) NOT NULL,
+        [IsMain] bit NOT NULL,
+        [ProductId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NOT NULL,
+        [DeleteAt] datetime2 NOT NULL,
+        [IsDeleted] bit NOT NULL,
+        CONSTRAINT [PK_ProductImages] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_ProductImages_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    CREATE INDEX [IX_ProductImages_ProductId] ON [ProductImages] ([ProductId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Auctions] ADD CONSTRAINT [FK_Auctions_Products_productid] FOREIGN KEY ([productid]) REFERENCES [Products] ([Id]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Conversations] ADD CONSTRAINT [FK_Conversations_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [OrderItems] ADD CONSTRAINT [FK_OrderItems_Products_productid] FOREIGN KEY ([productid]) REFERENCES [Products] ([Id]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Products] ADD CONSTRAINT [FK_Products_Organizations_OrganizationId] FOREIGN KEY ([OrganizationId]) REFERENCES [Organizations] ([Id]) ON DELETE NO ACTION;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    ALTER TABLE [Products] ADD CONSTRAINT [FK_Products_Organizations_OrganizationId1] FOREIGN KEY ([OrganizationId1]) REFERENCES [Organizations] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064210_Update'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260310064210_Update', N'10.0.1');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    ALTER TABLE [Products] DROP CONSTRAINT [FK_Products_Organizations_OrganizationId];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    ALTER TABLE [Products] DROP CONSTRAINT [FK_Products_Organizations_OrganizationId1];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    DROP INDEX [IX_Products_OrganizationId1] ON [Products];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    DECLARE @var9 nvarchar(max);
+    SELECT @var9 = QUOTENAME([d].[name])
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Products]') AND [c].[name] = N'OrganizationId1');
+    IF @var9 IS NOT NULL EXEC(N'ALTER TABLE [Products] DROP CONSTRAINT ' + @var9 + ';');
+    ALTER TABLE [Products] DROP COLUMN [OrganizationId1];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    ALTER TABLE [Products] ADD CONSTRAINT [FK_Products_Organizations_OrganizationId] FOREIGN KEY ([OrganizationId]) REFERENCES [Organizations] ([Id]) ON DELETE CASCADE;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310064751_UpdateAddDb'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260310064751_UpdateAddDb', N'10.0.1');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260310065322_UpdateAddDb2'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260310065322_UpdateAddDb2', N'10.0.1');
+END;
+
+COMMIT;
+GO
+

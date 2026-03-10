@@ -39,8 +39,25 @@ namespace Domain.MetaData
 
         public static class Product
         {
-            public const string Prefix = rule + "proudct/";
-            public const string cropInMarket = "list-crop-in-market";
+            public const string Prefix = rule + "product";
+
+            public const string AddProduct = Prefix + "/Add";
+            public const string GetAll = Prefix + "/GetAll";
+            public const string GetById = Prefix + "/{id}";
+            public const string ChangeStatus = Prefix + "/ChangeStatus";
+            // 👇 المسارات الجديدة
+            public const string UpdateProduct = Prefix + "/Update";
+            public const string DeleteProduct = Prefix + "/Delete/{id}";
+            public const string GetByOrgId = Prefix + "/Organization/{organizationId}";
+        }
+        public static class Order
+        {
+            public const string Prefix = rule + "order";
+
+            public const string CreateOrder = Prefix + "/Create";
+            public const string GetMyOrders = Prefix + "/MyOrders";
+            public const string GetOrderById = Prefix + "/{id}";
+            public const string ChangeStatus = Prefix + "/ChangeStatus";
         }
 
         public static class OrganizationRole

@@ -62,12 +62,6 @@ namespace Infrastructure.Data
 
             // 🛑 (تم حذف كود الوراثة الخاص بـ MarketItem لأنه لم يعد موجوداً)
 
-            // Product -> Organization (تم تعديله من MarketItem إلى Product)
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.Organization)
-                .WithMany() // لو Organization مفيهاش ICollection<Product>
-                .HasForeignKey(p => p.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // ProductImage -> Product (علاقة جديدة)
             modelBuilder.Entity<ProductImage>()
@@ -153,6 +147,12 @@ namespace Infrastructure.Data
                 .HasOne(m => m.Conversation)
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Organization)
+                .WithMany(o => o.Products)
+                .HasForeignKey(p => p.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // --- 3. Decimal Precision ---
