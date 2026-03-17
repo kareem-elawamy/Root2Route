@@ -33,5 +33,18 @@ namespace API.Controllers
             var response = await Mediator.Send(command);
             return NewResult(response);
         }
+        [HttpPost(Router.Authentication.ForgetPassword)]
+        public async Task<IActionResult> ForgetPassword([FromBody] SendResetPasswordOtpCommand command)
+        {
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+        [HttpPost(Router.Authentication.ResetPassword)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordWithOtpCommand command
+            )
+        {
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
     }
 }

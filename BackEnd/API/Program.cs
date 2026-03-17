@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text;
 using Core;
 using Core.Filters;
 using Domain.Constants;
@@ -116,13 +115,11 @@ builder
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
+   app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GreenLink API v1"));
     app.UseDeveloperExceptionPage();
 
-}
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

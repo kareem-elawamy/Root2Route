@@ -36,7 +36,7 @@ namespace Core.Features.Organization.Commands.Handler
         public async Task<Response<string>> Handle(CreateOrganizationCommand request,CancellationToken cancellationToken)
         {
             var organization = _mapper.Map<Domain.Models.Organization>(request);
-
+            organization.OrganizationStatus = Domain.Enums.OrganizationStatus.Approved;
             var result = await _organizationService
                 .CreateOrganizationAsync(organization, request.Logo);
 

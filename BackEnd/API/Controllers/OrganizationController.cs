@@ -50,6 +50,14 @@ namespace API.Controllers
             return NewResult(response);
         }
 
+        [HttpGet(Router.Organization.GetByStatus)]
+        public async Task<IActionResult> GetByStatus([FromRoute] OrganizationStatus status)
+        {
+            var response = await Mediator.Send(
+                new GetOrganizationsByStatusModel(status));
+
+            return NewResult(response);
+        }
         #endregion
 
         #region Commands

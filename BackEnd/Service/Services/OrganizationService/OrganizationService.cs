@@ -58,7 +58,7 @@ public class OrganizationService : IOrganizationService
 
             organization.Id = Guid.NewGuid();
             organization.CreatedAt = DateTime.UtcNow;
-            organization.OrganizationStatus = OrganizationStatus.Approved;
+            organization.OrganizationStatus = OrganizationStatus.Pending;
 
             await _organizationRepository.AddAsync(organization);
 
@@ -103,6 +103,10 @@ public class OrganizationService : IOrganizationService
     #region Get Methods
     public async Task<Organization?> GetByIdAsync(Guid id)
     {
+        if (id == Guid.Empty)
+            return null;
+        if (IsOrganizationActiveAsync(id).Result == false)
+            return null;
         return await _organizationRepository.GetByIdAsync(id);
     }
     public async Task<List<Organization>> GetAllAsync()
@@ -117,8 +121,24 @@ public class OrganizationService : IOrganizationService
     {
         return await _organizationRepository.GetAllOrganizationsByUserId(userId);
     }
+    public async Task<List<Organization>> GetAllPendingOrganizationsAsync()
+    {
+        return await _organizationRepository
+            .GetTableNoTracking()
+            .Where(x => x.OrganizationStatus == OrganizationStatus.Pending && !x.IsDeleted)
+            .ToListAsync();
+    }
 
+    public async Task<List<Organization>> GetOrganizationsByStatusAsync(OrganizationStatus status)
+    {
+        return await _organizationRepository
+            .GetTableNoTracking()
+            .Where(x => x.OrganizationStatus == status && !x.IsDeleted)
+            .ToListAsync();
+    }
     #endregion
+
+
 
     #region Update Organization
 
@@ -127,7 +147,8 @@ public class OrganizationService : IOrganizationService
         var org = await _organizationRepository.GetByIdAsync(id);
         if (org == null || org.IsDeleted)
             return "Not Found";
-
+        if (IsOrganizationActiveAsync(id).Result == false)
+            return "Organization is not active";
         org.Name = updatedData.Name;
         org.Description = updatedData.Description;
         org.Address = updatedData.Address;
@@ -271,4 +292,23 @@ public class OrganizationService : IOrganizationService
         return organization.OwnerId == ownerId;
     }
     #endregion
+    #region Check Organization Status 
+    public async Task<bool> IsOrganizationActiveAsync(Guid organizationId)
+    {
+        var organization = await _organizationRepository.GetByIdAsync(organizationId);
+
+        if (organization == null || organization.IsDeleted)
+            return false;
+
+        return organization.OrganizationStatus == OrganizationStatus.Approved;
+    } 
+    #endregion
+    #region Check Organization Existence
+    public async Task<bool> DoesOrganizationExistAsync(Guid organizationId)
+    {
+        return await _organizationRepository.GetTableNoTracking()
+            .AnyAsync(x => x.Id == organizationId && !x.IsDeleted);
+    }
+    #endregion
+    
 }

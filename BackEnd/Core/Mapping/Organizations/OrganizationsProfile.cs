@@ -12,6 +12,7 @@ namespace Core.Mapping.Organizations
 
             GetOrganizationById();
             UpdateOrganization();
+            GetAllOrganizationMapping();
 
         }
     }

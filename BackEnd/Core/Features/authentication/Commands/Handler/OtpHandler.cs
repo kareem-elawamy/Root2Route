@@ -18,22 +18,22 @@ namespace Core.Features.Authentication.Commands.Handler
             _emailService = emailService;
             _userManager = userManager;
         }
-        public Task<Response<JwtAuthResult>> Handle(VerifyOtpCommand request, CancellationToken cancellationToken)
+        public async Task<Response<JwtAuthResult>> Handle(VerifyOtpCommand request, CancellationToken cancellationToken)
         {
             var user = _userManager.FindByEmailAsync(request.Email).Result;
             if (user == null)
-                return Task.FromResult(BadRequest<JwtAuthResult>("User not found"));
+                return BadRequest<JwtAuthResult>("User not found");
             var isValidOtp = _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultEmailProvider, "EmailConfirmation", request.Otp).Result;
             if (!isValidOtp)
-                return Task.FromResult(BadRequest<JwtAuthResult>("Invalid OTP"));
+                return BadRequest<JwtAuthResult>("Invalid OTP");
             var result = _userManager.ConfirmEmailAsync(user, request.Otp).Result;
             if (!result.Succeeded)
-                return Task.FromResult(BadRequest<JwtAuthResult>("Failed to confirm email"));
-            return Task.FromResult(Success(new JwtAuthResult
+                return BadRequest<JwtAuthResult>("Failed to confirm email");
+            return Success(new JwtAuthResult
             {
                 FullName
                 = user.FullName,
-            }));
+            });
         }
 
         public async Task<Response<string>> Handle(ResendOtpCommand request, CancellationToken cancellationToken)
@@ -46,7 +46,10 @@ namespace Core.Features.Authentication.Commands.Handler
             if (user.EmailConfirmed) return BadRequest<string>("Email is already confirmed");
 
             // 3. توليد كود جديد (نفس المنطق المستخدم في التسجيل)
-            var otpCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var otpCode = await _userManager.GenerateTwoFactorTokenAsync(
+                        user,
+                        TokenOptions.DefaultEmailProvider
+                    ); ;
 
             // 4. إرسال الإيميل
             var emailBody = GetOtpHtmlTemplate(user.FullName, otpCode);
@@ -96,6 +99,7 @@ namespace Core.Features.Authentication.Commands.Handler
     </body>
     </html>";
         }
+
 
     }
 }

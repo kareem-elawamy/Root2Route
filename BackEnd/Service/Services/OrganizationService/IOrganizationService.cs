@@ -20,7 +20,7 @@ public interface IOrganizationService
     Task<object> GetStatisticsAsync(Guid organizationId);
     Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId);
     Task<bool> IsOwnerAsync(Guid ownerId, Guid organizationId);
-
+    Task<List<Organization>> GetOrganizationsByStatusAsync(OrganizationStatus status);
 
 
 }
