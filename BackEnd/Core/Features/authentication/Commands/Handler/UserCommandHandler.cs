@@ -57,22 +57,18 @@ namespace Core.Features.authentication.Commands.Handler
 
                 if (!createdResult.Succeeded)
                 {
-                    // لا حاجة لعمل Rollback يدوياً، الـ using سيقوم بذلك عند الخروج
                     var error = createdResult.Errors.FirstOrDefault()?.Description;
                     return BadRequest<JwtAuthResult>(error ?? "Failed to create user");
                 }
-               
-                // 5. توليد التوكن (تم نقلها قبل الـ Commit)
-                // لضمان أنه في حالة فشل التوكن، لا يتم حفظ اليوزر في الداتا بيز
                 var accessToken = await _authService.GenerateToken(userIdentity);
-
-                // 6. تثبيت التغييرات (آخر خطوة تماماً)
                 transaction.Commit();
 
-                var otpCode = await _userManager.GenerateEmailConfirmationTokenAsync(userIdentity);
+                var otpCode = await _userManager.GenerateTwoFactorTokenAsync(
+                        userIdentity,
+                        TokenOptions.DefaultEmailProvider
+                    );
                 var emailBody = GetOtpHtmlTemplate(userIdentity.FullName, otpCode);
                 await _emailService.SendEmailAsync(userIdentity.Email!, "تفعيل حساب Root2Route", emailBody);
-                // 7. إرجاع النتيجة
                 return Success(accessToken);
             }
             catch (Exception ex)

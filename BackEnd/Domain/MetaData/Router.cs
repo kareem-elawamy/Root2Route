@@ -16,6 +16,8 @@ namespace Domain.MetaData
             public const string Login = Prefix + "/login";
             public const string verifyOtp = Prefix + "/verify-otp";
             public const string resendOtp = Prefix + "/resend-otp";
+            public const string ForgetPassword = Prefix + "/forget-password";
+            public const string ResetPassword = Prefix + "/reset-password";
         }
 
         public static class PlantInfo
@@ -82,6 +84,7 @@ namespace Domain.MetaData
             public const string UpdateStatus = Prefix + singelroute + "/status";
             public const string UploadLogo = Prefix + singelroute + "/logo";
             public const string GetStatistics = Prefix + singelroute + "/statistics";
+            public const string GetByStatus = Prefix + "/status/{status}";
         }
 
         public static class OrganizationMember
