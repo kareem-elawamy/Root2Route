@@ -7,6 +7,7 @@ namespace Core.Features.OrganizationMember.Commands.Models
 {
     public record RemoveOrganizationMemberModel
     (
-        Guid OrganizationMemberId
+        Guid OrganizationMemberId,
+        [property: System.Text.Json.Serialization.JsonIgnore] Guid CurrentUserId = default
     ) : IRequest<Response<string>>;
 }

@@ -32,12 +32,14 @@ namespace Service.Services.OrganizationInvitationService
         }
         #region CRUD Operations
         #region Accept and Revoke Invitations
-        public async Task<InvitationResult> AcceptInvitationAsync(Guid invitationId, Guid userId)
+        public async Task<InvitationResult> AcceptInvitationAsync(Guid invitationId, Guid userId, string token)
         {
             var invitation = await _organizationInvitationRepository.GetByIdAsync(invitationId);
 
             if (invitation == null)
                 return InvitationResult.NotFound;
+            if (string.IsNullOrEmpty(token) || invitation.Token != token)
+                return InvitationResult.Failed;
 
             if (invitation.Status != InvitationStatus.Pending ||
                 invitation.ExpiryDate < DateTime.UtcNow)
@@ -111,9 +113,12 @@ namespace Service.Services.OrganizationInvitationService
             var invitation = await _organizationInvitationRepository.GetByIdAsync(invitationId);
             if (invitation == null || invitation.Status != InvitationStatus.Pending)
                 return InvitationResult.NotFound;
+            
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null ||
-                !string.Equals(invitation.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            bool isRecipient = user != null && string.Equals(invitation.Email, user.Email, StringComparison.OrdinalIgnoreCase);
+            bool isSenderOrAdmin = invitation.SenderId == userId;
+
+            if (!isRecipient && !isSenderOrAdmin)
                 return InvitationResult.InvalidUser;
 
             invitation.Status = InvitationStatus.Rejected;
@@ -132,6 +137,10 @@ namespace Service.Services.OrganizationInvitationService
         }
         public async Task<InvitationResult> SendInvitationAsync(OrganizationInvitation invitation)
         {
+            var isCallerAuthorized = await _organizationMemberRepository.GetTableNoTracking()
+                .AnyAsync(m => m.OrganizationId == invitation.OrganizationId && m.UserId == invitation.SenderId && m.OrganizationRoles.Any(r => r.Name == "Owner" || r.Name == "Admin"));
+            if (!isCallerAuthorized) return InvitationResult.Failed;
+
             var user = await _userManager.FindByEmailAsync(invitation.Email);
             if (user == null)
                 return InvitationResult.InvalidUser;

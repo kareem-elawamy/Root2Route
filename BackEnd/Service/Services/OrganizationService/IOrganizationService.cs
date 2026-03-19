@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Domain.Enums;
@@ -14,11 +14,11 @@ public interface IOrganizationService
     Task<List<Organization>> GetMyOrganizationsAsync(Guid userId);
     Task<string> UpdateAsync(Guid id, Organization updatedData, IFormFile? newLogo = null);
     Task<string> UpdateStatusAsync(Guid organizationId, OrganizationStatus newStatus);
-    Task<string> SoftDeleteAsync(Guid id);
+    Task<string> SoftDeleteAsync(Guid id, Guid currentUserId);
     Task<string> RestoreAsync(Guid id);
     Task<string> UploadLogoAsync(Guid organizationId, IFormFile file);
     Task<object> GetStatisticsAsync(Guid organizationId);
-    Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId);
+    Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId);
     Task<bool> IsOwnerAsync(Guid ownerId, Guid organizationId);
     Task<List<Organization>> GetOrganizationsByStatusAsync(OrganizationStatus status);
 

@@ -45,7 +45,6 @@ namespace Service.Services.OrderService
                 if (product.Status != ProductStatus.Approved || !product.IsAvailableForDirectSale)
                     return (null, $"المنتج '{product.Name}' غير متاح للبيع المباشر حالياً");
 
-                // 1. Atomic decrement in Database resolving Race Conditions
                 var rowsAffected = await _productRepository
                     .GetTableNoTracking()
                     .Where(p => p.Id == product.Id && p.StockQuantity >= requestedQuantity)
