@@ -33,7 +33,6 @@ namespace API.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
 
-            // بنبعت الـ ID بتاع اليوزر عشان يجيب طلباته هو بس
             var response = await Mediator.Send(new GetMyOrdersQuery(userId.Value));
             return NewResult(response);
         }
@@ -51,18 +50,41 @@ namespace API.Controllers
         [HttpGet(Router.Order.Prefix + "/Received/{organizationId}")]
         public async Task<IActionResult> GetReceivedOrders([FromRoute] Guid organizationId, [FromQuery] GetReceivedOrdersQuery query)
         {
-            // بنربط الـ ID اللي جاي من الرابط بالـ Query object
             query.OrganizationId = organizationId;
 
             var response = await Mediator.Send(query);
 
-            // بنستخدم Ok لأن PaginatedResult بيرجع مباشرة مش متغلف في Response العادي بتاعك
             return Ok(response);
         }
-        [HttpPut(Router.Order.ChangeStatus)]
-        public async Task<IActionResult> ChangeOrderStatus([FromBody] ChangeOrderStatusCommand command)
+       [HttpPut(Router.Order.ChangeStatus)]
+public async Task<IActionResult> ChangeOrderStatus([FromBody] ChangeOrderStatusCommand command)
+{
+    // 2. Safely extract OrganizationId from Users JWT instead of body
+    var orgIdString = User.FindFirst("OrganizationId")?.Value; // Match this with your exact Claim Type
+    if (string.IsNullOrEmpty(orgIdString) || !Guid.TryParse(orgIdString, out Guid orgId))
+    {
+        return Unauthorized("User does not belong to a valid organization.");
+    }
+
+    command.OrganizationId = orgId;
+
+    var response = await Mediator.Send(command);
+    return NewResult(response);
+}
+
+
+        [HttpPut(Router.Order.CancelOrder)]
+        public async Task<IActionResult> CancelOrder([FromRoute] Guid id)
         {
-            // اليوزر بيبعت الـ OrderId والـ NewStatus والـ OrganizationId بتاعته
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var command = new CancelOrderCommand
+            {
+                OrderId = id,
+                BuyerId = userId.Value
+            };
+
             var response = await Mediator.Send(command);
             return NewResult(response);
         }

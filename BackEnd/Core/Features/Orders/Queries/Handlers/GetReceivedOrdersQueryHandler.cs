@@ -35,6 +35,7 @@ namespace Core.Features.Orders.Queries.Handlers
                 OrderDate = o.OrderDate,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status.ToString(),
+                ShippingFees = o.ShippingFees,
                 BuyerId = o.BuyerId,
 
                 // هنا بنفلتر الـ Items عشان نرجع للبائع المنتجات بتاعته هو بس جوه الفاتورة

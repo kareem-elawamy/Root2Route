@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core.Base;
-using MediatR;
+using System.Text;
 
-namespace Core.Features.Orders.Commands.Models
+namespace Service.DTOs
 {
-    public class OrderItemRequest
+    public class OrderItemDto
     {
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
     }
 
-    public class CreateOrderCommand : IRequest<Response<string>>
+    public class CreateOrderDto
     {
         public Guid BuyerId { get; set; }
 
@@ -21,6 +20,6 @@ namespace Core.Features.Orders.Commands.Models
         public string ShippingStreet { get; set; } = null!;
         public string? BuildingNumber { get; set; }
 
-        public List<OrderItemRequest> Items { get; set; } = new List<OrderItemRequest>();
+        public List<OrderItemDto> Items { get; set; } = new List<OrderItemDto>();
     }
 }

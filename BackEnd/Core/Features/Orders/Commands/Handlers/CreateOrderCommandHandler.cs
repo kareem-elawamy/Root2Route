@@ -1,10 +1,11 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Core.Base;
+﻿using Core.Base;
 using Core.Features.Orders.Commands.Models;
 using MediatR;
+using Service.DTOs;
 using Service.Services.OrderService;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Core.Features.Orders.Commands.Handlers
 {
@@ -19,25 +20,29 @@ namespace Core.Features.Orders.Commands.Handlers
 
         public async Task<Response<string>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            // 1. تحويل الـ List اللي جاية من الفرونت إند لـ Dictionary عشان السيرفيس تفهمه
-            // بحيث الـ Key هو ProductId والـ Value هي Quantity
-            var productQuantities = request.Items.ToDictionary(
-                item => item.ProductId,
-                item => item.Quantity
-            );
+            var createOrderDto = new CreateOrderDto
+            {
+                BuyerId = request.BuyerId,
+                ReceiverName = request.ReceiverName,
+                ReceiverPhone = request.ReceiverPhone,
+                ShippingCity = request.ShippingCity,
+                ShippingStreet = request.ShippingStreet,
+                BuildingNumber = request.BuildingNumber,
+                Items = request.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
 
-            // 2. إرسال البيانات للسيرفيس عشان تحسب السعر وتخصم من المخزون وتكريت الطلب
-            var (order, message) = await _orderService.CreateOrderAsync(request.BuyerId, productQuantities);
+            var (order, message) = await _orderService.CreateOrderAsync(createOrderDto);
 
-            // 3. التحقق من النتيجة
             if (order == null)
             {
-                // معناها إن في منتج خلصان من المخزون أو سعره فيه مشكلة أو مش متاح للبيع
                 return new Response<string>(message) { Succeeded = false };
             }
 
-            // 4. إرجاع رسالة النجاح (وممكن نرجع الـ order.Id لو الفرونت إند بيحتاجه عشان يفتح صفحة الفاتورة)
             return new Response<string>(message) { Succeeded = true };
         }
     }
-}   
+}

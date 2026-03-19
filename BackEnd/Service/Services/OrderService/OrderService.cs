@@ -7,6 +7,7 @@ using Domain.Models;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Microsoft.EntityFrameworkCore;
+using Service.DTOs;
 
 namespace Service.Services.OrderService
 {
@@ -21,11 +22,12 @@ namespace Service.Services.OrderService
             _productRepository = productRepository;
         }
 
-        public async Task<(Order? Order, string Message)> CreateOrderAsync(Guid buyerId, Dictionary<Guid, int> productQuantities)
+        public async Task<(Order? Order, string Message)> CreateOrderAsync(CreateOrderDto orderDto)
         {
-            var productIds = productQuantities.Keys.ToList();
+            var productIds = orderDto.Items.Select(i => i.ProductId).ToList();
 
-            var products = await _productRepository.GetTableAsTracking()
+            var products = await _productRepository
+                .GetTableNoTracking()
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
@@ -37,43 +39,56 @@ namespace Service.Services.OrderService
 
             foreach (var product in products)
             {
-                var requestedQuantity = productQuantities[product.Id];
+                var requestedItem = orderDto.Items.First(i => i.ProductId == product.Id);
+                var requestedQuantity = requestedItem.Quantity;
 
-                // التأكد إن المنتج تمت الموافقة عليه ومتاح للبيع المباشر أصلاً
                 if (product.Status != ProductStatus.Approved || !product.IsAvailableForDirectSale)
                     return (null, $"المنتج '{product.Name}' غير متاح للبيع المباشر حالياً");
 
-                // التأكد إن المخزون يكفي الكمية المطلوبة
-                if (product.StockQuantity < requestedQuantity)
-                    return (null, $"الكمية المطلوبة من '{product.Name}' تتجاوز المخزون المتاح ({product.StockQuantity} فقط)");
+                // 1. Atomic decrement in Database resolving Race Conditions
+                var rowsAffected = await _productRepository
+                    .GetTableNoTracking()
+                    .Where(p => p.Id == product.Id && p.StockQuantity >= requestedQuantity)
+                    .ExecuteUpdateAsync(s =>
+                        s.SetProperty(
+                            p => p.StockQuantity,
+                            p => p.StockQuantity - requestedQuantity
+                        )
+                    );
 
-                // حساب السعر وتجهيز عنصر الطلب (بناخد السعر من الداتابيز مش من اليوزر للحماية)
+                if (rowsAffected == 0)
+                    return (
+                        null,
+                        $"الكمية المطلوبة من '{product.Name}' تتجاوز المخزون المتاح أو نفدت للتو"
+                    );
+
                 var itemPrice = product.DirectSalePrice;
                 totalAmount += itemPrice * requestedQuantity;
 
-                orderItems.Add(new OrderItem
-                {
-                    productid = product.Id,
-                    Quantity = requestedQuantity,
-                    UnitPrice = itemPrice
-                });
-
-                // 4. خصم الكمية المباعة من المخزون الفعلي للمنتج
-                product.StockQuantity -= requestedQuantity;
+                orderItems.Add(
+                    new OrderItem
+                    {
+                        productid = product.Id,
+                        Quantity = requestedQuantity,
+                        UnitPrice = itemPrice,
+                    }
+                );
             }
 
-            // 5. إنشاء كائن الطلب (Order)
             var newOrder = new Order
             {
-                BuyerId = buyerId,
+                BuyerId = orderDto.BuyerId,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = totalAmount,
                 Status = OrderStatus.Pending,
-                OrderItems = orderItems
+                OrderItems = orderItems,
+                ReceiverName = orderDto.ReceiverName,
+                ReceiverPhone = orderDto.ReceiverPhone,
+                ShippingCity = orderDto.ShippingCity,
+                ShippingStreet = orderDto.ShippingStreet,
+                BuildingNumber = orderDto.BuildingNumber,
             };
 
-            // 6. الحفظ في الداتابيز
-            // EF Core هيحفظ الـ Order والـ OrderItems ويعمل Update للـ Stock بتاع الـ Products في Transaction واحد أوتوماتيك!
             await _orderRepository.AddAsync(newOrder);
 
             return (newOrder, "تم إنشاء الطلب بنجاح");
@@ -81,40 +96,46 @@ namespace Service.Services.OrderService
 
         public async Task<Order?> GetOrderByIdAsync(Guid orderId)
         {
-            return await _orderRepository.GetTableNoTracking()
+            return await _orderRepository
+                .GetTableNoTracking()
                 .Include(o => o.OrderItems!)
-                    .ThenInclude(oi => oi.product) // عشان نجيب بيانات المنتج (زي اسمه) جوا الـ OrderItem
+                    .ThenInclude(oi => oi.product)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
-        public async Task<List<Order>> GetOrdersByBuyerIdAsync(Guid buyerId)
+        public IQueryable<Order> GetOrdersByBuyerIdQueryable(Guid buyerId)
         {
-            return await _orderRepository.GetTableNoTracking()
-                .Include(o => o.OrderItems!)
-                    .ThenInclude(oi => oi.product)
+            // 4. Returns IQueryable without execution, stopping domain leak memory issues
+            return _orderRepository
+                .GetTableNoTracking()
                 .Where(o => o.BuyerId == buyerId)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+                .OrderByDescending(o => o.OrderDate);
         }
-        public async Task<(List<Order> Orders, int TotalCount)> GetPaginatedReceivedOrdersForOrgAsync(Guid organizationId, int pageNumber, int pageSize, OrderStatus? status = null)
+
+        public async Task<(
+            List<Order> Orders,
+            int TotalCount
+        )> GetPaginatedReceivedOrdersForOrgAsync(
+            Guid organizationId,
+            int pageNumber,
+            int pageSize,
+            OrderStatus? status = null
+        )
         {
-            // 1. نبني الـ Query الأساسي ونجيب الطلبات اللي تخص المنظمة دي
-            var query = _orderRepository.GetTableNoTracking()
+            var query = _orderRepository
+                .GetTableNoTracking()
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.product)
                 .Where(o => o.OrderItems!.Any(oi => oi.product!.OrganizationId == organizationId))
                 .AsQueryable();
 
-            // 2. تطبيق الفلتر (لو البائع عايز الطلبات الـ Pending بس مثلاً)
             if (status.HasValue)
             {
                 query = query.Where(o => o.Status == status.Value);
             }
 
-            // 3. حساب العدد الإجمالي للطلبات (مهم للباجنيشن)
             var totalCount = await query.CountAsync();
 
-            // 4. تطبيق الباجنيشن والترتيب (الأحدث أولاً)
             var orders = await query
                 .OrderByDescending(o => o.OrderDate)
                 .Skip((pageNumber - 1) * pageSize)
@@ -123,15 +144,80 @@ namespace Service.Services.OrderService
 
             return (orders, totalCount);
         }
-        public async Task<bool> ChangeOrderStatusAsync(Guid orderId, OrderStatus newStatus)
+
+        public async Task<bool> ChangeOrderStatusAsync(
+            Guid orderId,
+            OrderStatus newStatus,
+            decimal shippingFees = 0
+        )
         {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null) return false;
+            // 3. Explicitly reject negative fees
+            if (shippingFees < 0)
+            {
+                throw new ArgumentException("رسوم الشحن لا يمكن أن تكون أقل من الصفر");
+            }
+
+            var order = await _orderRepository
+                .GetTableAsTracking()
+                .Include(o => o.OrderItems!)
+                    .ThenInclude(oi => oi.product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return false;
+
+            if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
+            {
+                foreach (var item in order.OrderItems!)
+                {
+                    if (item.product != null)
+                    {
+                        item.product.StockQuantity += item.Quantity;
+                    }
+                }
+            }
 
             order.Status = newStatus;
+            order.ShippingFees = shippingFees; // Don't forget to assign it!
+
             await _orderRepository.UpdateAsync(order);
 
             return true;
+        }
+
+        public async Task<(bool Success, string Message)> CancelOrderAsync(
+            Guid orderId,
+            Guid buyerId
+        )
+        {
+            var order = await _orderRepository
+                .GetTableAsTracking()
+                .Include(o => o.OrderItems!)
+                    .ThenInclude(oi => oi.product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return (false, "الطلب غير موجود");
+
+            if (order.BuyerId != buyerId)
+                return (false, "غير مصرح لك بإلغاء هذا الطلب");
+
+            if (order.Status != OrderStatus.Pending)
+                return (false, "لا يمكن إلغاء الطلب في هذه المرحلة، تواصل مع البائع");
+
+            foreach (var item in order.OrderItems!)
+            {
+                if (item.product != null)
+                {
+                    item.product.StockQuantity += item.Quantity;
+                }
+            }
+
+            order.Status = OrderStatus.Cancelled;
+
+            await _orderRepository.UpdateAsync(order);
+
+            return (true, "تم إلغاء الطلب بنجاح واسترجاع الكميات للمخزون");
         }
     }
 }

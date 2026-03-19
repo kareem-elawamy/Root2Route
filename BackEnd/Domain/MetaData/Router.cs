@@ -60,6 +60,7 @@ namespace Domain.MetaData
             public const string GetMyOrders = Prefix + "/MyOrders";
             public const string GetOrderById = Prefix + "/{id}";
             public const string ChangeStatus = Prefix + "/ChangeStatus";
+            public const string CancelOrder = Prefix + "/Cancel/{id}";
         }
 
         public static class OrganizationRole

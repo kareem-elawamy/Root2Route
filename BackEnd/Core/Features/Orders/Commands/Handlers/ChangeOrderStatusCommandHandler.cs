@@ -31,7 +31,8 @@ namespace Core.Features.Orders.Commands.Handlers
                 return new Response<string>("غير مصرح لك بتعديل حالة هذا الطلب لأنه لا يحتوي على منتجاتك") { Succeeded = false };
 
             // 3. تغيير الحالة
-            await _orderService.ChangeOrderStatusAsync(request.OrderId, request.NewStatus);
+         await _orderService.ChangeOrderStatusAsync(request.OrderId, request.NewStatus, request.ShippingFees);
+
 
             return new Response<string>($"تم تغيير حالة الطلب إلى {request.NewStatus} بنجاح") { Succeeded = true };
         }

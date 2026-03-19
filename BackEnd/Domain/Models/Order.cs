@@ -9,12 +9,18 @@ namespace Domain.Models
     {
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
-
-        // من المشتري؟ (ممكن يكون مستخدم عادي أو مصنع)
         public Guid BuyerId { get; set; }
         public ApplicationUser? Buyer { get; set; }
-        public OrderStatus Status { get; set; } // Pending, Shipped, Delivered
-
+        public OrderStatus Status { get; set; } 
+        public string ReceiverName { get; set; } = null!;
+        public string ReceiverPhone { get; set; } = null!;
+        public string ShippingCity { get; set; } = null!;
+        public string ShippingStreet { get; set; } = null!;
+        public string? BuildingNumber { get; set; }
+        public decimal ShippingFees { get; set; } = 0; 
+        public decimal FinalTotal => TotalAmount + ShippingFees;
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
         public ICollection<OrderItem>? OrderItems { get; set; }
     }
 }
