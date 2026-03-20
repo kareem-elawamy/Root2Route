@@ -1,4 +1,3 @@
-using System.Text;
 using Core;
 using Core.Filters;
 using Domain.Constants;
@@ -9,8 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Service; // ???? ?? ???? ??? Namespace ?????? JwtSettings
+using Service.Hubs;
 using Service.Services.AuthenticationService;
 using SixLabors.ImageSharp;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -89,7 +90,7 @@ builder
     .AddCoreDependencies()
     .AddInfrastructureDependencies()
     .AddModelServiceDependencies(builder.Configuration);
-
+builder.Services.AddSignalR();
 // Authentication Config
 builder
     .Services.AddAuthentication(options =>
@@ -125,7 +126,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.MapHub<AuctionHub>("/hubs/auction");
 app.UseAuthentication();
 app.UseAuthorization();
 

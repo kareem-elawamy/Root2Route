@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
+using Service.BackgroundServices;
 using Service.Services;
 using Service.Services.AIService;
+using Service.Services.AuctionService;
 using Service.Services.AuthenticationService;
 using Service.Services.AuthorizationService;
 using Service.Services.Email;
@@ -34,6 +36,8 @@ public static class ModuleServiceDependencies
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IAuctionService, AuctionService>();
+        services.AddHostedService<AuctionFinalizerBackgroundService>();
         return services;
     }
     public static IServiceCollection AddModelServiceDependencies(this IServiceCollection services, IConfiguration configuration)

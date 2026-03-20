@@ -1,87 +1,127 @@
-using System;
-using System.Threading.Tasks;
 using Domain.Enums;
-using Domain.Models; // مهم جداً عشان كيانات Auction و Bid
+using Domain.Models;
 using Infrastructure.Repositories.AuctionRepository;
-using Infrastructure.Repositories.BidRepository;
-using Infrastructure.Repositories.ProductRepository;
+using Infrastructure.Repositories.OrganizationMemberRepository;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Service.Services.AuctionService
 {
     public class AuctionService : IAuctionService
     {
         private readonly IAuctionRepository _auctionRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IBidRepository _bidRepository;
+        private readonly IOrganizationMemberRepository _organizationMemberRepository;
 
-        public AuctionService(IAuctionRepository auctionRepository, IProductRepository productRepository, IBidRepository bidRepository)
+        public AuctionService(IAuctionRepository auctionRepository, IOrganizationMemberRepository organizationMemberRepository)
         {
-            _bidRepository = bidRepository;
-            _productRepository = productRepository;
             _auctionRepository = auctionRepository;
+            _organizationMemberRepository = organizationMemberRepository;
         }
 
-        // التعديل هنا: اتغير الاسم لـ productId بدل marketItemId
-        public async Task<string> CreateAuctionAsync(Guid productId, int durationInHours)
+        public async Task<string> CreateAuctionAsync(Auction auction)
         {
-            // 1. جلب المنتج
-            var item = await _productRepository.GetByIdAsync(productId);
-
-            // 2. التحقق من وجوده وصلاحيته للمزاد
-            if (item == null || !item.IsAvailableForAuction)
-                return "Product not found or not available for auction";
-
-            // 3. إنشاء المزاد
-            var auction = new Auction
+            auction.Status = AuctionStatus.Pending; 
+            if (auction.StartDate <= DateTime.UtcNow)
             {
-                // إحنا مش محتاجين ندي Id بـ Guid.NewGuid() لأن EF بيكريته لوحده 
-                // بس لو عامل الكونستركتور في BaseEntity بيكريته يبقى مفيش مشكلة
-
-                productid = productId, // التعديل الأهم: ProductId بدل MarketItemId
-                Title = $"Auction for {item.Name}",
-                StartPrice = item.StartBiddingPrice,
-                CurrentHighestBid = item.StartBiddingPrice,
-                StartDate = DateTime.UtcNow,
-                EndDate = DateTime.UtcNow.AddHours(durationInHours),
-                Status = AuctionStatus.Ongoing
-            };
-
-            await _auctionRepository.AddAsync(auction);
-            return "Auction Created Successfully";
+                auction.Status = AuctionStatus.Active;
+            }
+            
+            var result = await _auctionRepository.AddAsync(auction);
+            return result != null ? "Success" : "Failed";
         }
 
         public async Task<string> PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount)
         {
-            // 1. جلب المزاد
-            var auction = await _auctionRepository.GetByIdAsync(auctionId);
-            if (auction == null) return "Auction not found";
+            var auction = await _auctionRepository.GetTableAsTracking()
+                .Include(a => a.product)
+                .Include(a => a.Bids)
+                .FirstOrDefaultAsync(a => a.Id == auctionId);
+            
+            if (auction == null) return "Failed: Auction not found";
+            if (auction.Status != AuctionStatus.Active) return "Failed: Auction is not active";
+            if (auction.EndDate <= DateTime.UtcNow) return "Failed: Auction has ended";
 
-            // 2. التحقق من حالة المزاد
-            if (auction.Status != AuctionStatus.Ongoing) return "Auction is not ongoing"; // أمان أكتر
-            if (auction.EndDate < DateTime.UtcNow) return "Auction has expired";
-
-            // 3. التحقق من مبلغ المزايدة
-            if (amount <= auction.CurrentHighestBid)
-                return "Bid must be higher than the current highest bid";
-
-            // 4. إنشاء المزايدة
-            var newBid = new Bid
+            // Shill Bidding Check
+            if (auction.product != null)
             {
-                AuctionId = auctionId,
-                BidderId = bidderId,
-                Amount = amount,
-                BidTime = DateTime.UtcNow
-            };
+                var isSeller = await _organizationMemberRepository.GetTableNoTracking()
+                    .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == bidderId && m.IsActive);
+                if (isSeller) return "Failed: You cannot bid on your own organization's auction.";
+            }
 
-            // 5. حفظ المزايدة وتحديث سعر المزاد الأعلى
-            await _bidRepository.AddAsync(newBid);
+            var minRequiredBid = auction.CurrentHighestBid == 0 
+                ? auction.StartPrice 
+                : auction.CurrentHighestBid + auction.MinimumBidIncrement;
+                
+            if (amount < minRequiredBid)
+                return $"Failed: Minimum bid is {minRequiredBid}";
 
-            auction.CurrentHighestBid = amount;
-            auction.HighestBidderId = bidderId; // 👈 إضافة مهمة جداً: لازم نسجل مين أعلى مزايد حالياً
+            using var transaction = await _auctionRepository.BeginTransactionAsync();
+            try
+            {
+                var bid = new Bid
+                {
+                    AuctionId = auctionId,
+                    BidderId = bidderId,
+                    Amount = amount,
+                    BidTime = DateTime.UtcNow
+                };
 
-            await _auctionRepository.UpdateAsync(auction);
+                auction.CurrentHighestBid = amount;
+                auction.HighestBidderId = bidderId;
+                auction.Bids.Add(bid);
 
-            return "Bid Placed Successfully";
+                await _auctionRepository.UpdateAsync(auction);
+                await transaction.CommitAsync();
+                return "Success";
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return "Failed: An error occurred while placing the bid";
+            }
+        }
+
+        public async Task<Auction?> GetAuctionByIdAsync(Guid id)
+        {
+            return await _auctionRepository.GetTableNoTracking()
+                .Include(a => a.product)
+                .Include(a => a.HighestBidder)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public async Task<List<Auction>> GetActiveAuctionsAsync()
+        {
+            return await _auctionRepository.GetTableNoTracking()
+                .Where(a => a.Status == AuctionStatus.Active)
+                .ToListAsync();
+        }
+
+        public async Task FinalizeExpiredAuctionsAsync()
+        {
+            var expiredAuctions = await _auctionRepository.GetTableAsTracking()
+                .Where(a => a.Status == AuctionStatus.Active && a.EndDate <= DateTime.UtcNow)
+                .ToListAsync();
+
+            foreach (var auction in expiredAuctions)
+            {
+                auction.Status = AuctionStatus.Completed;
+                await _auctionRepository.UpdateAsync(auction);
+            }
+        }
+
+        public async Task<List<Bid>> GetBidsForAuctionAsync(Guid auctionId)
+        {
+            var auction = await _auctionRepository.GetTableNoTracking()
+                .Include(a => a.Bids)
+                    .ThenInclude(b => b.Bidder)
+                .FirstOrDefaultAsync(a => a.Id == auctionId);
+                
+            if (auction == null) return new List<Bid>();
+            return auction.Bids.OrderByDescending(b => b.BidTime).ToList();
         }
     }
 }

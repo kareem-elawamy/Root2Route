@@ -102,6 +102,15 @@ namespace Domain.MetaData
             public const string AnalyzePlant = Prefix + "/analyze";
         }
 
+        public static class Auction
+        {
+            public const string Prefix = rule + "/auctions";
+            public const string CreateAuction = Prefix + "/create";
+            public const string GetById = Prefix + "/GetById";
+            public const string GetActive = Prefix + "/GetActive";
+            public const string PlaceBid = Prefix + "/{auctionId}/bid";
+        }
+
         public static class OrganizationInvitation
         {
             public const string Prefix = rule + "/organization-invitations";
