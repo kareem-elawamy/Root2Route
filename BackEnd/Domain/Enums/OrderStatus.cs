@@ -5,6 +5,7 @@ namespace Domain.Enums
         Pending,
         Shipped,
         Delivered,
-        Cancelled
+        Cancelled,
+        Processing
     }
 }

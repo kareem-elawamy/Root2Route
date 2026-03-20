@@ -23,7 +23,15 @@ namespace Core.Features.Auctions.Queries.Handlers
 
         public async Task<Response<List<AuctionResponse>>> Handle(GetActiveAuctionsQuery request, CancellationToken cancellationToken)
         {
-            var auctions = await _auctionService.GetActiveAuctionsAsync();
+            var filter = new AuctionFilter
+            {
+                SearchTerm = request.SearchTerm,
+                MinPrice = request.MinPrice,
+                MaxPrice = request.MaxPrice,
+                CategoryId = request.CategoryId,
+                SortBy = request.SortBy
+            };
+            var auctions = await _auctionService.GetActiveAuctionsAsync(filter, request.PageNumber, request.PageSize);
             var mapped = _mapper.Map<List<AuctionResponse>>(auctions);
             return Success(mapped);
         }

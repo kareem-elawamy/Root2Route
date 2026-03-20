@@ -55,6 +55,14 @@ namespace API.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet(Router.Auction.GetCompleted)]
+        public async Task<IActionResult> GetCompletedAuctions([FromQuery] GetCompletedAuctionsQuery query)
+        {
+            var response = await Mediator.Send(query);
+            return NewResult(response);
+        }
+
+        [AllowAnonymous]
         [HttpGet(Router.Auction.Prefix + "/{auctionId}/bids")]
         public async Task<IActionResult> GetAuctionBids([FromRoute] Guid auctionId)
         {
@@ -105,6 +113,17 @@ namespace API.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
             var response = await Mediator.Send(new GetMyParticipatedAuctionsQuery(userId.Value));
+            return NewResult(response);
+        }
+
+        [HttpPost(Router.Auction.Checkout)]
+        public async Task<IActionResult> Checkout([FromRoute] Guid id, [FromBody] CheckoutWonAuctionCommand command)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+            command.AuctionId = id;
+            command.UserId = userId.Value;
+            var response = await Mediator.Send(command);
             return NewResult(response);
         }
 
