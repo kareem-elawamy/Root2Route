@@ -2,7 +2,9 @@ using Domain.Enums;
 using Domain.Models;
 using Infrastructure.Repositories.AuctionRepository;
 using Infrastructure.Repositories.OrganizationMemberRepository;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Service.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +16,13 @@ namespace Service.Services.AuctionService
     {
         private readonly IAuctionRepository _auctionRepository;
         private readonly IOrganizationMemberRepository _organizationMemberRepository;
+        private readonly IHubContext<AuctionHub> _hubContext;
 
-        public AuctionService(IAuctionRepository auctionRepository, IOrganizationMemberRepository organizationMemberRepository)
+        public AuctionService(IAuctionRepository auctionRepository, IOrganizationMemberRepository organizationMemberRepository, IHubContext<AuctionHub> hubContext)
         {
             _auctionRepository = auctionRepository;
             _organizationMemberRepository = organizationMemberRepository;
+            _hubContext = hubContext;
         }
 
         public async Task<string> CreateAuctionAsync(Auction auction)
@@ -110,6 +114,9 @@ namespace Service.Services.AuctionService
             {
                 auction.Status = AuctionStatus.Completed;
                 await _auctionRepository.UpdateAsync(auction);
+                // Broadcast ReceiveAuctionClosed to all listeners in this auction group
+                await _hubContext.Clients.Group(auction.Id.ToString())
+                    .SendAsync("ReceiveAuctionClosed", auction.HighestBidderId, auction.CurrentHighestBid);
             }
         }
 
@@ -122,6 +129,79 @@ namespace Service.Services.AuctionService
                 
             if (auction == null) return new List<Bid>();
             return auction.Bids.OrderByDescending(b => b.BidTime).ToList();
+        }
+
+        public async Task<string> UpdateAuctionAsync(Guid auctionId, Auction updatedData, Guid sellerId)
+        {
+            var auction = await _auctionRepository.GetTableAsTracking()
+                .Include(a => a.Bids)
+                .Include(a => a.product)
+                .FirstOrDefaultAsync(a => a.Id == auctionId);
+            if (auction == null) return "Not Found";
+            if (auction.product?.OrganizationId == null) return "Not Found";
+            var isSeller = await _organizationMemberRepository.GetTableNoTracking()
+                .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
+            if (!isSeller) return "Unauthorized";
+            if (auction.Status != AuctionStatus.Pending) return "Failed: Can only update a Pending auction";
+            if (auction.Bids.Any()) return "Failed: Cannot update an auction that already has bids";
+
+            auction.Title = updatedData.Title;
+            auction.StartDate = updatedData.StartDate;
+            auction.EndDate = updatedData.EndDate;
+            auction.StartPrice = updatedData.StartPrice;
+            auction.MinimumBidIncrement = updatedData.MinimumBidIncrement;
+            auction.ReservePrice = updatedData.ReservePrice;
+
+            await _auctionRepository.UpdateAsync(auction);
+            return "Success";
+        }
+
+        public async Task<string> CancelAuctionAsync(Guid auctionId, Guid sellerId)
+        {
+            var auction = await _auctionRepository.GetTableAsTracking()
+                .Include(a => a.product)
+                .FirstOrDefaultAsync(a => a.Id == auctionId);
+            if (auction == null) return "Not Found";
+            if (auction.product?.OrganizationId == null) return "Not Found";
+            var isSeller = await _organizationMemberRepository.GetTableNoTracking()
+                .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
+            if (!isSeller) return "Unauthorized";
+            if (auction.Status == AuctionStatus.Completed) return "Failed: Cannot cancel a completed auction";
+
+            auction.Status = AuctionStatus.Cancelled;
+            await _auctionRepository.UpdateAsync(auction);
+            return "Success";
+        }
+
+        public async Task<List<Auction>> GetMyOrganizationAuctionsAsync(Guid organizationId)
+        {
+            return await _auctionRepository.GetTableNoTracking()
+                .Include(a => a.product)
+                .Include(a => a.HighestBidder)
+                .Where(a => a.product != null && a.product.OrganizationId == organizationId)
+                .OrderByDescending(a => a.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Auction>> GetMyWonAuctionsAsync(Guid userId)
+        {
+            return await _auctionRepository.GetTableNoTracking()
+                .Include(a => a.product)
+                .Include(a => a.HighestBidder)
+                .Where(a => a.Status == AuctionStatus.Completed && a.HighestBidderId == userId)
+                .OrderByDescending(a => a.EndDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Auction>> GetMyParticipatedAuctionsAsync(Guid userId)
+        {
+            return await _auctionRepository.GetTableNoTracking()
+                .Include(a => a.product)
+                .Include(a => a.HighestBidder)
+                .Include(a => a.Bids)
+                .Where(a => a.Status == AuctionStatus.Active && a.Bids.Any(b => b.BidderId == userId))
+                .OrderBy(a => a.EndDate)
+                .ToListAsync();
         }
     }
 }

@@ -62,6 +62,52 @@ namespace API.Controllers
             return NewResult(response);
         }
 
+        [HttpPut(Router.Auction.UpdateAuction)]
+        public async Task<IActionResult> UpdateAuction([FromRoute] Guid auctionId, [FromBody] UpdateAuctionCommand command)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+            command.AuctionId = auctionId;
+            command.SellerId = userId.Value;
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpDelete(Router.Auction.CancelAuction)]
+        public async Task<IActionResult> CancelAuction([FromRoute] Guid auctionId)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+            var command = new CancelAuctionCommand { AuctionId = auctionId, SellerId = userId.Value };
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpGet(Router.Auction.GetMyOrgAuctions)]
+        public async Task<IActionResult> GetMyOrganizationAuctions([FromRoute] Guid organizationId)
+        {
+            var response = await Mediator.Send(new GetMyOrganizationAuctionsQuery(organizationId));
+            return NewResult(response);
+        }
+
+        [HttpGet(Router.Auction.GetMyWonAuctions)]
+        public async Task<IActionResult> GetMyWonAuctions()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+            var response = await Mediator.Send(new GetMyWonAuctionsQuery(userId.Value));
+            return NewResult(response);
+        }
+
+        [HttpGet(Router.Auction.GetMyParticipated)]
+        public async Task<IActionResult> GetMyParticipatedAuctions()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+            var response = await Mediator.Send(new GetMyParticipatedAuctionsQuery(userId.Value));
+            return NewResult(response);
+        }
+
         private Guid? GetCurrentUserId()
         {
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

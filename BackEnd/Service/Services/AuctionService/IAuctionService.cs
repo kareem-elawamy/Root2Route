@@ -13,5 +13,10 @@ namespace Service.Services.AuctionService
         Task<List<Auction>> GetActiveAuctionsAsync();
         Task FinalizeExpiredAuctionsAsync();
         Task<List<Bid>> GetBidsForAuctionAsync(Guid auctionId);
+        Task<string> UpdateAuctionAsync(Guid auctionId, Auction updatedData, Guid sellerId);
+        Task<string> CancelAuctionAsync(Guid auctionId, Guid sellerId);
+        Task<List<Auction>> GetMyOrganizationAuctionsAsync(Guid organizationId);
+        Task<List<Auction>> GetMyWonAuctionsAsync(Guid userId);
+        Task<List<Auction>> GetMyParticipatedAuctionsAsync(Guid userId);
     }
 }
