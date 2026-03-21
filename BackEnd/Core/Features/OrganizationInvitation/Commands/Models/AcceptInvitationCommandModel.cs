@@ -7,6 +7,7 @@ namespace Core.Features.OrganizationInvitation.Commands.Models
 {
     public record AcceptInvitationCommandModel(
      Guid UserId,
-     Guid InvitationId
+     Guid InvitationId,
+     string Token
     ) : IRequest<Response<string>>;
 }

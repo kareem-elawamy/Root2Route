@@ -15,6 +15,12 @@ namespace Domain.Models
         public decimal StartPrice { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
+        public decimal MinimumBidIncrement { get; set; } = 1.00m;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ReservePrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal CurrentHighestBid { get; set; }
 
         public AuctionStatus Status { get; set; }

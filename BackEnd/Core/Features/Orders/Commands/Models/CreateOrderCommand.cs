@@ -15,6 +15,12 @@ namespace Core.Features.Orders.Commands.Models
     {
         public Guid BuyerId { get; set; }
 
+        public string ReceiverName { get; set; } = null!;
+        public string ReceiverPhone { get; set; } = null!;
+        public string ShippingCity { get; set; } = null!;
+        public string ShippingStreet { get; set; } = null!;
+        public string? BuildingNumber { get; set; }
+
         public List<OrderItemRequest> Items { get; set; } = new List<OrderItemRequest>();
     }
 }

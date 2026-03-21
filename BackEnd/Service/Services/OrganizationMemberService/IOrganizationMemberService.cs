@@ -9,11 +9,11 @@ namespace Service.Services.OrganizationMemberService
     {
         Task<string> AddOrganizationMemberAsync(OrganizationMember organizationMember);
         Task<List<OrganizationMember>> GetOrganizationMembersByOrganizationIdAsync(Guid organizationId);
-        Task<string> RemoveOrganizationMemberAsync(Guid organizationMemberId);
+        Task<string> RemoveOrganizationMemberAsync(Guid organizationMemberId, Guid currentUserId);
         Task<string> UpdateOrganizationMemberRoleAsync(Guid organizationMemberId, Guid newRoleId);
         Task<string> DeactivateOrganizationMemberAsync(Guid organizationMemberId);
         Task<string> ActivateOrganizationMemberAsync(Guid organizationMemberId);
         Task<OrganizationMember> GetOrganizationMemberByIdAsync(Guid organizationMemberId);
-        Task<string> TransferOwnershipAsync(Guid organizationId, Guid newOwnerId);
+        Task<string> TransferOwnershipAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId);
     }
 }

@@ -124,6 +124,12 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<decimal>("MinimumBidIncrement")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ReservePrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -293,6 +299,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BuildingNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("BuyerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -307,6 +316,31 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingCity")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ShippingFees")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ShippingStreet")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

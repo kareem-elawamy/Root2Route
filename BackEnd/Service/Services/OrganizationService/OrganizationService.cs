@@ -1,4 +1,4 @@
-﻿using Domain.Enums;
+using Domain.Enums;
 using Infrastructure.Repositories.OrganizationRepository;
 using Infrastructure.Repositories.OrganizationMemberRepository;
 using Infrastructure.Repositories.OrganizationRoleRepository;
@@ -147,6 +147,8 @@ public class OrganizationService : IOrganizationService
         var org = await _organizationRepository.GetByIdAsync(id);
         if (org == null || org.IsDeleted)
             return "Not Found";
+        if (org.OwnerId != updatedData.OwnerId)
+            return "Unauthorized: Only the owner can update the organization.";
         if (IsOrganizationActiveAsync(id).Result == false)
             return "Organization is not active";
         org.Name = updatedData.Name;
@@ -174,18 +176,26 @@ public class OrganizationService : IOrganizationService
     #endregion
     #region Soft Delete
 
-    public async Task<string> SoftDeleteAsync(Guid id)
+    public async Task<string> SoftDeleteAsync(Guid id, Guid currentUserId)
     {
 
         var org = await _organizationRepository.GetByIdAsync(id);
         if (org == null)
             return "Not Found";
+        if (org.OwnerId != currentUserId)
+            return "Unauthorized: Only the owner can delete the organization.";
 
         org.IsDeleted = true;
         org.DeleteAt = DateTime.UtcNow;
         org.OrganizationStatus = OrganizationStatus.Suspended;
 
+        var productsToSuspend = await _context.Products.Where(p => p.OrganizationId == id && !p.IsDeleted).ToListAsync();
+        foreach (var product in productsToSuspend) {
+            product.IsDeleted = true;
+        }
+
         await _organizationRepository.UpdateAsync(org);
+        await _context.SaveChangesAsync();
 
         return "Deleted";
     }
@@ -208,11 +218,13 @@ public class OrganizationService : IOrganizationService
 
     #region Change Owner
 
-    public async Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId)
+    public async Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId)
     {
         var org = await _organizationRepository.GetByIdAsync(organizationId);
         if (org == null)
             return "Not Found";
+        if (org.OwnerId != currentOwnerId)
+            return "Unauthorized: Only the current owner can transfer ownership.";
 
         var user = await _userManager.FindByIdAsync(newOwnerId.ToString());
         if (user == null)

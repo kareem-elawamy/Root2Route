@@ -79,7 +79,7 @@ namespace Core.Features.Organization.Commands.Handler
             if (!isOwner)
                 return Unauthorized<string>("You are not allowed to delete this organization");
             var result = await _organizationService
-           .SoftDeleteAsync(request.OrganizationId);
+           .SoftDeleteAsync(request.OrganizationId, request.OwnerId);
             if (result == "Not Found")
                 return NotFound<string>("Organization not found");
             return Success("Organization deleted successfully");
@@ -109,7 +109,7 @@ namespace Core.Features.Organization.Commands.Handler
             if (!isOwner)
                 return Unauthorized<string>("Only the current owner can change ownership");
             var result = await _organizationService
-      .ChangeOwnerAsync(request.OrganizationId, request.NewOwnerId);
+      .ChangeOwnerAsync(request.OrganizationId, request.NewOwnerId, request.CurrentOwnerId);
             if (result == "Not Found")
                 return NotFound<string>("Organization not found");
             if (result == "User Not Found")

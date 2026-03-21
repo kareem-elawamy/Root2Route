@@ -15,7 +15,7 @@ namespace Core.Features.OrganizationInvitation.Commands.Handlers
         }
         public async Task<Response<string>> Handle(AcceptInvitationCommandModel request, CancellationToken cancellationToken)
         {
-            var result = await _invitationService.AcceptInvitationAsync(request.InvitationId, request.UserId);
+            var result = await _invitationService.AcceptInvitationAsync(request.InvitationId, request.UserId, request.Token);
             return result switch
             {
                 InvitationResult.NotFound => NotFound<string>("Not Found Invitation"),

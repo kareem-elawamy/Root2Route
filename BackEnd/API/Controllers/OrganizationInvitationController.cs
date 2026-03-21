@@ -38,13 +38,14 @@ namespace API.Controllers
             return NewResult(result);
         }
         [HttpPost(Router.OrganizationInvitation.AcceptInvitation)]
-        public async Task<IActionResult> AcceptInvitation(Guid InvitationId)
+        public async Task<IActionResult> AcceptInvitation(Guid InvitationId, [FromQuery] string token)
         {
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
             var model = new AcceptInvitationCommandModel(
                  userId.Value,
-                 InvitationId
+                 InvitationId,
+                 token
             );
             var result = await Mediator.Send(model);
             return NewResult(result);

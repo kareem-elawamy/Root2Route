@@ -10,7 +10,7 @@ namespace Service.Services.OrganizationInvitationService
         Task<InvitationResult> SendInvitationAsync(OrganizationInvitation invitation);
         Task<List<OrganizationInvitation>> GetInvitationsByOrganizationIdAsync(Guid organizationId);
         Task<InvitationResult> RevokeInvitationAsync(Guid invitationId, Guid userId);
-        Task<InvitationResult> AcceptInvitationAsync(Guid invitationId, Guid userId);
+        Task<InvitationResult> AcceptInvitationAsync(Guid invitationId, Guid userId, string token);
         Task<List<OrganizationInvitation>> GetAllInvitationsForUserAsync(Guid userId);
     }
 }

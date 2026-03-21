@@ -28,6 +28,7 @@ namespace Core.Features.Orders.Queries.Handlers
                 Id = order.Id,
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
+                ShippingFees = order.ShippingFees,
                 Status = order.Status.ToString(),
                 BuyerId = order.BuyerId,
                 Items = order.OrderItems!.Select(i => new OrderItemResponse

@@ -16,7 +16,7 @@ namespace Core.Features.OrganizationMember.Commands.Handler
         }
         public async Task<Response<string>> Handle(RemoveOrganizationMemberModel request, CancellationToken cancellationToken)
         {
-            var result = await _organizationMemberService.RemoveOrganizationMemberAsync(request.OrganizationMemberId);
+            var result = await _organizationMemberService.RemoveOrganizationMemberAsync(request.OrganizationMemberId, request.CurrentUserId);
             if (result.StartsWith("Failed"))
             {
                 return BadRequest<string>("Failed to remove organization member: " + result);

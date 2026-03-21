@@ -60,6 +60,7 @@ namespace Domain.MetaData
             public const string GetMyOrders = Prefix + "/MyOrders";
             public const string GetOrderById = Prefix + "/{id}";
             public const string ChangeStatus = Prefix + "/ChangeStatus";
+            public const string CancelOrder = Prefix + "/Cancel/{id}";
         }
 
         public static class OrganizationRole
@@ -99,6 +100,22 @@ namespace Domain.MetaData
         {
             public const string Prefix = rule + "/model-analysis";
             public const string AnalyzePlant = Prefix + "/analyze";
+        }
+
+        public static class Auction
+        {
+            public const string Prefix = rule + "/auctions";
+            public const string CreateAuction = Prefix + "/create";
+            public const string UpdateAuction = Prefix + "/{auctionId}/update";
+            public const string CancelAuction = Prefix + "/{auctionId}/cancel";
+            public const string GetById = Prefix + "/{id}";
+            public const string GetActive = Prefix + "/GetActive";
+            public const string GetCompleted = Prefix + "/GetCompleted";
+            public const string Checkout = Prefix + "/{id}/checkout";
+            public const string GetMyOrgAuctions = Prefix + "/my-organization/{organizationId}";
+            public const string GetMyWonAuctions = Prefix + "/my-won";
+            public const string GetMyParticipated = Prefix + "/my-participated";
+            public const string PlaceBid = Prefix + "/{auctionId}/bid";
         }
 
         public static class OrganizationInvitation

@@ -9,7 +9,7 @@ namespace Core.Features.Orders.Queries.Results
         public string ProductName { get; set; } = null!;
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-        public decimal TotalPrice => Quantity * UnitPrice; // السعر الإجمالي للعنصر
+        public decimal TotalPrice => Quantity * UnitPrice;
     }
 
     public class OrderResponse
@@ -20,6 +20,15 @@ namespace Core.Features.Orders.Queries.Results
         public string Status { get; set; } = null!;
         public Guid BuyerId { get; set; }
 
+        public string ReceiverName { get; set; } = null!;
+        public string ReceiverPhone { get; set; } = null!;
+        public string ShippingCity { get; set; } = null!;
+        public string ShippingStreet { get; set; } = null!;
+        public string? BuildingNumber { get; set; }
+        public string PaymentMethod { get; set; } = "CashOnDelivery"; 
+        public string PaymentStatus { get; set; } = "Pending";
         public List<OrderItemResponse> Items { get; set; } = new List<OrderItemResponse>();
+        public decimal ShippingFees { get; set; }
+        public decimal FinalTotal => TotalAmount + ShippingFees;
     }
 }

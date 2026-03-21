@@ -42,10 +42,8 @@ namespace Core.Filters
                 return;
             }
 
-            // السحر كله هنا: بنطلب الـ DbContext الخاص بالريكويست في اللحظة دي بس
             var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 
-            // ولازم نتأكد إننا كاتبين await
             var hasPermission = await dbContext.OrganizationMembers
                 .Where(m => m.UserId == userId && m.OrganizationId == organizationId && !m.IsDeleted && m.IsActive)
                 .SelectMany(m => m.OrganizationRoles)

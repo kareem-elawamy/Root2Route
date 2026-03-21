@@ -22,7 +22,10 @@ namespace API.Controllers
         [HttpPut(Router.OrganizationMember.RemoveOrganizationMember)]
         public async Task<IActionResult> RemoveOrganizationMember([FromRoute] Guid organizationMemberId)
         {
-            var model = new RemoveOrganizationMemberModel(organizationMemberId);
+            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId)) return Unauthorized();
+
+            var model = new RemoveOrganizationMemberModel(organizationMemberId, userId);
             var result = await Mediator.Send(model);
             return NewResult(result);
         }
