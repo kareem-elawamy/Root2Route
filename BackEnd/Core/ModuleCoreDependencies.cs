@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.Design;
+using System.ComponentModel.Design;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
 using FluentValidation.AspNetCore;
+using FluentValidation;
 
 namespace Core;
 
@@ -14,6 +15,7 @@ public static class ModuleCoreDependencies
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
         services.AddFluentValidation();
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         return services;
     }
 }

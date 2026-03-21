@@ -82,7 +82,7 @@ if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.Secret))
 builder.Services.AddSingleton(jwtSettings);
 
 // ==================== FIX ENDS HERE ====================
-
+builder.Services.AddLocalization();
 // Dependencies
 builder
     .Services.AddServiceDependencies()
