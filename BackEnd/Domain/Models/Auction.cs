@@ -30,6 +30,8 @@ namespace Domain.Models
         public Product? product { get; set; }
         public Guid? HighestBidderId { get; set; }
         public ApplicationUser? HighestBidder { get; set; }
+        public Guid? OrderId { get; set; }
+        public Order? Order { get; set; }
         public ICollection<Bid> Bids { get; set; } = new List<Bid>();
     }
 }

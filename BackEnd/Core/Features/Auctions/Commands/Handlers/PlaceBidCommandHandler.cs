@@ -22,14 +22,12 @@ namespace Core.Features.Auctions.Commands.Handlers
 
         public async Task<Response<string>> Handle(PlaceBidCommand request, CancellationToken cancellationToken)
         {
-            var result = await _auctionService.PlaceBidAsync(request.AuctionId, request.BidderId, request.Amount);
-            if (result == "Success") 
-            {
-                await _hubContext.Clients.Group(request.AuctionId.ToString())
-                    .SendAsync("ReceiveNewBid", request.Amount, request.BidderId, cancellationToken);
-                return Success("Bid placed successfully");
-            }
-            return BadRequest<string>(result);
+            await _auctionService.PlaceBidAsync(request.AuctionId, request.BidderId, request.Amount);
+            
+            await _hubContext.Clients.Group(request.AuctionId.ToString())
+                .SendAsync("ReceiveNewBid", request.Amount, request.BidderId, cancellationToken);
+            
+            return Success("Bid placed successfully");
         }
     }
 }

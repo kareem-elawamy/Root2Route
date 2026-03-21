@@ -7,7 +7,7 @@ using Domain.Models;
 
 namespace Core.Features.Auctions.Commands.Handlers
 {
-    public class CreateAuctionCommandHandler : ResponseHandler, IRequestHandler<CreateAuctionCommand, Response<string>>
+    public class CreateAuctionCommandHandler : ResponseHandler, IRequestHandler<CreateAuctionCommand, Response<Guid>>
     {
         private readonly IAuctionService _auctionService;
 
@@ -16,7 +16,7 @@ namespace Core.Features.Auctions.Commands.Handlers
             _auctionService = auctionService;
         }
 
-        public async Task<Response<string>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
+        public async Task<Response<Guid>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
         {
             var auction = new Auction
             {
@@ -30,8 +30,7 @@ namespace Core.Features.Auctions.Commands.Handlers
             };
 
             var result = await _auctionService.CreateAuctionAsync(auction);
-            if (result == "Success") return Success("Auction created successfully");
-            return BadRequest<string>(result);
+            return Success(result);
         }
     }
 }

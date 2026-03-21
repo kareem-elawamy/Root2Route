@@ -28,7 +28,7 @@ namespace Service.Services.AuctionService
             _hubContext = hubContext;
         }
 
-        public async Task<string> CreateAuctionAsync(Auction auction)
+        public async Task<Guid> CreateAuctionAsync(Auction auction)
         {
             auction.Status = AuctionStatus.Pending; 
             if (auction.StartDate <= DateTime.UtcNow)
@@ -36,27 +36,27 @@ namespace Service.Services.AuctionService
                 auction.Status = AuctionStatus.Active;
             }
             
-            var result = await _auctionRepository.AddAsync(auction);
-            return result != null ? "Success" : "Failed";
+            await _auctionRepository.AddAsync(auction);
+            return auction.Id;
         }
 
-        public async Task<string> PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount)
+        public async Task PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
                 .Include(a => a.product)
                 .Include(a => a.Bids)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
             
-            if (auction == null) return "Failed: Auction not found";
-            if (auction.Status != AuctionStatus.Active) return "Failed: Auction is not active";
-            if (auction.EndDate <= DateTime.UtcNow) return "Failed: Auction has ended";
+            if (auction == null) throw new KeyNotFoundException("Auction not found");
+            if (auction.Status != AuctionStatus.Active) throw new InvalidOperationException("Auction is not active");
+            if (auction.EndDate <= DateTime.UtcNow) throw new InvalidOperationException("Auction has ended");
 
             // Shill Bidding Check
             if (auction.product != null)
             {
                 var isSeller = await _organizationMemberRepository.GetTableNoTracking()
                     .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == bidderId && m.IsActive);
-                if (isSeller) return "Failed: You cannot bid on your own organization's auction.";
+                if (isSeller) throw new UnauthorizedAccessException("You cannot bid on your own organization's auction.");
             }
 
             var minRequiredBid = auction.CurrentHighestBid == 0 
@@ -64,7 +64,7 @@ namespace Service.Services.AuctionService
                 : auction.CurrentHighestBid + auction.MinimumBidIncrement;
                 
             if (amount < minRequiredBid)
-                return $"Failed: Minimum bid is {minRequiredBid}";
+                throw new InvalidOperationException($"Minimum bid is {minRequiredBid}");
 
             using var transaction = await _auctionRepository.BeginTransactionAsync();
             try
@@ -83,12 +83,11 @@ namespace Service.Services.AuctionService
 
                 await _auctionRepository.UpdateAsync(auction);
                 await transaction.CommitAsync();
-                return "Success";
             }
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                return "Failed: An error occurred while placing the bid";
+                throw;
             }
         }
 
@@ -184,19 +183,19 @@ namespace Service.Services.AuctionService
             return auction.Bids.OrderByDescending(b => b.BidTime).ToList();
         }
 
-        public async Task<string> UpdateAuctionAsync(Guid auctionId, Auction updatedData, Guid sellerId)
+        public async Task UpdateAuctionAsync(Guid auctionId, Auction updatedData, Guid sellerId)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
                 .Include(a => a.Bids)
                 .Include(a => a.product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
-            if (auction == null) return "Not Found";
-            if (auction.product?.OrganizationId == null) return "Not Found";
+            if (auction == null) throw new KeyNotFoundException("Auction not found");
+            if (auction.product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
             var isSeller = await _organizationMemberRepository.GetTableNoTracking()
                 .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
-            if (!isSeller) return "Unauthorized";
-            if (auction.Status != AuctionStatus.Pending) return "Failed: Can only update a Pending auction";
-            if (auction.Bids.Any()) return "Failed: Cannot update an auction that already has bids";
+            if (!isSeller) throw new UnauthorizedAccessException("Only the auction owner can update it");
+            if (auction.Status != AuctionStatus.Pending) throw new InvalidOperationException("Can only update a Pending auction");
+            if (auction.Bids.Any()) throw new InvalidOperationException("Cannot update an auction that already has bids");
 
             auction.Title = updatedData.Title;
             auction.StartDate = updatedData.StartDate;
@@ -206,24 +205,22 @@ namespace Service.Services.AuctionService
             auction.ReservePrice = updatedData.ReservePrice;
 
             await _auctionRepository.UpdateAsync(auction);
-            return "Success";
         }
 
-        public async Task<string> CancelAuctionAsync(Guid auctionId, Guid sellerId)
+        public async Task CancelAuctionAsync(Guid auctionId, Guid sellerId)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
                 .Include(a => a.product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
-            if (auction == null) return "Not Found";
-            if (auction.product?.OrganizationId == null) return "Not Found";
+            if (auction == null) throw new KeyNotFoundException("Auction not found");
+            if (auction.product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
             var isSeller = await _organizationMemberRepository.GetTableNoTracking()
                 .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
-            if (!isSeller) return "Unauthorized";
-            if (auction.Status == AuctionStatus.Completed) return "Failed: Cannot cancel a completed auction";
+            if (!isSeller) throw new UnauthorizedAccessException("Only the auction owner can cancel it");
+            if (auction.Status == AuctionStatus.Completed) throw new InvalidOperationException("Cannot cancel a completed auction");
 
             auction.Status = AuctionStatus.Cancelled;
             await _auctionRepository.UpdateAsync(auction);
-            return "Success";
         }
 
         public async Task<List<Auction>> GetMyOrganizationAuctionsAsync(Guid organizationId)
@@ -257,31 +254,31 @@ namespace Service.Services.AuctionService
                 .ToListAsync();
         }
 
-        public async Task<string> CheckoutWonAuctionAsync(Guid auctionId, Guid userId, string shippingAddress, string paymentMethod)
+        public async Task<Guid> CheckoutWonAuctionAsync(Guid auctionId, Guid userId, string receiverName, string receiverPhone, string shippingCity, string shippingAddress, string paymentMethod)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
                 .Include(a => a.product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
 
-            if (auction == null) return "Not Found";
-            if (auction.Status != AuctionStatus.Completed) return "Failed: Auction is not completed";
-            if (auction.HighestBidderId != userId) return "Unauthorized: You are not the winner";
-
-            // Check if already checked out? 
-            // In a real system, we might have an 'IsOrdered' flag on Auction or check existing orders.
+            if (auction == null) throw new KeyNotFoundException("Auction not found");
+            if (auction.Status != AuctionStatus.Completed) throw new InvalidOperationException("Auction is not completed");
+            if (auction.HighestBidderId != userId) throw new UnauthorizedAccessException("You are not the winner");
+            if (auction.OrderId != null) throw new InvalidOperationException("This auction has already been checked out.");
 
             using var transaction = await _auctionRepository.BeginTransactionAsync();
             try
             {
+                var orderId = Guid.NewGuid();
                 var order = new Order
                 {
+                    Id = orderId,
                     BuyerId = userId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = auction.CurrentHighestBid,
-                    Status = OrderStatus.Processing, // Default status for a new order
-                    ReceiverName = "Auction Winner", // Placeholder, usually from user profile or command
-                    ReceiverPhone = "0000000000",   // Placeholder
-                    ShippingCity = "City",         // Placeholder or parsed from shippingAddress
+                    Status = OrderStatus.Processing, 
+                    ReceiverName = receiverName,
+                    ReceiverPhone = receiverPhone,
+                    ShippingCity = shippingCity,
                     ShippingStreet = shippingAddress,
                     PaymentMethod = Enum.Parse<PaymentMethod>(paymentMethod, true),
                     PaymentStatus = PaymentStatus.Pending,
@@ -289,6 +286,8 @@ namespace Service.Services.AuctionService
                     {
                         new OrderItem
                         {
+                            Id = Guid.NewGuid(),
+                            OrderId = orderId,
                             productid = auction.productid,
                             Quantity = 1,
                             UnitPrice = auction.CurrentHighestBid
@@ -298,16 +297,17 @@ namespace Service.Services.AuctionService
 
                 await _orderRepository.AddAsync(order);
                 
-                // Mark auction as processed?
-                // auction.Status = AuctionStatus.Ordered; // If such status exists
+                auction.OrderId = order.Id;
+                auction.Status = AuctionStatus.Completed; // Already completed but ensuring consistency
+                await _auctionRepository.UpdateAsync(auction);
 
                 await transaction.CommitAsync();
-                return order.Id.ToString();
+                return order.Id;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
-                return $"Error: {ex.Message}";
+                throw;
             }
         }
     }

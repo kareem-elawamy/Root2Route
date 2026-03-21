@@ -28,15 +28,9 @@ namespace Core.Features.Auctions.Commands.Handlers
                 ReservePrice = request.ReservePrice
             };
 
-            var result = await _auctionService.UpdateAuctionAsync(request.AuctionId, updatedData, request.SellerId);
+            await _auctionService.UpdateAuctionAsync(request.AuctionId, updatedData, request.SellerId);
 
-            return result switch
-            {
-                "Success" => Success("Auction updated successfully"),
-                "Not Found" => NotFound<string>("Auction not found"),
-                "Unauthorized" => Unauthorized<string>("Only the auction owner can update it"),
-                _ => BadRequest<string>(result)
-            };
+            return Success("Auction updated successfully");
         }
     }
 }
