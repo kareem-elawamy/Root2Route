@@ -6,6 +6,7 @@ using Infrastructure.Repositories.OrderRepository;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Service.Hubs;
+using Service.Services.NotificationService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,21 +20,23 @@ namespace Service.Services.AuctionService
         private readonly IOrderRepository _orderRepository;
         private readonly IOrganizationMemberRepository _organizationMemberRepository;
         private readonly IHubContext<AuctionHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
-        public AuctionService(IAuctionRepository auctionRepository, IOrderRepository orderRepository, IOrganizationMemberRepository organizationMemberRepository, IHubContext<AuctionHub> hubContext)
+        public AuctionService(IAuctionRepository auctionRepository, IOrderRepository orderRepository, IOrganizationMemberRepository organizationMemberRepository, IHubContext<AuctionHub> hubContext, INotificationService notificationService)
         {
             _auctionRepository = auctionRepository;
             _orderRepository = orderRepository;
             _organizationMemberRepository = organizationMemberRepository;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<Guid> CreateAuctionAsync(Auction auction)
         {
-            auction.Status = AuctionStatus.Pending; 
+            auction.Status = AuctionStatus.Upcoming; 
             if (auction.StartDate <= DateTime.UtcNow)
             {
-                auction.Status = AuctionStatus.Active;
+                auction.Status = AuctionStatus.Ongoing;
             }
             
             await _auctionRepository.AddAsync(auction);
@@ -43,19 +46,19 @@ namespace Service.Services.AuctionService
         public async Task PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.Bids)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
             
             if (auction == null) throw new KeyNotFoundException("Auction not found");
-            if (auction.Status != AuctionStatus.Active) throw new InvalidOperationException("Auction is not active");
+            if (auction.Status != AuctionStatus.Ongoing) throw new InvalidOperationException("Auction is not active");
             if (auction.EndDate <= DateTime.UtcNow) throw new InvalidOperationException("Auction has ended");
 
             // Shill Bidding Check
-            if (auction.product != null)
+            if (auction.Product != null)
             {
                 var isSeller = await _organizationMemberRepository.GetTableNoTracking()
-                    .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == bidderId && m.IsActive);
+                    .AnyAsync(m => m.OrganizationId == auction.Product.OrganizationId && m.UserId == bidderId && m.IsActive);
                 if (isSeller) throw new UnauthorizedAccessException("You cannot bid on your own organization's auction.");
             }
 
@@ -83,6 +86,26 @@ namespace Service.Services.AuctionService
 
                 await _auctionRepository.UpdateAsync(auction);
                 await transaction.CommitAsync();
+
+                // Notify the previously outbid bidder (if any)
+                var previousHighBidder = auction.Bids
+                    .Where(b => b.BidderId != bidderId)
+                    .OrderByDescending(b => b.BidTime)
+                    .Select(b => b.BidderId)
+                    .FirstOrDefault();
+
+                if (previousHighBidder != Guid.Empty && previousHighBidder != bidderId)
+                {
+                    try
+                    {
+                        await _notificationService.SendPushNotificationAsync(
+                            previousHighBidder,
+                            "You've been outbid! 🔔",
+                            $"Someone placed a higher bid on '{auction.Product?.Name ?? "this auction"}'. Place a new bid to stay in the lead!",
+                            auction.Id.ToString());
+                    }
+                    catch { }
+                }
             }
             catch (Exception)
             {
@@ -94,7 +117,7 @@ namespace Service.Services.AuctionService
         public async Task<Auction?> GetAuctionByIdAsync(Guid id)
         {
             return await _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
@@ -102,14 +125,14 @@ namespace Service.Services.AuctionService
         public async Task<List<Auction>> GetActiveAuctionsAsync(AuctionFilter? filter = null, int pageNumber = 1, int pageSize = 10)
         {
             var query = _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
-                .Where(a => a.Status == AuctionStatus.Active);
+                .Where(a => a.Status == AuctionStatus.Ongoing);
 
             if (filter != null)
             {
                 if (!string.IsNullOrEmpty(filter.SearchTerm))
-                    query = query.Where(a => a.Title.Contains(filter.SearchTerm) || (a.product != null && a.product.Name.Contains(filter.SearchTerm)));
+                    query = query.Where(a => a.Title.Contains(filter.SearchTerm) || (a.Product != null && a.Product.Name.Contains(filter.SearchTerm)));
                 
                 if (filter.MinPrice.HasValue)
                     query = query.Where(a => a.CurrentHighestBid >= filter.MinPrice.Value || (a.CurrentHighestBid == 0 && a.StartPrice >= filter.MinPrice.Value));
@@ -147,7 +170,7 @@ namespace Service.Services.AuctionService
         public async Task<List<Auction>> GetCompletedAuctionsAsync(int pageNumber = 1, int pageSize = 10)
         {
             return await _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
                 .Where(a => a.Status == AuctionStatus.Completed)
                 .OrderByDescending(a => a.EndDate)
@@ -159,16 +182,74 @@ namespace Service.Services.AuctionService
         public async Task FinalizeExpiredAuctionsAsync()
         {
             var expiredAuctions = await _auctionRepository.GetTableAsTracking()
-                .Where(a => a.Status == AuctionStatus.Active && a.EndDate <= DateTime.UtcNow)
+                .Include(a => a.Product)
+                .Where(a => a.Status == AuctionStatus.Ongoing && a.EndDate <= DateTime.UtcNow)
                 .ToListAsync();
 
             foreach (var auction in expiredAuctions)
             {
                 auction.Status = AuctionStatus.Completed;
                 await _auctionRepository.UpdateAsync(auction);
-                // Broadcast ReceiveAuctionClosed to all listeners in this auction group
                 await _hubContext.Clients.Group(auction.Id.ToString())
                     .SendAsync("ReceiveAuctionClosed", auction.HighestBidderId, auction.CurrentHighestBid);
+
+                // Notify winner
+                if (auction.HighestBidderId.HasValue && auction.HighestBidderId != Guid.Empty)
+                {
+                    try
+                    {
+                        await _notificationService.SendPushNotificationAsync(
+                            auction.HighestBidderId.Value,
+                            "You Won the Auction! 🏆",
+                            $"Congratulations! You won the auction for '{auction.Product?.Name ?? auction.Title}'. Please proceed to checkout.",
+                            auction.Id.ToString());
+                    }
+                    catch { }
+
+                    // Notify seller org members
+                    if (auction.Product?.OrganizationId != null)
+                    {
+                        try
+                        {
+                            var sellerMembers = await _organizationMemberRepository.GetTableNoTracking()
+                                .Where(m => m.OrganizationId == auction.Product.OrganizationId && m.IsActive)
+                                .ToListAsync();
+
+                            foreach (var member in sellerMembers)
+                            {
+                                await _notificationService.SendPushNotificationAsync(
+                                    member.UserId,
+                                    "Auction Completed 🎉",
+                                    $"Your auction for '{auction.Product.Name}' was won. Await the buyer's checkout.",
+                                    auction.Id.ToString());
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                else
+                {
+                    // No bids — notify seller org
+                    if (auction.Product?.OrganizationId != null)
+                    {
+                        try
+                        {
+                            var sellerMembers = await _organizationMemberRepository.GetTableNoTracking()
+                                .Where(m => m.OrganizationId == auction.Product.OrganizationId && m.IsActive)
+                                .ToListAsync();
+
+                            foreach (var member in sellerMembers)
+                            {
+                                await _notificationService.SendPushNotificationAsync(
+                                    member.UserId,
+                                    "Auction Ended with No Bids",
+                                    $"Your auction for '{auction.Product.Name}' ended with no bids.",
+                                    auction.Id.ToString());
+                            }
+                        }
+                        catch { }
+                    }
+                }
             }
         }
 
@@ -187,14 +268,14 @@ namespace Service.Services.AuctionService
         {
             var auction = await _auctionRepository.GetTableAsTracking()
                 .Include(a => a.Bids)
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
             if (auction == null) throw new KeyNotFoundException("Auction not found");
-            if (auction.product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
+            if (auction.Product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
             var isSeller = await _organizationMemberRepository.GetTableNoTracking()
-                .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
+                .AnyAsync(m => m.OrganizationId == auction.Product.OrganizationId && m.UserId == sellerId && m.IsActive);
             if (!isSeller) throw new UnauthorizedAccessException("Only the auction owner can update it");
-            if (auction.Status != AuctionStatus.Pending) throw new InvalidOperationException("Can only update a Pending auction");
+            if (auction.Status != AuctionStatus.Upcoming) throw new InvalidOperationException("Can only update an Upcoming auction");
             if (auction.Bids.Any()) throw new InvalidOperationException("Cannot update an auction that already has bids");
 
             auction.Title = updatedData.Title;
@@ -210,12 +291,12 @@ namespace Service.Services.AuctionService
         public async Task CancelAuctionAsync(Guid auctionId, Guid sellerId)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
             if (auction == null) throw new KeyNotFoundException("Auction not found");
-            if (auction.product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
+            if (auction.Product?.OrganizationId == null) throw new KeyNotFoundException("Product Organization not found");
             var isSeller = await _organizationMemberRepository.GetTableNoTracking()
-                .AnyAsync(m => m.OrganizationId == auction.product.OrganizationId && m.UserId == sellerId && m.IsActive);
+                .AnyAsync(m => m.OrganizationId == auction.Product.OrganizationId && m.UserId == sellerId && m.IsActive);
             if (!isSeller) throw new UnauthorizedAccessException("Only the auction owner can cancel it");
             if (auction.Status == AuctionStatus.Completed) throw new InvalidOperationException("Cannot cancel a completed auction");
 
@@ -226,9 +307,9 @@ namespace Service.Services.AuctionService
         public async Task<List<Auction>> GetMyOrganizationAuctionsAsync(Guid organizationId)
         {
             return await _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
-                .Where(a => a.product != null && a.product.OrganizationId == organizationId)
+                .Where(a => a.Product != null && a.Product.OrganizationId == organizationId)
                 .OrderByDescending(a => a.StartDate)
                 .ToListAsync();
         }
@@ -236,7 +317,7 @@ namespace Service.Services.AuctionService
         public async Task<List<Auction>> GetMyWonAuctionsAsync(Guid userId)
         {
             return await _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
                 .Where(a => a.Status == AuctionStatus.Completed && a.HighestBidderId == userId)
                 .OrderByDescending(a => a.EndDate)
@@ -246,10 +327,10 @@ namespace Service.Services.AuctionService
         public async Task<List<Auction>> GetMyParticipatedAuctionsAsync(Guid userId)
         {
             return await _auctionRepository.GetTableNoTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .Include(a => a.HighestBidder)
                 .Include(a => a.Bids)
-                .Where(a => a.Status == AuctionStatus.Active && a.Bids.Any(b => b.BidderId == userId))
+                .Where(a => a.Status == AuctionStatus.Ongoing && a.Bids.Any(b => b.BidderId == userId))
                 .OrderBy(a => a.EndDate)
                 .ToListAsync();
         }
@@ -257,7 +338,7 @@ namespace Service.Services.AuctionService
         public async Task<Guid> CheckoutWonAuctionAsync(Guid auctionId, Guid userId, string receiverName, string receiverPhone, string shippingCity, string shippingAddress, string paymentMethod)
         {
             var auction = await _auctionRepository.GetTableAsTracking()
-                .Include(a => a.product)
+                .Include(a => a.Product)
                 .FirstOrDefaultAsync(a => a.Id == auctionId);
 
             if (auction == null) throw new KeyNotFoundException("Auction not found");
@@ -275,7 +356,8 @@ namespace Service.Services.AuctionService
                     BuyerId = userId,
                     OrderDate = DateTime.UtcNow,
                     TotalAmount = auction.CurrentHighestBid,
-                    Status = OrderStatus.Processing, 
+                    Status = OrderStatus.Confirmed,
+                    OrganizationId = auction.Product!.OrganizationId,
                     ReceiverName = receiverName,
                     ReceiverPhone = receiverPhone,
                     ShippingCity = shippingCity,
@@ -288,7 +370,7 @@ namespace Service.Services.AuctionService
                         {
                             Id = Guid.NewGuid(),
                             OrderId = orderId,
-                            productid = auction.productid,
+                            ProductId = auction.ProductId,
                             Quantity = 1,
                             UnitPrice = auction.CurrentHighestBid
                         }

@@ -140,5 +140,30 @@ namespace Domain.MetaData
             public const string RejectOffer = Prefix + "/reject-offer";
             public const string DeleteMessage = Prefix + "/messages/{messageId}";
         }
+
+        public static class Shipment
+        {
+            public const string Prefix = rule + "/shipments";
+            public const string Dispatch = Prefix + "/dispatch";
+            public const string GetMyAddresses = Prefix + "/addresses";
+            public const string AddAddress = Prefix + "/addresses";
+            public const string UpdateStatus = Prefix + "/{id}/status";
+        }
+
+        public static class Review
+        {
+            public const string Prefix = rule + "/reviews";
+            public const string Add = Prefix;
+            public const string GetByOrganization = Prefix + "/organization/{orgId}";
+        }
+
+        public static class Notification
+        {
+            public const string Prefix = rule + "/notifications";
+            public const string GetMy = Prefix;
+            public const string UnreadCount = Prefix + "/unread-count";
+            public const string MarkRead = Prefix + "/{id}/read";
+            public const string MarkAllRead = Prefix + "/read-all";
+        }
     }
 }

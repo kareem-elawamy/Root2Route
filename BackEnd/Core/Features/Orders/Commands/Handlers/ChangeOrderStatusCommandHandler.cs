@@ -1,4 +1,3 @@
-﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Base;
@@ -19,22 +18,13 @@ namespace Core.Features.Orders.Commands.Handlers
 
         public async Task<Response<string>> Handle(ChangeOrderStatusCommand request, CancellationToken cancellationToken)
         {
-            // 1. نجيب الطلب بكل تفاصيله
-            var order = await _orderService.GetOrderByIdAsync(request.OrderId);
-            if (order == null)
-                return new Response<string>("الطلب غير موجود") { Succeeded = false };
+            var result = await _orderService.UpdateOrderStatusAsync(
+                request.OrderId,
+                request.NewStatus,
+                request.CurrentUserId,
+                request.Note);
 
-            // 2. 👈 حماية البيزنس: نتأكد إن البائع ده له منتجات جوه الطلب ده
-            var isSellerOwnsItems = order.OrderItems!.Any(oi => oi.product?.OrganizationId == request.OrganizationId);
-
-            if (!isSellerOwnsItems)
-                return new Response<string>("غير مصرح لك بتعديل حالة هذا الطلب لأنه لا يحتوي على منتجاتك") { Succeeded = false };
-
-            // 3. تغيير الحالة
-         await _orderService.ChangeOrderStatusAsync(request.OrderId, request.NewStatus, request.ShippingFees);
-
-
-            return new Response<string>($"تم تغيير حالة الطلب إلى {request.NewStatus} بنجاح") { Succeeded = true };
+            return new Response<string>(result) { Succeeded = true };
         }
     }
 }

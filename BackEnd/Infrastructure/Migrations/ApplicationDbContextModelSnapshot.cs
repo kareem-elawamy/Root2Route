@@ -130,6 +130,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal?>("ReservePrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -150,16 +153,13 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("productid")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("HighestBidderId");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("productid");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Auctions");
                 });
@@ -350,6 +350,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ApplicationUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("BuildingNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -403,6 +406,8 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ApplicationUserId");
+
                     b.HasIndex("BuyerId");
 
                     b.HasIndex("OrganizationId");
@@ -428,6 +433,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -437,14 +445,11 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("productid")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("productid");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
                 });
@@ -969,13 +974,19 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
                     b.Property<Guid>("ReviewerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("TargetUserId")
+                    b.Property<Guid>("TargetOrganizationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -983,11 +994,105 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("ReviewerId");
 
-                    b.HasIndex("TargetUserId");
+                    b.HasIndex("TargetOrganizationId");
+
+                    b.HasIndex("OrderId", "ReviewerId")
+                        .IsUnique();
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("Domain.Models.Shipment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CarrierName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DriverPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrackingNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Shipments");
+                });
+
+            modelBuilder.Entity("Domain.Models.ShippingAddress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ShippingAddresses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -1146,9 +1251,9 @@ namespace Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("OrderId");
 
-                    b.HasOne("Domain.Models.Product", "product")
+                    b.HasOne("Domain.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("productid")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1156,7 +1261,7 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Order");
 
-                    b.Navigation("product");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Domain.Models.Bid", b =>
@@ -1228,7 +1333,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1236,8 +1341,12 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Order", b =>
                 {
-                    b.HasOne("Domain.Models.ApplicationUser", "Buyer")
+                    b.HasOne("Domain.Models.ApplicationUser", null)
                         .WithMany("Orders")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("Domain.Models.ApplicationUser", "Buyer")
+                        .WithMany()
                         .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1261,15 +1370,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.Product", "product")
+                    b.HasOne("Domain.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("productid")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("product");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Domain.Models.OrderStatusHistory", b =>
@@ -1416,21 +1525,58 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Review", b =>
                 {
+                    b.HasOne("Domain.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Models.ApplicationUser", "Reviewer")
                         .WithMany()
                         .HasForeignKey("ReviewerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Models.ApplicationUser", "TargetUser")
+                    b.HasOne("Domain.Models.Organization", "TargetOrganization")
                         .WithMany()
-                        .HasForeignKey("TargetUserId")
+                        .HasForeignKey("TargetOrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+
                     b.Navigation("Reviewer");
 
-                    b.Navigation("TargetUser");
+                    b.Navigation("TargetOrganization");
+                });
+
+            modelBuilder.Entity("Domain.Models.Shipment", b =>
+                {
+                    b.HasOne("Domain.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Domain.Models.ShippingAddress", b =>
+                {
+                    b.HasOne("Domain.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

@@ -21,6 +21,8 @@ namespace Core.Features.Chat.Queries.Handlers
 
         public async Task<Response<List<ChatRoomResponse>>> Handle(GetMyChatRoomsQuery request, CancellationToken cancellationToken)
         {
+            request.PageSize = request.PageSize > 50 ? 50 : request.PageSize;
+
             var rooms = await _chatRoomRepository.GetTableNoTracking()
                 .Include(r => r.Organization)
                 .Include(r => r.Product)

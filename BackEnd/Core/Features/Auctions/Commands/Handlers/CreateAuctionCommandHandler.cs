@@ -26,7 +26,7 @@ namespace Core.Features.Auctions.Commands.Handlers
                 StartPrice = request.StartPrice,
                 MinimumBidIncrement = request.MinimumBidIncrement,
                 ReservePrice = request.ReservePrice,
-                productid = request.ProductId
+                ProductId = request.ProductId
             };
 
             var result = await _auctionService.CreateAuctionAsync(auction);

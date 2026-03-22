@@ -237,7 +237,7 @@ namespace Service.Services.ChatService
                     new OrderItem
                     {
                         Id = Guid.NewGuid(),
-                        productid = room.ProductId.Value,
+                        ProductId = room.ProductId.Value,
                         Quantity = offerMsg.ProposedQuantity.Value,
                         UnitPrice = offerMsg.ProposedPrice.Value
                     }

@@ -19,6 +19,8 @@ using Service.Services.PlantGuideStepService;
 using Service.Services.PlantInfoService;
 using Service.Services.ProductService;
 using Service.Services.NotificationService;
+using Service.Services.ShipmentService;
+using Service.Services.ReviewService;
 
 namespace Service;
 
@@ -41,6 +43,8 @@ public static class ModuleServiceDependencies
         services.AddScoped<IAuctionService, AuctionService>();
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IShipmentService, ShipmentService>();
+        services.AddScoped<IReviewService, ReviewService>();
         services.AddHostedService<AuctionFinalizerBackgroundService>();
         return services;
     }

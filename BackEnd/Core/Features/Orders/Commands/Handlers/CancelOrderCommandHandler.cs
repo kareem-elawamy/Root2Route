@@ -1,9 +1,10 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Core.Base;
 using Core.Features.Orders.Commands.Models;
 using MediatR;
 using Service.Services.OrderService;
+using Domain.Enums;
 
 namespace Core.Features.Orders.Commands.Handlers
 {
@@ -18,12 +19,13 @@ namespace Core.Features.Orders.Commands.Handlers
 
         public async Task<Response<string>> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
         {
-            var (success, message) = await _orderService.CancelOrderAsync(request.OrderId, request.BuyerId);
+            var result = await _orderService.UpdateOrderStatusAsync(
+                request.OrderId,
+                OrderStatus.Cancelled,
+                request.BuyerId,
+                "Cancelled by user");
 
-            if (!success)
-                return new Response<string>(message) { Succeeded = false };
-
-            return new Response<string>(message) { Succeeded = true };
+            return new Response<string>(result) { Succeeded = true };
         }
     }
 }

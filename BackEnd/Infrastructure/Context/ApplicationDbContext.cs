@@ -48,6 +48,12 @@ namespace Infrastructure.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // =========================================================
+        // 5. Logistics & Shipping
+        // =========================================================
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
+        public DbSet<Shipment> Shipments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -75,16 +81,16 @@ namespace Infrastructure.Data
 
             // OrderItem -> Product (تم تعديله من MarketItem)
             modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.product)
+                .HasOne(oi => oi.Product)
                 .WithMany()
-                .HasForeignKey(oi => oi.productid)
+                .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Auction -> Product (تأكد من تعديل الـ FK في كيان الـ Auction ليكون ProductId)
             modelBuilder.Entity<Auction>()
-                .HasOne(a => a.product)
+                .HasOne(a => a.Product)
                 .WithMany()
-                .HasForeignKey(a => a.productid)
+                .HasForeignKey(a => a.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Order -> Organization (Seller link)
@@ -97,7 +103,7 @@ namespace Infrastructure.Data
             // Order -> Buyer
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Buyer)
-                .WithMany(u => u.Orders)
+                .WithMany()
                 .HasForeignKey(o => o.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -141,7 +147,7 @@ namespace Infrastructure.Data
                 .HasForeignKey(p => p.OrganizationRoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Review Relationships
+            // Review Relationships (B2B)
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Reviewer)
                 .WithMany()
@@ -149,9 +155,47 @@ namespace Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Review>()
-                .HasOne(r => r.TargetUser)
+                .HasOne(r => r.TargetOrganization)
                 .WithMany()
-                .HasForeignKey(r => r.TargetUserId)
+                .HasForeignKey(r => r.TargetOrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Composite Unique Index for Review (Race Condition Protection)
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.OrderId, r.ReviewerId })
+                .IsUnique();
+
+            // ShippingAddress -> User
+            modelBuilder.Entity<ShippingAddress>()
+                .HasOne(sa => sa.User)
+                .WithMany()
+                .HasForeignKey(sa => sa.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Shipment -> Order
+            modelBuilder.Entity<Shipment>()
+                .HasOne(s => s.Order)
+                .WithMany()
+                .HasForeignKey(s => s.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Notification -> User
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Bid Relationships

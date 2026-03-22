@@ -3,8 +3,6 @@ using Infrastructure.Repositories.AuctionRepository;
 using Infrastructure.Repositories.BidRepository;
 using Infrastructure.Repositories.ChatMessageRepository;
 using Infrastructure.Repositories.ChatRoomRepository;
-using Infrastructure.Repositories.ConversationRepository;
-
 using Infrastructure.Repositories.OrderItemRepository;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.OrganizationInvitationRepository;
@@ -18,6 +16,8 @@ using Infrastructure.Repositories.ReviewRepository;
 using Infrastructure.Repositories.NotificationRepository;
 using Infrastructure.Repositories.PaymentRepository;
 using Infrastructure.Repositories.OrderStatusHistoryRepository;
+using Infrastructure.Repositories.ShippingAddressRepository;
+using Infrastructure.Repositories.ShipmentRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -32,7 +32,6 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IBidRepository, BidRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
-        services.AddScoped<IConversationRepository, ConversationRepository>();
 
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
@@ -49,6 +48,8 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IOrderStatusHistoryRepository, OrderStatusHistoryRepository>();
+        services.AddScoped<IShippingAddressRepository, ShippingAddressRepository>();
+        services.AddScoped<IShipmentRepository, ShipmentRepository>();
         return services;
     }
 }
