@@ -12,10 +12,10 @@ namespace Domain.Models
         public Guid BuyerId { get; set; }
         public ApplicationUser? Buyer { get; set; }
         public OrderStatus Status { get; set; } 
-        public string ReceiverName { get; set; } = null!;
-        public string ReceiverPhone { get; set; } = null!;
-        public string ShippingCity { get; set; } = null!;
-        public string ShippingStreet { get; set; } = null!;
+        public string? ReceiverName { get; set; }
+        public string? ReceiverPhone { get; set; }
+        public string? ShippingCity { get; set; }
+        public string? ShippingStreet { get; set; }
         public string? BuildingNumber { get; set; }
         public decimal ShippingFees { get; set; } = 0; 
         public decimal FinalTotal => TotalAmount + ShippingFees;

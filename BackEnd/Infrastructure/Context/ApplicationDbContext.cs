@@ -41,9 +41,10 @@ namespace Infrastructure.Data
         // =========================================================
         public DbSet<PlantInfo> PlantInfos { get; set; }
         public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
-        public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<ChatMessage> Chats { get; set; }
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,24 +130,29 @@ namespace Infrastructure.Data
                 .HasForeignKey(om => om.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Conversation
-            modelBuilder.Entity<Conversation>()
+            // ChatRoom & ChatMessage Relationships
+            modelBuilder.Entity<ChatRoom>()
                 .HasOne(c => c.Buyer)
                 .WithMany()
                 .HasForeignKey(c => c.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.Seller)
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(c => c.Organization)
                 .WithMany()
-                .HasForeignKey(c => c.SellerId)
+                .HasForeignKey(c => c.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ChatMessage
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(c => c.Product)
+                .WithMany()
+                .HasForeignKey(c => c.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<ChatMessage>()
-                .HasOne(m => m.Conversation)
+                .HasOne(m => m.ChatRoom)
                 .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.ConversationId)
+                .HasForeignKey(m => m.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Product>()
@@ -164,7 +170,8 @@ namespace Infrastructure.Data
                 (typeof(Order), "TotalAmount"),
                 (typeof(OrderItem), "UnitPrice"),
                 (typeof(Product), "DirectSalePrice"),   // تم إضافة أسعار المنتج
-                (typeof(Product), "StartBiddingPrice")
+                (typeof(Product), "StartBiddingPrice"),
+                (typeof(ChatMessage), "ProposedPrice")
             };
 
             foreach (var prop in decimalProps)

@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using Service.BackgroundServices;
 using Service.Services;
 using Service.Services.AIService;
 using Service.Services.AuctionService;
+using Service.Services.ChatService;
 using Service.Services.AuthenticationService;
 using Service.Services.AuthorizationService;
 using Service.Services.Email;
@@ -17,6 +18,7 @@ using Service.Services.OrganizationRoleService;
 using Service.Services.PlantGuideStepService;
 using Service.Services.PlantInfoService;
 using Service.Services.ProductService;
+using Service.Services.NotificationService;
 
 namespace Service;
 
@@ -37,6 +39,8 @@ public static class ModuleServiceDependencies
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IAuctionService, AuctionService>();
+        services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddHostedService<AuctionFinalizerBackgroundService>();
         return services;
     }

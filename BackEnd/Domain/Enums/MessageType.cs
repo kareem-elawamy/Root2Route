@@ -4,6 +4,9 @@ namespace Domain.Enums
     {
         Text,
         Image,
-        File
+        File,
+        NegotiationOffer,
+        OfferAccepted,
+        OfferRejected
     }
 }

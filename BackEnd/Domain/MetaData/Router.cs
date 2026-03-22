@@ -124,7 +124,17 @@ namespace Domain.MetaData
             public const string SendInvitation = Prefix + "/send";
             public const string GetAllInvitationsForUser = Prefix + "/my";
             public const string AcceptInvitation = Prefix + "/accept";
-            public const string Revoken = Prefix + "/revoke"; // تم تعديل revoken لـ revoke كفعل صحيح
+            public const string Revoken = Prefix + "/revoke"; 
+        }
+
+        public static class Chat
+        {
+            public const string Prefix = rule + "/chat";
+            public const string StartChat = Prefix + "/start";
+            public const string SendMessage = Prefix + "/send";
+            public const string AcceptOffer = Prefix + "/accept-offer";
+            public const string GetMyRooms = Prefix + "/my-rooms";
+            public const string GetHistory = Prefix + "/{chatRoomId}/history";
         }
     }
 }

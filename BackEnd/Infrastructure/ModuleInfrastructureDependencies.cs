@@ -1,7 +1,8 @@
-﻿using Infrastructure.Base;
+using Infrastructure.Base;
 using Infrastructure.Repositories.AuctionRepository;
 using Infrastructure.Repositories.BidRepository;
 using Infrastructure.Repositories.ChatMessageRepository;
+using Infrastructure.Repositories.ChatRoomRepository;
 using Infrastructure.Repositories.ConversationRepository;
 
 using Infrastructure.Repositories.OrderItemRepository;
@@ -14,6 +15,7 @@ using Infrastructure.Repositories.PlantGuideStepRepository;
 using Infrastructure.Repositories.PlantInfoRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.ReviewRepository;
+using Infrastructure.Repositories.NotificationRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -27,6 +29,7 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IAuctionRepository, AuctionRepository>();
         services.AddScoped<IBidRepository, BidRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+        services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
 
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
@@ -39,7 +42,9 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IPlantGuideStepRepository, PlantGuideStepRepository>();
         services.AddScoped<IPlantInfoRepository, PlantInfoRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
         return services;
     }
 }
