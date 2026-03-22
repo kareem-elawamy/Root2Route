@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.Features.Chat.Queries.Handlers
 {
-    public class GetMyChatRoomsQueryHandler : ResponseHandler, IRequestHandler<GetMyChatRoomsQuery, Response<List<ChatRoomResponse>>>
+    public class GetMyChatRoomsQueryHandler : IRequestHandler<GetMyChatRoomsQuery, Response<List<ChatRoomResponse>>>
     {
         private readonly IChatRoomRepository _chatRoomRepository;
 
@@ -27,6 +27,9 @@ namespace Core.Features.Chat.Queries.Handlers
                 .Include(r => r.Messages)
                 .Where(r => r.BuyerId == request.CurrentUserId || 
                             (r.Organization != null && r.Organization.Members.Any(m => m.UserId == request.CurrentUserId && m.IsActive)))
+                .OrderByDescending(r => r.LastMessageAt)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .Select(r => new ChatRoomResponse
                 {
                     Id = r.Id,
@@ -40,7 +43,7 @@ namespace Core.Features.Chat.Queries.Handlers
                 })
                 .ToListAsync(cancellationToken);
 
-            return Success(rooms.OrderByDescending(r => r.LastMessageAt).ToList());
+            return new Response<List<ChatRoomResponse>> { Succeeded = true, Data = rooms };
         }
     }
 }

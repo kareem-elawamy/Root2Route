@@ -29,7 +29,7 @@ namespace API.Controllers
         }
 
         [HttpPost(Router.Chat.SendMessage)]
-        public async Task<IActionResult> SendMessage([FromBody] SendMessageCommand command)
+        public async Task<IActionResult> SendMessage([FromForm] SendMessageCommand command)
         {
             command.CurrentUserId = GetUserId();
             var response = await Mediator.Send(command);
@@ -44,10 +44,18 @@ namespace API.Controllers
             return NewResult(response);
         }
 
-        [HttpGet(Router.Chat.GetMyRooms)]
-        public async Task<IActionResult> GetMyRooms()
+        [HttpPost(Router.Chat.RejectOffer)]
+        public async Task<IActionResult> RejectOffer([FromBody] RejectOfferCommand command)
         {
-            var query = new GetMyChatRoomsQuery { CurrentUserId = GetUserId() };
+            command.CurrentUserId = GetUserId();
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpGet(Router.Chat.GetMyRooms)]
+        public async Task<IActionResult> GetMyRooms([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            var query = new GetMyChatRoomsQuery { CurrentUserId = GetUserId(), PageNumber = pageNumber, PageSize = pageSize };
             var response = await Mediator.Send(query);
             return NewResult(response);
         }
@@ -60,10 +68,34 @@ namespace API.Controllers
             return NewResult(response);
         }
 
+        [HttpGet(Router.Chat.GetRoomDetails)]
+        public async Task<IActionResult> GetRoomDetails([FromRoute] Guid roomId)
+        {
+            var query = new GetChatRoomDetailsQuery { ChatRoomId = roomId, CurrentUserId = GetUserId() };
+            var response = await Mediator.Send(query);
+            return NewResult(response);
+        }
+
         [HttpPut(Router.Chat.Prefix + "/{roomId}/read")]
         public async Task<IActionResult> MarkRoomAsRead([FromRoute] Guid roomId)
         {
             var command = new MarkRoomAsReadCommand { ChatRoomId = roomId, CurrentUserId = GetUserId() };
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpPut(Router.Chat.CloseChat)]
+        public async Task<IActionResult> CloseChat([FromRoute] Guid roomId)
+        {
+            var command = new CloseChatCommand { ChatRoomId = roomId, CurrentUserId = GetUserId() };
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpDelete(Router.Chat.DeleteMessage)]
+        public async Task<IActionResult> DeleteMessage([FromRoute] Guid messageId)
+        {
+            var command = new DeleteMessageCommand { MessageId = messageId, CurrentUserId = GetUserId() };
             var response = await Mediator.Send(command);
             return NewResult(response);
         }

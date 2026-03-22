@@ -3,6 +3,7 @@ using MediatR;
 using System;
 using Core.Base;
 using Core.Features.Chat.Queries.DTOs;
+using Microsoft.AspNetCore.Http;
 
 namespace Core.Features.Chat.Commands.Models
 {
@@ -13,6 +14,9 @@ namespace Core.Features.Chat.Commands.Models
         public MessageType Type { get; set; }
         public decimal? ProposedPrice { get; set; }
         public int? ProposedQuantity { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public IFormFile? ImageFile { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
         public Guid CurrentUserId { get; set; }

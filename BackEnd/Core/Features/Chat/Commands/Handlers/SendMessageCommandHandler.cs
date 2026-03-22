@@ -8,7 +8,7 @@ using Service.Services.ChatService;
 
 namespace Core.Features.Chat.Commands.Handlers
 {
-    public class SendMessageCommandHandler : ResponseHandler, IRequestHandler<SendMessageCommand, Response<ChatMessageResponse>>
+    public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Response<ChatMessageResponse>>
     {
         private readonly IChatService _chatService;
 
@@ -19,7 +19,14 @@ namespace Core.Features.Chat.Commands.Handlers
 
         public async Task<Response<ChatMessageResponse>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
         {
-            var message = await _chatService.SendMessageAsync(request.CurrentUserId, request.ChatRoomId, request.Content, request.Type, request.ProposedPrice, request.ProposedQuantity);
+            var message = await _chatService.SendMessageAsync(
+                request.CurrentUserId, 
+                request.ChatRoomId, 
+                request.Content, 
+                request.Type, 
+                request.ProposedPrice, 
+                request.ProposedQuantity,
+                request.ImageFile);
             
             var dto = new ChatMessageResponse
             {
@@ -35,7 +42,7 @@ namespace Core.Features.Chat.Commands.Handlers
                 RelatedOrderId = message.RelatedOrderId
             };
 
-            return Success(dto);
+            return new Response<ChatMessageResponse> { Succeeded = true, Data = dto };
         }
     }
 }

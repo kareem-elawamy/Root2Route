@@ -20,6 +20,7 @@ namespace Domain.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastMessageAt { get; set; } = DateTime.UtcNow;
+        public bool IsClosed { get; set; } = false;
 
         public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
     }

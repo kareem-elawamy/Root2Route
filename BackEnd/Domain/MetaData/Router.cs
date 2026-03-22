@@ -135,6 +135,10 @@ namespace Domain.MetaData
             public const string AcceptOffer = Prefix + "/accept-offer";
             public const string GetMyRooms = Prefix + "/my-rooms";
             public const string GetHistory = Prefix + "/{chatRoomId}/history";
+            public const string GetRoomDetails = Prefix + "/{roomId}/details";
+            public const string CloseChat = Prefix + "/{roomId}/close";
+            public const string RejectOffer = Prefix + "/reject-offer";
+            public const string DeleteMessage = Prefix + "/messages/{messageId}";
         }
     }
 }

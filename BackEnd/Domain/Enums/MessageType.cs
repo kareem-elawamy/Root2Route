@@ -7,6 +7,7 @@ namespace Domain.Enums
         File,
         NegotiationOffer,
         OfferAccepted,
-        OfferRejected
+        OfferRejected,
+        Deleted
     }
 }

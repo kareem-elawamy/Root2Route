@@ -9,9 +9,11 @@ using Infrastructure.Repositories.ChatMessageRepository;
 using Infrastructure.Repositories.ChatRoomRepository;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Service.Hubs;
+using Service.Services.FileService;
 using Service.Services.NotificationService;
 
 namespace Service.Services.ChatService
@@ -24,6 +26,7 @@ namespace Service.Services.ChatService
         private readonly IOrderRepository _orderRepository;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly INotificationService _notificationService;
+        private readonly IFileService _fileService;
 
         public ChatService(
             IChatRoomRepository chatRoomRepository,
@@ -31,7 +34,8 @@ namespace Service.Services.ChatService
             IProductRepository productRepository,
             IOrderRepository orderRepository,
             IHubContext<ChatHub> hubContext,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IFileService fileService)
         {
             _chatRoomRepository = chatRoomRepository;
             _chatMessageRepository = chatMessageRepository;
@@ -39,6 +43,7 @@ namespace Service.Services.ChatService
             _orderRepository = orderRepository;
             _hubContext = hubContext;
             _notificationService = notificationService;
+            _fileService = fileService;
         }
 
         public async Task<Guid> StartChatAsync(Guid currentUserId, Guid organizationId, Guid? productId)
@@ -74,7 +79,7 @@ namespace Service.Services.ChatService
             return newRoom.Id;
         }
 
-        public async Task<ChatMessage> SendMessageAsync(Guid currentUserId, Guid chatRoomId, string content, MessageType type, decimal? proposedPrice, int? proposedQuantity)
+        public async Task<ChatMessage> SendMessageAsync(Guid currentUserId, Guid chatRoomId, string content, MessageType type, decimal? proposedPrice, int? proposedQuantity, IFormFile? imageFile = null)
         {
             var room = await _chatRoomRepository.GetTableAsTracking()
                 .Include(r => r.Organization)
@@ -84,16 +89,28 @@ namespace Service.Services.ChatService
             if (room == null)
                 throw new KeyNotFoundException("Chat room not found.");
 
+            // Security: Closed room guard
+            if (room.IsClosed)
+                throw new InvalidOperationException("This chat room is closed. No further messages can be sent.");
+
             bool isBuyer = room.BuyerId == currentUserId;
             bool isSellerMember = room.Organization != null && room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
             
             if (!isBuyer && !isSellerMember)
                 throw new UnauthorizedAccessException("You are not a participant of this chat room.");
 
+            // Handle image upload
+            if (imageFile != null)
+            {
+                var imageUrl = await _fileService.UploadImageAsync("ChatImages", imageFile);
+                content = imageUrl;
+                type = MessageType.Image;
+            }
+
             if (type == MessageType.NegotiationOffer)
             {
                 if (room.ProductId == null)
-                    throw new InvalidOperationException("Cannot send a negotiation offer in a chat room without a specific product context.");
+                    throw new InvalidOperationException("Cannot negotiate in a general inquiry chat.");
 
                 var product = await _productRepository.GetTableNoTracking().FirstOrDefaultAsync(p => p.Id == room.ProductId.Value);
                 if (product == null)
@@ -121,7 +138,6 @@ namespace Service.Services.ChatService
             await _chatRoomRepository.UpdateAsync(room);
             await _chatMessageRepository.SaveChangesAsync();
 
-            // Broadast via an anonymous object maintaining DTO signature decoupling
             await _hubContext.Clients.Group(chatRoomId.ToString())
                 .SendAsync("ReceiveMessage", new 
                 {
@@ -169,6 +185,10 @@ namespace Service.Services.ChatService
                 throw new InvalidOperationException("The specified message is not a valid negotiation offer.");
 
             var room = offerMsg.ChatRoom;
+
+            // Security: Closed room guard
+            if (room.IsClosed)
+                throw new InvalidOperationException("This chat room is closed. Offers cannot be accepted.");
 
             bool isSellerMember = room.Organization != null && 
                                   room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
@@ -292,6 +312,141 @@ namespace Service.Services.ChatService
             await _chatMessageRepository.SaveChangesAsync();
 
             return $"Successfully marked {unreadMessages.Count} messages as read.";
+        }
+
+        public async Task<string> CloseChatAsync(Guid currentUserId, Guid chatRoomId)
+        {
+            var room = await _chatRoomRepository.GetTableAsTracking()
+                .Include(r => r.Organization)
+                .ThenInclude(o => o.Members)
+                .FirstOrDefaultAsync(r => r.Id == chatRoomId);
+
+            if (room == null)
+                throw new KeyNotFoundException("Chat room not found.");
+
+            bool isBuyer = room.BuyerId == currentUserId;
+            bool isSellerMember = room.Organization != null && room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
+
+            if (!isBuyer && !isSellerMember)
+                throw new UnauthorizedAccessException("You are not a participant of this chat room.");
+
+            if (room.IsClosed)
+                throw new InvalidOperationException("This chat room is already closed.");
+
+            room.IsClosed = true;
+            await _chatRoomRepository.UpdateAsync(room);
+            await _chatRoomRepository.SaveChangesAsync();
+
+            await _hubContext.Clients.Group(chatRoomId.ToString())
+                .SendAsync("ChatRoomClosed", new { ChatRoomId = chatRoomId, ClosedBy = currentUserId });
+
+            return "Chat room has been successfully closed.";
+        }
+
+        public async Task<string> RejectOfferAsync(Guid currentUserId, Guid offerMessageId)
+        {
+            var offerMsg = await _chatMessageRepository.GetTableAsTracking()
+                .Include(m => m.ChatRoom)
+                .ThenInclude(r => r.Organization)
+                .ThenInclude(o => o.Members)
+                .FirstOrDefaultAsync(m => m.Id == offerMessageId);
+
+            if (offerMsg == null || offerMsg.ChatRoom == null)
+                throw new KeyNotFoundException("Negotiation offer not found.");
+
+            if (offerMsg.Type != MessageType.NegotiationOffer)
+                throw new InvalidOperationException("The specified message is not a valid negotiation offer.");
+
+            var room = offerMsg.ChatRoom;
+
+            if (room.IsClosed)
+                throw new InvalidOperationException("This chat room is closed. Offers cannot be rejected.");
+
+            bool isSellerMember = room.Organization != null &&
+                                  room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
+
+            if (!isSellerMember)
+                throw new UnauthorizedAccessException("Only active seller organization members can reject offers.");
+
+            if (offerMsg.RelatedOrderId.HasValue)
+                throw new InvalidOperationException("This offer has already been accepted and cannot be rejected.");
+
+            // Check if a rejection system message already exists for this offer
+            var alreadyRejected = await _chatMessageRepository.GetTableNoTracking()
+                .AnyAsync(m => m.ChatRoomId == room.Id
+                            && m.Type == MessageType.OfferRejected
+                            && m.SentAt > offerMsg.SentAt
+                            && m.SenderId == currentUserId);
+
+            if (alreadyRejected)
+                throw new InvalidOperationException("This offer has already been rejected.");
+
+            var systemMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ChatRoomId = room.Id,
+                SenderId = currentUserId,
+                Content = "Offer was rejected.",
+                Type = MessageType.OfferRejected,
+                SentAt = DateTime.UtcNow
+            };
+
+            room.LastMessageAt = systemMessage.SentAt;
+
+            await _chatMessageRepository.AddAsync(systemMessage);
+            await _chatRoomRepository.UpdateAsync(room);
+            await _chatMessageRepository.SaveChangesAsync();
+
+            await _hubContext.Clients.Group(room.Id.ToString())
+                .SendAsync("ReceiveOfferRejected", new
+                {
+                    OfferMessageId = offerMessageId,
+                    Message = new
+                    {
+                        Id = systemMessage.Id,
+                        ChatRoomId = systemMessage.ChatRoomId,
+                        SenderId = systemMessage.SenderId,
+                        Content = systemMessage.Content,
+                        Type = systemMessage.Type,
+                        SentAt = systemMessage.SentAt
+                    }
+                });
+
+            try
+            {
+                await _notificationService.SendPushNotificationAsync(room.BuyerId, "Offer Rejected", "Your negotiation offer was rejected by the seller.");
+            }
+            catch { }
+
+            return "Offer has been rejected successfully.";
+        }
+
+        public async Task<string> DeleteMessageAsync(Guid currentUserId, Guid messageId)
+        {
+            var message = await _chatMessageRepository.GetTableAsTracking()
+                .FirstOrDefaultAsync(m => m.Id == messageId);
+
+            if (message == null)
+                throw new KeyNotFoundException("Message not found.");
+
+            if (message.SenderId != currentUserId)
+                throw new UnauthorizedAccessException("You can only delete your own messages.");
+
+            // Soft delete: preserve audit trail
+            message.Content = "This message was deleted.";
+            message.Type = MessageType.Deleted;
+
+            await _chatMessageRepository.UpdateAsync(message);
+            await _chatMessageRepository.SaveChangesAsync();
+
+            await _hubContext.Clients.Group(message.ChatRoomId.ToString())
+                .SendAsync("ReceiveMessageDeleted", new
+                {
+                    MessageId = messageId,
+                    ChatRoomId = message.ChatRoomId
+                });
+
+            return "Message deleted successfully.";
         }
     }
 }
