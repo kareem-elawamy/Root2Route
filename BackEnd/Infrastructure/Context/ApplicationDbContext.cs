@@ -33,6 +33,8 @@ namespace Infrastructure.Data
         // =========================================================
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Bid> Bids { get; set; }
 
@@ -83,6 +85,48 @@ namespace Infrastructure.Data
                 .HasOne(a => a.product)
                 .WithMany()
                 .HasForeignKey(a => a.productid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Order -> Organization (Seller link)
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Organization)
+                .WithMany()
+                .HasForeignKey(o => o.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Order -> Buyer
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Buyer)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(o => o.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // OrderStatusHistory -> Order
+            modelBuilder.Entity<OrderStatusHistory>()
+                .HasOne(h => h.Order)
+                .WithMany()
+                .HasForeignKey(h => h.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // OrderStatusHistory -> ChangedBy (User) - RESTRICT to avoid cycle
+            modelBuilder.Entity<OrderStatusHistory>()
+                .HasOne(h => h.ChangedBy)
+                .WithMany()
+                .HasForeignKey(h => h.ChangedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Payment -> Order
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Payment -> User - RESTRICT to avoid cycle
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // OrganizationMember -> OrganizationRole
@@ -171,7 +215,9 @@ namespace Infrastructure.Data
                 (typeof(OrderItem), "UnitPrice"),
                 (typeof(Product), "DirectSalePrice"),   // تم إضافة أسعار المنتج
                 (typeof(Product), "StartBiddingPrice"),
-                (typeof(ChatMessage), "ProposedPrice")
+                (typeof(ChatMessage), "ProposedPrice"),
+                (typeof(Payment), "Amount"),
+                (typeof(Order), "ShippingFees")
             };
 
             foreach (var prop in decimalProps)

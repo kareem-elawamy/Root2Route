@@ -16,6 +16,8 @@ using Infrastructure.Repositories.PlantInfoRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.ReviewRepository;
 using Infrastructure.Repositories.NotificationRepository;
+using Infrastructure.Repositories.PaymentRepository;
+using Infrastructure.Repositories.OrderStatusHistoryRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -45,6 +47,8 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IOrderStatusHistoryRepository, OrderStatusHistoryRepository>();
         return services;
     }
 }

@@ -229,6 +229,7 @@ namespace Service.Services.ChatService
             {
                 Id = Guid.NewGuid(),
                 BuyerId = room.BuyerId,
+                OrganizationId = room.OrganizationId,
                 TotalAmount = offerMsg.ProposedPrice.Value * offerMsg.ProposedQuantity.Value,
                 Status = OrderStatus.Pending,
                 OrderItems = new List<OrderItem>
