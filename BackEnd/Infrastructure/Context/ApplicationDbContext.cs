@@ -33,6 +33,8 @@ namespace Infrastructure.Data
         // =========================================================
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Bid> Bids { get; set; }
 
@@ -41,9 +43,16 @@ namespace Infrastructure.Data
         // =========================================================
         public DbSet<PlantInfo> PlantInfos { get; set; }
         public DbSet<PlantGuideStep> PlantGuideSteps { get; set; }
-        public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<ChatMessage> Chats { get; set; }
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+
+        // =========================================================
+        // 5. Logistics & Shipping
+        // =========================================================
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
+        public DbSet<Shipment> Shipments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,16 +81,58 @@ namespace Infrastructure.Data
 
             // OrderItem -> Product (تم تعديله من MarketItem)
             modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.product)
+                .HasOne(oi => oi.Product)
                 .WithMany()
-                .HasForeignKey(oi => oi.productid)
+                .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Auction -> Product (تأكد من تعديل الـ FK في كيان الـ Auction ليكون ProductId)
             modelBuilder.Entity<Auction>()
-                .HasOne(a => a.product)
+                .HasOne(a => a.Product)
                 .WithMany()
-                .HasForeignKey(a => a.productid)
+                .HasForeignKey(a => a.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Order -> Organization (Seller link)
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Organization)
+                .WithMany()
+                .HasForeignKey(o => o.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Order -> Buyer
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Buyer)
+                .WithMany()
+                .HasForeignKey(o => o.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // OrderStatusHistory -> Order
+            modelBuilder.Entity<OrderStatusHistory>()
+                .HasOne(h => h.Order)
+                .WithMany()
+                .HasForeignKey(h => h.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // OrderStatusHistory -> ChangedBy (User) - RESTRICT to avoid cycle
+            modelBuilder.Entity<OrderStatusHistory>()
+                .HasOne(h => h.ChangedBy)
+                .WithMany()
+                .HasForeignKey(h => h.ChangedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Payment -> Order
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Payment -> User - RESTRICT to avoid cycle
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // OrganizationMember -> OrganizationRole
@@ -96,7 +147,7 @@ namespace Infrastructure.Data
                 .HasForeignKey(p => p.OrganizationRoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Review Relationships
+            // Review Relationships (B2B)
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Reviewer)
                 .WithMany()
@@ -104,9 +155,47 @@ namespace Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Review>()
-                .HasOne(r => r.TargetUser)
+                .HasOne(r => r.TargetOrganization)
                 .WithMany()
-                .HasForeignKey(r => r.TargetUserId)
+                .HasForeignKey(r => r.TargetOrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Composite Unique Index for Review (Race Condition Protection)
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.OrderId, r.ReviewerId })
+                .IsUnique();
+
+            // ShippingAddress -> User
+            modelBuilder.Entity<ShippingAddress>()
+                .HasOne(sa => sa.User)
+                .WithMany()
+                .HasForeignKey(sa => sa.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Shipment -> Order
+            modelBuilder.Entity<Shipment>()
+                .HasOne(s => s.Order)
+                .WithMany()
+                .HasForeignKey(s => s.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Notification -> User
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Bid Relationships
@@ -129,24 +218,29 @@ namespace Infrastructure.Data
                 .HasForeignKey(om => om.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Conversation
-            modelBuilder.Entity<Conversation>()
+            // ChatRoom & ChatMessage Relationships
+            modelBuilder.Entity<ChatRoom>()
                 .HasOne(c => c.Buyer)
                 .WithMany()
                 .HasForeignKey(c => c.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.Seller)
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(c => c.Organization)
                 .WithMany()
-                .HasForeignKey(c => c.SellerId)
+                .HasForeignKey(c => c.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ChatMessage
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(c => c.Product)
+                .WithMany()
+                .HasForeignKey(c => c.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<ChatMessage>()
-                .HasOne(m => m.Conversation)
+                .HasOne(m => m.ChatRoom)
                 .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.ConversationId)
+                .HasForeignKey(m => m.ChatRoomId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Product>()
@@ -164,7 +258,10 @@ namespace Infrastructure.Data
                 (typeof(Order), "TotalAmount"),
                 (typeof(OrderItem), "UnitPrice"),
                 (typeof(Product), "DirectSalePrice"),   // تم إضافة أسعار المنتج
-                (typeof(Product), "StartBiddingPrice")
+                (typeof(Product), "StartBiddingPrice"),
+                (typeof(ChatMessage), "ProposedPrice"),
+                (typeof(Payment), "Amount"),
+                (typeof(Order), "ShippingFees")
             };
 
             foreach (var prop in decimalProps)

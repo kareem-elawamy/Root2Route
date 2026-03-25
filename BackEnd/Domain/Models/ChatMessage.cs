@@ -1,25 +1,29 @@
+using Domain.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Models
 {
     public class ChatMessage : BaseEntity
     {
-        public Guid ConversationId { get; set; }
-        public Conversation Conversation { get; set; }
+        public Guid ChatRoomId { get; set; }
+        [ForeignKey(nameof(ChatRoomId))]
+        public ChatRoom? ChatRoom { get; set; }
 
         public Guid SenderId { get; set; }
-        public string Message { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        [ForeignKey(nameof(SenderId))]
+        public ApplicationUser? Sender { get; set; }
 
-        public bool IsRead { get; set; }
+        public string Content { get; set; } = string.Empty;
+        
+        public MessageType Type { get; set; } = MessageType.Text;
+        public bool IsRead { get; set; } = false;
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
-        // لإضافة طابع "مستقل":
-        public bool IsSystemMessage { get; set; } // هل دي رسالة تلقائية من السيستم؟
-        public string? AttachmentUrl { get; set; } // لو هيبعت صورة المحصول أو العقد
+        // Negotiation Offer Specifics
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ProposedPrice { get; set; }
+        public int? ProposedQuantity { get; set; }
+        public Guid? RelatedOrderId { get; set; }
     }
-
-
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json.Serialization;
 using Core.Base;
 using MediatR;
@@ -9,12 +9,10 @@ namespace Core.Features.Orders.Commands.Models
     public class ChangeOrderStatusCommand : IRequest<Response<string>>
     {
         public Guid OrderId { get; set; }
-        
         public OrderStatus NewStatus { get; set; }
-        
-        public decimal ShippingFees { get; set; }
+        public string? Note { get; set; }
 
         [JsonIgnore] 
-        public Guid OrganizationId { get; set; } 
+        public Guid CurrentUserId { get; set; }
     }
 }

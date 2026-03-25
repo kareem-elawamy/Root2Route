@@ -1,4 +1,4 @@
-﻿using Core.Features.Orders.Commands.Models;
+using Core.Features.Orders.Commands.Models;
 using FluentValidation;
 
 namespace Core.Features.Orders.Commands.Validations
@@ -7,9 +7,7 @@ namespace Core.Features.Orders.Commands.Validations
     {
         public ChangeOrderStatusCommandValidator()
         {
-            RuleFor(x => x.ShippingFees)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("رسوم الشحن لا يمكن أن تكون قيمة سالبة.");
+            // ShippingFees validation removed as the command no longer handles fees
         }
     }
 }

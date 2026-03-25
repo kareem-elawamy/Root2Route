@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Controllers.Shared;
@@ -14,7 +14,6 @@ namespace API.Controllers
     [Authorize] 
     public class OrderController : BaseApiController
     {
-       
         [HttpPost(Router.Order.CreateOrder)]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
         {
@@ -26,18 +25,23 @@ namespace API.Controllers
             return NewResult(response);
         }
 
-    
         [HttpGet(Router.Order.GetMyOrders)]
-        public async Task<IActionResult> GetMyOrders()
+        public async Task<IActionResult> GetMyOrders([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var userId = GetCurrentUserId();
             if (userId == null) return Unauthorized();
 
-            var response = await Mediator.Send(new GetMyOrdersQuery(userId.Value));
+            var query = new GetMyOrdersQuery
+            {
+                CurrentUserId = userId.Value,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var response = await Mediator.Send(query);
             return NewResult(response);
         }
 
-        
         [HttpGet(Router.Order.GetOrderById)]
         public async Task<IActionResult> GetOrderById([FromRoute] Guid id)
         {
@@ -47,31 +51,25 @@ namespace API.Controllers
             var response = await Mediator.Send(new GetOrderByIdQuery(id, userId.Value));
             return NewResult(response);
         }
+
         [HttpGet(Router.Order.Prefix + "/Received/{organizationId}")]
         public async Task<IActionResult> GetReceivedOrders([FromRoute] Guid organizationId, [FromQuery] GetReceivedOrdersQuery query)
         {
             query.OrganizationId = organizationId;
-
             var response = await Mediator.Send(query);
-
             return Ok(response);
         }
-       [HttpPut(Router.Order.ChangeStatus)]
-public async Task<IActionResult> ChangeOrderStatus([FromBody] ChangeOrderStatusCommand command)
-{
-    // 2. Safely extract OrganizationId from Users JWT instead of body
-    var orgIdString = User.FindFirst("OrganizationId")?.Value; // Match this with your exact Claim Type
-    if (string.IsNullOrEmpty(orgIdString) || !Guid.TryParse(orgIdString, out Guid orgId))
-    {
-        return Unauthorized("User does not belong to a valid organization.");
-    }
 
-    command.OrganizationId = orgId;
+        [HttpPut(Router.Order.ChangeStatus)]
+        public async Task<IActionResult> ChangeOrderStatus([FromBody] ChangeOrderStatusCommand command)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
 
-    var response = await Mediator.Send(command);
-    return NewResult(response);
-}
-
+            command.CurrentUserId = userId.Value;
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
 
         [HttpPut(Router.Order.CancelOrder)]
         public async Task<IActionResult> CancelOrder([FromRoute] Guid id)

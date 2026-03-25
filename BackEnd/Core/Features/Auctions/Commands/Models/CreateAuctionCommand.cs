@@ -3,7 +3,7 @@ using System;
 
 namespace Core.Features.Auctions.Commands.Models
 {
-    public class CreateAuctionCommand : IRequest<Response<string>>
+    public class CreateAuctionCommand : IRequest<Response<Guid>>
     {
         public string Title { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }

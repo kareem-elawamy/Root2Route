@@ -124,7 +124,46 @@ namespace Domain.MetaData
             public const string SendInvitation = Prefix + "/send";
             public const string GetAllInvitationsForUser = Prefix + "/my";
             public const string AcceptInvitation = Prefix + "/accept";
-            public const string Revoken = Prefix + "/revoke"; // تم تعديل revoken لـ revoke كفعل صحيح
+            public const string Revoken = Prefix + "/revoke"; 
+        }
+
+        public static class Chat
+        {
+            public const string Prefix = rule + "/chat";
+            public const string StartChat = Prefix + "/start";
+            public const string SendMessage = Prefix + "/send";
+            public const string AcceptOffer = Prefix + "/accept-offer";
+            public const string GetMyRooms = Prefix + "/my-rooms";
+            public const string GetHistory = Prefix + "/{chatRoomId}/history";
+            public const string GetRoomDetails = Prefix + "/{roomId}/details";
+            public const string CloseChat = Prefix + "/{roomId}/close";
+            public const string RejectOffer = Prefix + "/reject-offer";
+            public const string DeleteMessage = Prefix + "/messages/{messageId}";
+        }
+
+        public static class Shipment
+        {
+            public const string Prefix = rule + "/shipments";
+            public const string Dispatch = Prefix + "/dispatch";
+            public const string GetMyAddresses = Prefix + "/addresses";
+            public const string AddAddress = Prefix + "/addresses";
+            public const string UpdateStatus = Prefix + "/{id}/status";
+        }
+
+        public static class Review
+        {
+            public const string Prefix = rule + "/reviews";
+            public const string Add = Prefix;
+            public const string GetByOrganization = Prefix + "/organization/{orgId}";
+        }
+
+        public static class Notification
+        {
+            public const string Prefix = rule + "/notifications";
+            public const string GetMy = Prefix;
+            public const string UnreadCount = Prefix + "/unread-count";
+            public const string MarkRead = Prefix + "/{id}/read";
+            public const string MarkAllRead = Prefix + "/read-all";
         }
     }
 }

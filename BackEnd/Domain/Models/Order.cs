@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Models
 {
@@ -9,15 +8,22 @@ namespace Domain.Models
     {
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public decimal TotalAmount { get; set; }
+
         public Guid BuyerId { get; set; }
+        [ForeignKey(nameof(BuyerId))]
         public ApplicationUser? Buyer { get; set; }
-        public OrderStatus Status { get; set; } 
-        public string ReceiverName { get; set; } = null!;
-        public string ReceiverPhone { get; set; } = null!;
-        public string ShippingCity { get; set; } = null!;
-        public string ShippingStreet { get; set; } = null!;
+
+        public Guid OrganizationId { get; set; }
+        [ForeignKey(nameof(OrganizationId))]
+        public Organization? Organization { get; set; }
+
+        public OrderStatus Status { get; set; }
+        public string? ReceiverName { get; set; }
+        public string? ReceiverPhone { get; set; }
+        public string? ShippingCity { get; set; }
+        public string? ShippingStreet { get; set; }
         public string? BuildingNumber { get; set; }
-        public decimal ShippingFees { get; set; } = 0; 
+        public decimal ShippingFees { get; set; } = 0;
         public decimal FinalTotal => TotalAmount + ShippingFees;
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;

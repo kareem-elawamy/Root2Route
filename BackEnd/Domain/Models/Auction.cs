@@ -7,9 +7,8 @@ namespace Domain.Models
         [Required, MaxLength(150)]
         public string Title { get; set; } = string.Empty;
 
-        // التواريخ دي بتتحسب لما اليوزر يختار "مدة المزاد"
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; } // هنا بتخزن الوقت اللي هيخلص فيه
+        public DateTime EndDate { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal StartPrice { get; set; }
@@ -25,11 +24,13 @@ namespace Domain.Models
 
         public AuctionStatus Status { get; set; }
 
-        // ربط المزاد بالمنتج
-        public Guid productid { get; set; }
-        public Product? product { get; set; }
+        public Guid ProductId { get; set; }
+        [ForeignKey(nameof(ProductId))]
+        public Product? Product { get; set; }
         public Guid? HighestBidderId { get; set; }
         public ApplicationUser? HighestBidder { get; set; }
+        public Guid? OrderId { get; set; }
+        public Order? Order { get; set; }
         public ICollection<Bid> Bids { get; set; } = new List<Bid>();
     }
 }

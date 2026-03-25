@@ -24,5 +24,6 @@ namespace Service.Services.OrderService
             decimal shippingFees = 0
         );
         Task<(bool Success, string Message)> CancelOrderAsync(Guid orderId, Guid buyerId);
+        Task<string> UpdateOrderStatusAsync(Guid orderId, OrderStatus newStatus, Guid currentUserId, string? note = null);
     }
 }

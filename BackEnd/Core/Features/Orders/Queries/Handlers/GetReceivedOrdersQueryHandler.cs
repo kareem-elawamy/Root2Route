@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,14 +21,12 @@ namespace Core.Features.Orders.Queries.Handlers
 
         public async Task<PaginatedResult<OrderResponse>> Handle(GetReceivedOrdersQuery request, CancellationToken cancellationToken)
         {
-            // 1. جلب البيانات من السيرفيس
             var result = await _orderService.GetPaginatedReceivedOrdersForOrgAsync(
                 request.OrganizationId,
                 request.PageNumber,
                 request.PageSize,
                 request.Status);
 
-            // 2. المابينج (Mapping)
             var mappedOrders = result.Orders.Select(o => new OrderResponse
             {
                 Id = o.Id,
@@ -37,20 +35,20 @@ namespace Core.Features.Orders.Queries.Handlers
                 Status = o.Status.ToString(),
                 ShippingFees = o.ShippingFees,
                 BuyerId = o.BuyerId,
+                OrganizationId = o.OrganizationId,
+                OrganizationName = o.Organization?.Name,
 
-                // هنا بنفلتر الـ Items عشان نرجع للبائع المنتجات بتاعته هو بس جوه الفاتورة
                 Items = o.OrderItems!
-                    .Where(i => i.product?.OrganizationId == request.OrganizationId)
+                    .Where(i => i.Product?.OrganizationId == request.OrganizationId)
                     .Select(i => new OrderItemResponse
                     {
-                        ProductId = i.productid,
-                        ProductName = i.product?.Name ?? "منتج غير معروف",
+                        ProductId = i.ProductId,
+                        ProductName = i.Product?.Name ?? "Unknown",
                         Quantity = i.Quantity,
                         UnitPrice = i.UnitPrice
                     }).ToList()
             }).ToList();
 
-            // 3. إرجاع النتيجة
             return new PaginatedResult<OrderResponse>(
                 mappedOrders,
                 result.TotalCount,
