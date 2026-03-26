@@ -40,8 +40,14 @@ namespace API.Controllers
             return NewResult(response);
         }
         [HttpPost(Router.Authentication.ResetPassword)]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordWithOtpCommand command
-            )
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordWithOtpCommand command)
+        {
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
         {
             var response = await Mediator.Send(command);
             return NewResult(response);
