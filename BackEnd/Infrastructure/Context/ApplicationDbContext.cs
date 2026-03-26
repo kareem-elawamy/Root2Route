@@ -47,6 +47,14 @@ namespace Infrastructure.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<DiagnosisLog> DiagnosisLogs { get; set; }
+
+        // =========================================================
+        // 6. Super Admin & System Settings
+        // =========================================================
+        public DbSet<SystemSetting> SystemSettings { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<OrganizationDocument> OrganizationDocuments { get; set; }
 
         // =========================================================
         // 5. Logistics & Shipping
@@ -205,6 +213,13 @@ namespace Infrastructure.Data
                 .HasForeignKey(b => b.BidderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // OrganizationDocument Relationships
+            modelBuilder.Entity<OrganizationDocument>()
+                .HasOne(od => od.Organization)
+                .WithMany()
+                .HasForeignKey(od => od.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // OrganizationMember Relationships
             modelBuilder.Entity<OrganizationMember>()
                 .HasOne(om => om.Organization)
@@ -261,7 +276,8 @@ namespace Infrastructure.Data
                 (typeof(Product), "StartBiddingPrice"),
                 (typeof(ChatMessage), "ProposedPrice"),
                 (typeof(Payment), "Amount"),
-                (typeof(Order), "ShippingFees")
+                (typeof(Order), "ShippingFees"),
+                (typeof(Order), "PlatformFee")
             };
 
             foreach (var prop in decimalProps)

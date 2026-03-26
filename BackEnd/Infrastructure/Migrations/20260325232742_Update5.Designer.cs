@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325232742_Update5")]
+    partial class Update5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,50 +167,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Auctions");
                 });
 
-            modelBuilder.Entity("Domain.Models.AuditLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DeleteAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EntityName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("NewValues")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldValues")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AuditLogs");
-                });
-
             modelBuilder.Entity("Domain.Models.Bid", b =>
                 {
                     b.Property<Guid>("Id")
@@ -352,9 +311,6 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("Confidence")
                         .HasColumnType("float");
 
@@ -367,17 +323,8 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
-
                     b.Property<string>("Prediction")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Region")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -645,44 +592,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Organizations");
-                });
-
-            modelBuilder.Entity("Domain.Models.OrganizationDocument", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DeleteAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.ToTable("OrganizationDocuments");
                 });
 
             modelBuilder.Entity("Domain.Models.OrganizationInvitation", b =>
@@ -1227,38 +1136,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("ShippingAddresses");
                 });
 
-            modelBuilder.Entity("Domain.Models.SystemSetting", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DeleteAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PlatformFeePercentage")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("StandardShippingFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SystemSettings");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1428,17 +1305,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Domain.Models.AuditLog", b =>
-                {
-                    b.HasOne("Domain.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Models.Bid", b =>
                 {
                     b.HasOne("Domain.Models.Auction", "Auction")
@@ -1595,17 +1461,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("Domain.Models.OrganizationDocument", b =>
-                {
-                    b.HasOne("Domain.Models.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Domain.Models.OrganizationInvitation", b =>

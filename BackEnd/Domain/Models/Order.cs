@@ -24,6 +24,7 @@ namespace Domain.Models
         public string? ShippingStreet { get; set; }
         public string? BuildingNumber { get; set; }
         public decimal ShippingFees { get; set; } = 0;
+        public decimal PlatformFee { get; set; } = 0;
         public decimal FinalTotal => TotalAmount + ShippingFees;
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;

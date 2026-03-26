@@ -1,0 +1,17 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Domain -> C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Domain\bin\Debug\net10.0\Domain.dll
+  Infrastructure -> C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Infrastructure\bin\Debug\net10.0\Infrastructure.dll
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\ModuleServiceDependencies.cs(24,24): error CS0234: The type or namespace name 'DashboardService' does not exist in the namespace 'Service.Services' (are you missing an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Services\OrderService\IOrderService.cs(12,63): error CS0246: The type or namespace name 'CreateOrderDto' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Services\OrderService\OrderService.cs(53,76): error CS0246: The type or namespace name 'CreateOrderDto' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+
+Build FAILED.
+
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\ModuleServiceDependencies.cs(24,24): error CS0234: The type or namespace name 'DashboardService' does not exist in the namespace 'Service.Services' (are you missing an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Services\OrderService\IOrderService.cs(12,63): error CS0246: The type or namespace name 'CreateOrderDto' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Services\OrderService\OrderService.cs(53,76): error CS0246: The type or namespace name 'CreateOrderDto' could not be found (are you missing a using directive or an assembly reference?) [C:\Users\TC\Desktop\RoorToRoute\Root2Route\BackEnd\Service\Service.csproj]
+    0 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:07.36
