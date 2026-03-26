@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -49,8 +49,6 @@ namespace Service.Services.AuthenticationService
             // ✅ 2. Organization Scope
             if (organizationId.HasValue)
             {
-                claims.Add(new Claim("organizationId", organizationId.Value.ToString()));
-
                 var membership = await _context.OrganizationMembers
                     .Where(m => m.UserId == user.Id && m.OrganizationId == organizationId.Value)
                         .Include(r => r.OrganizationRoles).ThenInclude(or => or.Permissions)
@@ -58,15 +56,20 @@ namespace Service.Services.AuthenticationService
                         m.UserId == user.Id &&
                         m.OrganizationId == organizationId);
 
-                if (membership?.OrganizationRoles != null)
+                if (membership != null)
                 {
-                    claims.Add(new Claim("organizationRole",
-                        membership.OrganizationRoles.FirstOrDefault()?.Name ?? "Member"));
+                    // Secure: Only add the organizationId claim if they are a confirmed member
+                    claims.Add(new Claim("organizationId", organizationId.Value.ToString()));
 
-                    foreach (var permission in membership.OrganizationRoles.SelectMany(r => r.Permissions))
+                    if (membership.OrganizationRoles != null)
                     {
-                        claims.Add(new Claim("permission",
-                            permission.PermissionsClaim));
+                        claims.Add(new Claim("organizationRole",
+                            membership.OrganizationRoles.FirstOrDefault()?.Name ?? "Member"));
+
+                        foreach (var permission in membership.OrganizationRoles.SelectMany(r => r.Permissions))
+                        {
+                            claims.Add(new Claim("permission", permission.PermissionsClaim));
+                        }
                     }
                 }
             }
@@ -93,7 +96,21 @@ namespace Service.Services.AuthenticationService
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
                 ExpireAt = token.ValidTo,
                 FullName = user.FullName,
+                RefreshToken = (await CreateRefreshToken(user, organizationId)).Token
             };
+        }
+        private async Task<RefreshToken> CreateRefreshToken(ApplicationUser user, Guid? organizationId)
+        {
+            var refreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = Guid.NewGuid().ToString(),
+                ExpiresOn = DateTime.UtcNow.AddDays(7),
+                CreatedOn = DateTime.UtcNow,
+            };
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+            return refreshToken;
         }
     }
 }
