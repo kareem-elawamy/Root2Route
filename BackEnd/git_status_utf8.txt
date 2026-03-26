@@ -1,0 +1,30 @@
+﻿On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   API/appsettings.json
+	modified:   Domain/Models/Order.cs
+	modified:   Infrastructure/Context/ApplicationDbContext.cs
+	modified:   Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs
+	modified:   Infrastructure/ModuleInfrastructureDependencies.cs
+	deleted:    Service/DTOs/OrderDTOs.cs
+	modified:   Service/ModuleServiceDependencies.cs
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	API/Controllers/DashboardController.cs
+	Core/Features/DashBoard/
+	Core/Mapping/DashBoardMapping/
+	Domain/Models/DiagnosisLog.cs
+	Infrastructure/Migrations/20260325040607_AddSuperAdminDashboardFields.Designer.cs
+	Infrastructure/Migrations/20260325040607_AddSuperAdminDashboardFields.cs
+	Infrastructure/Repositories/DiagnosisLogRepository/
+	Service/DTOs/DashBoardDto/
+	build_errors.txt
+	build_errors_utf8.txt
+	git_status.txt
+	git_status_utf8.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")

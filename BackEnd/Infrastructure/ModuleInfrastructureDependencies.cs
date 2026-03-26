@@ -18,6 +18,10 @@ using Infrastructure.Repositories.PaymentRepository;
 using Infrastructure.Repositories.OrderStatusHistoryRepository;
 using Infrastructure.Repositories.ShippingAddressRepository;
 using Infrastructure.Repositories.ShipmentRepository;
+using Infrastructure.Repositories.DiagnosisLogRepository;
+using Infrastructure.Repositories.SystemSettingRepository;
+using Infrastructure.Repositories.AuditLogRepository;
+using Infrastructure.Repositories.OrganizationDocumentRepository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -50,6 +54,12 @@ public static class ModuleInfrastructureDependencies
         services.AddScoped<IOrderStatusHistoryRepository, OrderStatusHistoryRepository>();
         services.AddScoped<IShippingAddressRepository, ShippingAddressRepository>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
+        services.AddScoped<IDiagnosisLogRepository, DiagnosisLogRepository>();
+        
+        services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IOrganizationDocumentRepository, OrganizationDocumentRepository>();
+        
         return services;
     }
 }
