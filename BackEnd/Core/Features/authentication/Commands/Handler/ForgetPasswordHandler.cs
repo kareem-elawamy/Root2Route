@@ -78,6 +78,11 @@ namespace Core.Features.Authentication.Commands.Handler
                 return BadRequest<string>("Password reset failed: " +
                     string.Join(", ", resetResult.Errors.Select(e => e.Description)));
 
+            // Step D: Explicitly persist the changes to fix EF Core tracking issue
+            // ResetPasswordAsync may report Succeeded without flushing to DB in some configurations.
+            await _userManager.UpdateSecurityStampAsync(user);
+            await _userManager.UpdateAsync(user);
+
             return Success("Password changed successfully");
         }
 

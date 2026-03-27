@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Service; // ???? ?? ???? ??? Namespace ?????? JwtSettings
+using Service;
 using Service.Hubs;
 using Service.Services.AuthenticationService;
 using SixLabors.ImageSharp;
@@ -17,6 +17,29 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// ==================== CORS Config ====================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+
+    // Use this policy for SignalR endpoints (credentials required)
+    options.AddPolicy("SignalRPolicy", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(_ => true) // Allow any origin with credentials
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+// ==================== END CORS ====================
 
 // Swagger Config
 builder.Services.AddSwaggerGen(c =>
@@ -56,32 +79,25 @@ builder.Services.AddSwaggerGen(c =>
 
 
 
-
-
 // Database Config
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)
 );
 
-// ==================== FIX STARTS HERE ====================
-
-// 1. ??? ??? Section ??????? ??? ???? IOptions ???? ????????
+// ==================== JWT Config ====================
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
-// 2. ??????? ????? ?????????? ??? ???? Program.cs (?????? ??? TokenValidation)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
-// ????? ??????: ?????? ?? ?? ????????? ???? ????? ???? ?????? ??? ?????
 if (jwtSettings == null || string.IsNullOrEmpty(jwtSettings.Secret))
 {
     throw new Exception("JWT Settings are not configured correctly in appsettings.json");
 }
 
-// ????? ??? Settings ?? Singleton (??????? ??? ??? ?????? IOptions? ??? ?? ???)
 builder.Services.AddSingleton(jwtSettings);
 
-// ==================== FIX ENDS HERE ====================
+// ==================== END JWT ====================
 builder.Services.AddLocalization();
 // Dependencies
 builder
@@ -107,7 +123,8 @@ builder
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,            ValidIssuer = jwtSettings.Issuer,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
         };
@@ -116,19 +133,23 @@ builder
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-   app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GreenLink API v1"));
-    app.UseDeveloperExceptionPage();
-
-
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Root2Route API v1"));
+app.UseDeveloperExceptionPage();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.MapHub<AuctionHub>("/hubs/auction");
+
+// CORS must be BEFORE Authentication & Authorization
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+// SignalR hubs use the SignalR CORS policy (supports credentials)
+app.MapHub<AuctionHub>("/hubs/auction").RequireCors("SignalRPolicy");
 
 app.MapControllers();
 app.MapGet("/", () => "Welcome to Root2Route API - System is Running Successfully! ");
