@@ -56,6 +56,14 @@ namespace Core.Features.Authentication.Commands.Handlers
             if (user == null)
                 return NotFound<JwtAuthResult>("User not found.");
 
+            // Security: Block banned/locked users
+            if (await _userManager.IsLockedOutAsync(user))
+                return BadRequest<JwtAuthResult>("Account is locked or banned.");
+
+            // Security: Block unconfirmed email accounts
+            if (!user.EmailConfirmed)
+                return BadRequest<JwtAuthResult>("Email is not confirmed.");
+
             var currentRefreshToken = await _context.RefreshTokens
                 .FirstOrDefaultAsync(r => r.Token == request.RefreshToken && r.UserId == userId, cancellationToken);
 

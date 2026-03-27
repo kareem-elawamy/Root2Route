@@ -24,7 +24,7 @@ namespace Service
                 options.Lockout.AllowedForNewUsers = true;
 
                 // User settings
-                options.User.RequireUniqueEmail = false;
+                options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 
