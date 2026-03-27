@@ -52,22 +52,31 @@ namespace Core.Features.Authentication.Commands.Handler
         }
 
         public async Task<Response<string>> Handle(
-    ResetPasswordWithOtpCommand request,
-    CancellationToken cancellationToken)
+            ResetPasswordWithOtpCommand request,
+            CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
                 return NotFound<string>("User not found");
 
-            var result = await _userManager.ResetPasswordAsync(
-                user,
-                request.Otp,
-                request.NewPassword
-            );
+            // Step A: Verify the 6-digit OTP
+            bool isOtpValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user, TokenOptions.DefaultEmailProvider, request.Otp);
 
-            if (!result.Succeeded)
-                return BadRequest<string>("Invalid OTP or password reset failed");
+            if (!isOtpValid)
+                return BadRequest<string>("Invalid or expired OTP.");
+
+            // Step B: Generate the actual reset token internally
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Step C: Reset the password using the internally generated token
+            var resetResult = await _userManager.ResetPasswordAsync(
+                user, resetToken, request.NewPassword);
+
+            if (!resetResult.Succeeded)
+                return BadRequest<string>("Password reset failed: " +
+                    string.Join(", ", resetResult.Errors.Select(e => e.Description)));
 
             return Success("Password changed successfully");
         }

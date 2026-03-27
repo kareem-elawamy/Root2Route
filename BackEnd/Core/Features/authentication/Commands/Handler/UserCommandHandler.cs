@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.Base;
 using Core.Features.authentication.Commands.Models;
 using Domain.Enums;
@@ -60,16 +60,17 @@ namespace Core.Features.authentication.Commands.Handler
                     var error = createdResult.Errors.FirstOrDefault()?.Description;
                     return BadRequest<JwtAuthResult>(error ?? "Failed to create user");
                 }
-                var accessToken = await _authService.GenerateToken(userIdentity);
                 transaction.Commit();
 
-                var otpCode = await _userManager.GenerateTwoFactorTokenAsync(
-                        userIdentity,
-                        TokenOptions.DefaultEmailProvider
-                    );
+                var otpCode = await _userManager.GenerateEmailConfirmationTokenAsync(userIdentity);
                 var emailBody = GetOtpHtmlTemplate(userIdentity.FullName, otpCode);
                 await _emailService.SendEmailAsync(userIdentity.Email!, "تفعيل حساب Root2Route", emailBody);
-                return Success(accessToken);
+
+                return Success(new JwtAuthResult
+                {
+                    Message = "User registered successfully. Please check your email for the OTP.",
+                    FullName = userIdentity.FullName
+                });
             }
             catch (Exception ex)
             {

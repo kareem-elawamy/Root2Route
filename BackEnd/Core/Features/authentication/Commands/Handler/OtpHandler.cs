@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Service;
+using Service.Services.AuthenticationService;
 using Service.Services.Email;
 
 namespace Core.Features.Authentication.Commands.Handler
@@ -13,45 +14,45 @@ namespace Core.Features.Authentication.Commands.Handler
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
-        public OtpHandler(UserManager<ApplicationUser> userManager, IEmailService emailService)
+        private readonly IAuthenticationService _authService;
+
+        public OtpHandler(
+            UserManager<ApplicationUser> userManager,
+            IEmailService emailService,
+            IAuthenticationService authService)
         {
             _emailService = emailService;
             _userManager = userManager;
+            _authService = authService;
         }
+
         public async Task<Response<JwtAuthResult>> Handle(VerifyOtpCommand request, CancellationToken cancellationToken)
         {
-            var user = _userManager.FindByEmailAsync(request.Email).Result;
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
                 return BadRequest<JwtAuthResult>("User not found");
-            var isValidOtp = _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultEmailProvider, "EmailConfirmation", request.Otp).Result;
-            if (!isValidOtp)
-                return BadRequest<JwtAuthResult>("Invalid OTP");
-            var result = _userManager.ConfirmEmailAsync(user, request.Otp).Result;
+
+            if (user.EmailConfirmed)
+                return BadRequest<JwtAuthResult>("Email is already confirmed");
+
+            var result = await _userManager.ConfirmEmailAsync(user, request.Otp);
             if (!result.Succeeded)
-                return BadRequest<JwtAuthResult>("Failed to confirm email");
-            return Success(new JwtAuthResult
-            {
-                FullName
-                = user.FullName,
-            });
+                return BadRequest<JwtAuthResult>("Invalid OTP or confirmation failed");
+
+            // Email confirmed — issue first real JWT + RefreshToken
+            var tokens = await _authService.GenerateToken(user);
+            return Success(tokens);
         }
 
         public async Task<Response<string>> Handle(ResendOtpCommand request, CancellationToken cancellationToken)
         {
-            // 1. البحث عن المستخدم
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return NotFound<string>("User not found");
 
-            // 2. التأكد أن الإيميل لم يتم تفعيله بالفعل
             if (user.EmailConfirmed) return BadRequest<string>("Email is already confirmed");
 
-            // 3. توليد كود جديد (نفس المنطق المستخدم في التسجيل)
-            var otpCode = await _userManager.GenerateTwoFactorTokenAsync(
-                        user,
-                        TokenOptions.DefaultEmailProvider
-                    ); ;
+            var otpCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            // 4. إرسال الإيميل
             var emailBody = GetOtpHtmlTemplate(user.FullName, otpCode);
             await _emailService.SendEmailAsync(user.Email!, "إعادة إرسال كود التحقق - Root2Route", emailBody);
 
