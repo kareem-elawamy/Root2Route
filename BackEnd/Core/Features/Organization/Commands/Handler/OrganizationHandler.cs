@@ -110,7 +110,7 @@ namespace Core.Features.Organization.Commands.Handler
             if (!isOwner)
                 return Unauthorized<string>("Only the current owner can change ownership");
             var result = await _organizationService
-      .ChangeOwnerAsync(request.OrganizationId, request.NewOwnerId, request.CurrentOwnerId);
+      .ChangeOwnerAsync(request.OrganizationId, request.Email, request.CurrentOwnerId);
             if (result == "Not Found")
                 return NotFound<string>("Organization not found");
             if (result == "User Not Found")

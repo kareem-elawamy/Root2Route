@@ -41,7 +41,7 @@ namespace Domain.MetaData
 
         public static class Product
         {
-            public const string Prefix = rule + "product";
+            public const string Prefix = rule + "/product";
 
             public const string AddProduct = Prefix + "/Add";
             public const string GetAll = Prefix + "/GetAll";
@@ -54,7 +54,7 @@ namespace Domain.MetaData
         }
         public static class Order
         {
-            public const string Prefix = rule + "order";
+            public const string Prefix = rule + "/order";
 
             public const string CreateOrder = Prefix + "/Create";
             public const string GetMyOrders = Prefix + "/MyOrders";

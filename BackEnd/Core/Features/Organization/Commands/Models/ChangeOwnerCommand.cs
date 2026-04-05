@@ -8,6 +8,6 @@ namespace Core.Features.Organization.Commands.Models
     public record ChangeOwnerCommand(
      Guid OrganizationId,
      Guid CurrentOwnerId,
-     Guid NewOwnerId
+     string Email
  ) : IRequest<Response<string>>;
 }

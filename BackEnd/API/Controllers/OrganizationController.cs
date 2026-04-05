@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Authorize] // مهم جدًا
+    [Authorize] 
     public class OrganizationController : BaseApiController
     {
         #region Queries
