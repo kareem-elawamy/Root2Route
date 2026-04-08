@@ -115,7 +115,7 @@ namespace API.Controllers
         [HttpPut(Router.Organization.ChangeOwner)]
         public async Task<IActionResult> ChangeOwner(
             [FromRoute] Guid id,
-            [FromBody] Guid newOwnerId)
+            [FromBody] string newOwnerId)
         {
             var currentOwnerId = GetCurrentUserId();
             if (currentOwnerId == null) return Unauthorized();

@@ -18,9 +18,9 @@ namespace Core.Features.Organization.Commands.Validations
             RuleFor(x => x.CurrentOwnerId)
                 .NotEmpty();
 
-            RuleFor(x => x.NewOwnerId)
+            RuleFor(x => x.Email)
                 .NotEmpty()
-                .NotEqual(x => x.CurrentOwnerId)
+                .NotEqual(x => x.Email)
                 .WithMessage("New owner must be different from current owner");
         }
     }

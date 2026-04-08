@@ -157,10 +157,10 @@ public class OrganizationService : IOrganizationService
         org.ContactEmail = updatedData.ContactEmail;
         org.ContactPhone = updatedData.ContactPhone;
 
-        // Fix: Include the missing Type property
-        // org.Type = updatedData.Type; // Uncomment this if 'Type' exists on your Domain.Models.Organization
+            // Fix: Include the missing Type property
+            // org.Type = updatedData.Type; // Uncomment this if 'Type' exists on your Domain.Models.Organization
 
-        // Fix: Handle the Logo upload if a new file was provided
+            // Fix: Handle the Logo upload if a new file was provided
         if (newLogo != null)
         {
             org.LogoUrl = await _fileService.UploadImageAsync("Logo-images", newLogo);
@@ -218,7 +218,7 @@ public class OrganizationService : IOrganizationService
 
     #region Change Owner
 
-    public async Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId)
+    public async Task<string> ChangeOwnerAsync(Guid organizationId, string email, Guid currentOwnerId)
     {
         var org = await _organizationRepository.GetByIdAsync(organizationId);
         if (org == null)
@@ -226,11 +226,11 @@ public class OrganizationService : IOrganizationService
         if (org.OwnerId != currentOwnerId)
             return "Unauthorized: Only the current owner can transfer ownership.";
 
-        var user = await _userManager.FindByIdAsync(newOwnerId.ToString());
+        var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
             return "User Not Found";
 
-        org.OwnerId = newOwnerId;
+        org.OwnerId = user.Id;
         await _organizationRepository.UpdateAsync(org);
 
         return "Owner Updated";
