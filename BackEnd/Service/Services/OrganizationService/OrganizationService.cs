@@ -157,10 +157,10 @@ public class OrganizationService : IOrganizationService
         org.ContactEmail = updatedData.ContactEmail;
         org.ContactPhone = updatedData.ContactPhone;
 
-            // Fix: Include the missing Type property
-            // org.Type = updatedData.Type; // Uncomment this if 'Type' exists on your Domain.Models.Organization
+        // Fix: Include the missing Type property
+        // org.Type = updatedData.Type; // Uncomment this if 'Type' exists on your Domain.Models.Organization
 
-            // Fix: Handle the Logo upload if a new file was provided
+        // Fix: Handle the Logo upload if a new file was provided
         if (newLogo != null)
         {
             org.LogoUrl = await _fileService.UploadImageAsync("Logo-images", newLogo);
@@ -190,7 +190,8 @@ public class OrganizationService : IOrganizationService
         org.OrganizationStatus = OrganizationStatus.Suspended;
 
         var productsToSuspend = await _context.Products.Where(p => p.OrganizationId == id && !p.IsDeleted).ToListAsync();
-        foreach (var product in productsToSuspend) {
+        foreach (var product in productsToSuspend)
+        {
             product.IsDeleted = true;
         }
 
@@ -313,7 +314,7 @@ public class OrganizationService : IOrganizationService
             return false;
 
         return organization.OrganizationStatus == OrganizationStatus.Approved;
-    } 
+    }
     #endregion
     #region Check Organization Existence
     public async Task<bool> DoesOrganizationExistAsync(Guid organizationId)
@@ -321,6 +322,12 @@ public class OrganizationService : IOrganizationService
         return await _organizationRepository.GetTableNoTracking()
             .AnyAsync(x => x.Id == organizationId && !x.IsDeleted);
     }
+
+    public async Task<Guid?> GetFirstOrganizationIdForUserAsync(Guid userId)
+    {
+        var organizations = await _organizationRepository.GetAllOrganizationsByUserId(userId);
+        return organizations.FirstOrDefault()?.Id;
+    }
     #endregion
-    
+
 }

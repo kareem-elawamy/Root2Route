@@ -30,10 +30,6 @@ namespace API.Controllers
         [HttpPut(Router.PlantInfo.EditPlantInfo)]
         public async Task<IActionResult> EditPlantInfo([FromForm] EditPlantInfoCommand command)
         {
-            // if (command.Image == null)
-            // {
-            //     return BadRequest("الملف لم يصل! تأكد من Postman وأن اسم الحقل هو 'Image'");
-            // }
             var response = await Mediator.Send(command);
 
             return NewResult(response);
@@ -43,6 +39,17 @@ namespace API.Controllers
         {
             return NewResult(await Mediator.Send(new DeletePlantInfoCommand(id)));
 
+        }
+        [HttpPost(Router.PlantInfo.UploadPlantInfoImage)]
+        public async Task<IActionResult> UploadPlantInfoImage([FromForm] UploadPlantInfoImageCommand command)
+        {
+            if (command.Image == null)
+            {
+                return BadRequest("The file hasn't arrived");
+            }
+            var response = await Mediator.Send(command);
+
+            return NewResult(response);
         }
     }
 }

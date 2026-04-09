@@ -1,0 +1,188 @@
+<div class="space-y-6 animate-fade-in pb-10">
+
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-1">
+        Overview
+      </h1>
+      <p class="text-sm font-body text-on-surface-variant font-medium">
+        Welcome back, <span class="text-primary font-semibold">{{ currentUser()?.name || 'Partner' }}</span>. Here's
+        what's happening at <span class="font-bold border-b border-primary/30 pb-0.5">{{ activeOrg()?.name || 'your
+          organization' }}</span>.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button
+        class="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm font-label font-semibold text-outline hover:bg-surface-container-low transition-colors shadow-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+        Last 30 Days
+      </button>
+      <button
+        class="px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        Export Report
+      </button>
+    </div>
+  </div>
+
+
+  <!-- KPI Metrics Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    @for (metric of metrics(); track metric.title) {
+      <div
+        class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-4">
+        <div
+          class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined">{{ metric.icon }}</span>
+        </div>
+        <div class="px-2.5 py-1 rounded-full text-xs font-label font-bold" [class.bg-primary-fixed]="metric.isUp"
+          [class.text-on-primary-fixed-variant]="metric.isUp" [class.bg-error-container]="!metric.isUp" [class.text-on-error-container]="!metric.isUp">
+          {{ metric.trend }}
+        </div>
+      </div>
+      <div class="font-body">
+        <h3 class="text-on-surface-variant text-sm font-medium mb-1">{{ metric.title }}</h3>
+        <p class="text-2xl font-headline font-bold text-on-surface">{{ metric.value }}</p>
+      </div>
+      <!-- Decorative subtle background shape -->
+      <div class="absolute -bottom-6 -right-6 text-primary/5 pointer-events-none">
+        <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">{{ metric.icon
+          }}</span>
+      </div>
+    </div>
+    }
+  </div>
+
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left Column: Activity Chart & Latest Orders (Takes 2 columns) -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Activity Chart Placeholder -->
+      <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-headline font-bold text-on-surface">Revenue & Activity Overview</h3>
+          <button class="text-outline hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">more_horiz</span>
+          </button>
+        </div>
+        <!-- Simple pure HTML/CSS visually appealing graph placeholder -->
+        <div
+          class="w-full h-64 bg-surface-container-low rounded-xl border border-outline-variant relative overflow-hidden flex items-end px-4 pt-8 pb-4 gap-2">
+          <!-- Grid lines -->
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none p-4">
+            <div class="border-b border-dashed border-outline-variant w-full"></div>
+            <div class="border-b border-dashed border-outline-variant w-full"></div>
+            <div class="border-b border-dashed border-outline-variant w-full"></div>
+            <div class="border-b border-dashed border-outline-variant w-full"></div>
+          </div>
+
+          <!-- Dummy Bars representing data -->
+          <div class="w-full flex justify-between items-end h-full z-10 px-2 group/chart">
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[30%]"></div>
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[45%]"></div>
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[25%]"></div>
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[60%]"></div>
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[50%]"></div>
+            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[80%]"></div>
+            <div
+              class="w-[8%] bg-primary transition-colors rounded-t-md relative h-[95%] shadow-[0_0_15px_rgba(0,105,72,0.4)]">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Latest Orders -->
+      <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-headline font-bold text-on-surface">Recent Orders</h3>
+          <a routerLink="/org/orders" class="text-sm font-label text-primary font-semibold hover:underline cursor-pointer">View
+            All</a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse font-body">
+            <thead>
+              <tr class="text-xs uppercase font-label text-outline border-b border-outline-variant">
+                <th class="pb-3 font-semibold">Order ID</th>
+                <th class="pb-3 font-semibold">Product</th>
+                <th class="pb-3 font-semibold">Amount</th>
+                <th class="pb-3 font-semibold text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrders; track order.id) {
+              <tr
+                class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+                <td class="py-3.5 text-sm font-semibold text-on-surface">{{ order.id }}</td>
+                <td class="py-3.5 text-sm text-on-surface-variant">{{ order.product }}</td>
+                <td class="py-3.5 text-sm font-semibold text-on-surface">{{ order.amount }}</td>
+                <td class="py-3.5 text-right font-label">
+                  <span class="px-2.5 py-1 text-[10px] uppercase font-bold rounded-full inline-block"
+                    [class.bg-secondary-container]="order.status === 'Processing'"
+                    [class.text-on-secondary-container]="order.status === 'Processing'"
+                    [class.bg-tertiary-container]="order.status === 'Shipped'" 
+                    [class.text-on-tertiary-container]="order.status === 'Shipped'"
+                    [class.bg-primary-container]="order.status === 'Delivered'"
+                    [class.text-on-primary-container]="order.status === 'Delivered'">
+                    {{ order.status }}
+                  </span>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Bid Activity (Takes 1 column) -->
+    <div class="lg:col-span-1 space-y-6">
+
+      <div
+        class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm h-full max-h-[800px] flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+            Live Feed
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span>
+            </span>
+          </h3>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar font-body">
+          @for (bid of liveBids; track bid.auction) {
+          <div class="relative pl-4 ml-2 border-l-2 border-outline-variant pb-2">
+            <span
+              class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface border-2 border-primary"></span>
+            <div class="mb-1 flex justify-between items-start">
+              <p class="text-sm font-bold text-on-surface">{{ bid.bidder }}</p>
+              <span class="text-[10px] text-outline font-semibold">{{ bid.time }}</span>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-2">Placed a new bid on <span
+                class="font-semibold text-on-surface">"{{ bid.auction }}"</span></p>
+            <div
+              class="inline-flex items-center gap-1.5 px-2 py-1 bg-secondary-container text-on-secondary-container rounded-md text-xs font-bold leading-none">
+              <span class="material-symbols-outlined text-[14px]">payments</span>
+              {{ bid.amount }}
+            </div>
+          </div>
+          }
+        </div>
+
+        <div class="pt-4 mt-2 border-t border-outline-variant">
+          <button
+            class="w-full py-2 text-sm text-outline font-semibold hover:text-primary transition-colors text-center border border-dashed border-outline-variant rounded-xl hover:border-primary hover:bg-primary/5 font-label">
+            View All Activity
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

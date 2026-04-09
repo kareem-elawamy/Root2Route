@@ -34,19 +34,17 @@ namespace Service.Services.AuthenticationService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Name, user.UserName ?? "")
+            new Claim(ClaimTypes.Name, user.UserName ?? ""),
 
         };
 
 
-            // ✅ 1. Identity Roles (Global)
             var identityRoles = await _userManager.GetRolesAsync(user);
             foreach (var role in identityRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            // ✅ 2. Organization Scope
             if (organizationId.HasValue)
             {
                 var membership = await _context.OrganizationMembers
@@ -96,7 +94,7 @@ namespace Service.Services.AuthenticationService
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
                 ExpireAt = token.ValidTo,
                 FullName = user.FullName,
-                RefreshToken = (await CreateRefreshToken(user, organizationId)).Token
+                RefreshToken = (await CreateRefreshToken(user, organizationId)).Token,
             };
         }
         private async Task<RefreshToken> CreateRefreshToken(ApplicationUser user, Guid? organizationId)

@@ -54,9 +54,9 @@ namespace Core.Features.Authentication.Commands.Handler
             var otpCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var emailBody = GetOtpHtmlTemplate(user.FullName, otpCode);
-            await _emailService.SendEmailAsync(user.Email!, "إعادة إرسال كود التحقق - Root2Route", emailBody);
+            await _emailService.SendEmailAsync(user.Email!, "Resend verification code - Root2Route", emailBody);
 
-            return Success("تم إعادة إرسال كود التحقق إلى بريدك الإلكتروني.");
+            return Success("Resend verification code successfully.");
         }
         private string GetOtpHtmlTemplate(string userName, string otpCode)
         {
@@ -84,17 +84,17 @@ namespace Core.Features.Authentication.Commands.Handler
                 <h1>Root2Route</h1>
             </div>
             <div class='content'>
-                <h2>مرحباً {userName}</h2>
-                <p>سعداء بانضمامك إلى منصتنا. يرجى استخدام كود التحقق التالي لإتمام عملية تسجيل حسابك:</p>
+                <h2>Hello {userName}</h2>
+                <p>We are happy to have you join our platform. Please use the following verification code to complete your account registration:</p>
                 <div class='otp-box'>
                     <div class='otp-code'>{otpCode}</div>
                 </div>
-                <p>هذا الكود صالح لمدة 15 دقيقة فقط.</p>
-                <p>إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذا البريد الإلكتروني.</p>
+                <p>This code is valid for 15 minutes only.</p>
+                <p>If you did not create an account, you can ignore this email.</p>
             </div>
             <div class='footer'>
-                <p>© {DateTime.Now.Year} Root2Route - دعم الزراعة المستدامة</p>
-                <p>هذه رسالة تلقائية، يرجى عدم الرد عليها.</p>
+                <p>© {DateTime.Now.Year} Root2Route - Support Sustainable Agriculture</p>
+                <p>This is an automated message, please do not reply to it.</p>
             </div>
         </div>
     </body>

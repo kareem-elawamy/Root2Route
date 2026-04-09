@@ -1,0 +1,197 @@
+<div class="org-layout">
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SideBar -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <aside
+    class="h-screen w-64 fixed left-0 top-0 bg-surface-container flex flex-col py-6 px-4 z-50 border-r border-outline-variant">
+
+    <!-- Brand -->
+    <div class="flex items-center gap-3 mb-10 px-2">
+      <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
+        <img src="./favicon.ico" alt="Root2Route" class="w-6 h-6" />
+      </div>
+      <div>
+        <h2 class="text-xl font-headline font-bold text-primary leading-none">Root2Route</h2>
+        <p class="text-xs font-label text-outline mt-1">Digital Agrarian</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1 overflow-y-auto">
+      <a routerLink="/org/overview" routerLinkActive="active-nav" class="nav-item"
+        [routerLinkActiveOptions]="{ exact: false }">
+        <span class="material-symbols-outlined nav-icon">dashboard</span>
+        <span>Overview</span>
+      </a>
+      <a routerLink="/org/products" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">inventory_2</span>
+        <span>Products</span>
+      </a>
+      <a routerLink="/org/orders" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">shopping_cart</span>
+        <span>Orders</span>
+      </a>
+      <a routerLink="/org/auctions" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">gavel</span>
+        <span>Auctions</span>
+      </a>
+      <a routerLink="/org/members" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">group</span>
+        <span>Team &amp; Roles</span>
+      </a>
+      <a routerLink="/org/chat" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">forum</span>
+        <span>Chat &amp; Offers</span>
+      </a>
+      <a routerLink="/org/reviews" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">star</span>
+        <span>Reviews</span>
+      </a>
+      <a routerLink="/org/shipments" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">local_shipping</span>
+        <span>Shipments</span>
+      </a>
+      <a routerLink="/org/settings" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">settings</span>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <!-- New Auction CTA -->
+    <div class="mt-4 pt-4 border-t border-outline-variant">
+      <button
+        class="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-body font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+        New Auction
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- Top NavBar -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <header
+    class="fixed top-0 left-64 right-0 h-16 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-8">
+
+    <!-- Left: Org Switcher Dropdown -->
+    <div class="relative">
+      <button id="org-switcher-btn" (click)="toggleDropdown()"
+        class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-container-high transition-all group">
+
+        <!-- Org Icon / Initial -->
+        <div
+          class="w-8 h-8 rounded-lg bg-primary-container border border-outline-variant flex items-center justify-center text-on-primary-container font-headline font-bold text-sm flex-shrink-0">
+          {{ orgInitial(activeOrg()?.name ?? '') }}
+        </div>
+
+        <!-- Org Name -->
+        <div class="text-left font-body">
+          @if (isLoadingOrgs()) {
+          <div class="h-3 w-28 bg-surface-variant rounded animate-pulse"></div>
+          <div class="h-2 w-16 bg-surface-container-high rounded animate-pulse mt-1"></div>
+          } @else {
+          <p class="text-sm font-semibold text-on-surface leading-none">
+            {{ activeOrg()?.name ?? 'Select Organization' }}
+          </p>
+          <p class="text-[10px] text-outline uppercase tracking-widest mt-0.5">Organization</p>
+          }
+        </div>
+
+        <!-- Chevron -->
+        <span class="material-symbols-outlined text-outline text-[18px] transition-transform duration-200"
+          [class.rotate-180]="dropdownOpen()">
+          expand_more
+        </span>
+      </button>
+
+      <!-- Dropdown -->
+      @if (dropdownOpen()) {
+      <div
+        class="absolute top-full left-0 mt-2 w-64 bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant py-2 z-50 animate-dropdown">
+
+        <p class="px-4 py-2 text-[10px] font-label font-bold uppercase tracking-widest text-outline">
+          My Organizations
+        </p>
+
+        @if (isLoadingOrgs()) {
+        @for (i of [1,2]; track i) {
+        <div class="flex items-center gap-3 px-4 py-2.5">
+          <div class="w-8 h-8 bg-surface-container-high rounded-lg animate-pulse"></div>
+          <div class="h-3 w-32 bg-surface-container-high rounded animate-pulse"></div>
+        </div>
+        }
+        } @else if (organizations().length === 0) {
+        <div class="px-4 py-4 text-center">
+          <span class="material-symbols-outlined text-outline-variant text-3xl">domain_disabled</span>
+          <p class="text-xs font-body text-outline mt-1">No organizations found</p>
+        </div>
+        } @else {
+        @for (org of organizations(); track org.id) {
+        <button (click)="switchOrg(org.id)"
+          class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container-low transition-colors text-left"
+          [class.bg-secondary-container]="activeOrg()?.id === org.id">
+          <!-- Org Initial Avatar -->
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center font-headline text-xs font-bold flex-shrink-0"
+            [class.bg-primary]="activeOrg()?.id === org.id" [class.text-on-primary]="activeOrg()?.id === org.id"
+            [class.bg-surface-container-high]="activeOrg()?.id !== org.id" [class.text-on-surface-variant]="activeOrg()?.id !== org.id">
+            {{ orgInitial(org.name) }}
+          </div>
+          <span class="text-sm font-body font-medium text-on-surface truncate">{{ org.name }}</span>
+          @if (activeOrg()?.id === org.id) {
+          <span class="material-symbols-outlined text-primary text-[18px] ml-auto">check</span>
+          }
+        </button>
+        }
+        }
+
+        <div class="border-t border-outline-variant mt-2 pt-2 px-4 pb-1">
+          <button class="text-xs font-label text-primary font-semibold hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+            Create New Organization
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Right: Actions + User -->
+    <div class="flex items-center gap-5">
+
+      <!-- Notifications -->
+      <button id="topbar-notifications"
+        class="relative text-outline hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-error rounded-full"></span>
+      </button>
+
+      <!-- Support -->
+      <button id="topbar-support"
+        class="text-outline hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined">help</span>
+        <span class="text-sm font-label">Support</span>
+      </button>
+
+      <!-- User Profile -->
+      <div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+        <div class="text-right font-body">
+          <p class="text-sm font-semibold text-on-surface leading-none">{{ currentUser()?.name || 'User' }}</p>
+          <p class="text-[10px] text-outline uppercase tracking-widest font-bold mt-0.5">
+            {{ currentUser()?.permissions?.length ? 'Member' : 'Admin' }}
+          </p>
+        </div>
+        <!-- Avatar: Initial fallback -->
+        <div
+          class="w-9 h-9 rounded-[var(--radius-full)] bg-primary flex items-center justify-center text-on-primary font-headline font-bold text-sm flex-shrink-0 border-2 border-outline-variant">
+          {{ userInitial() }}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- Main Content -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <main class="layout-content">
+    <router-outlet />
+  </main>
+</div>

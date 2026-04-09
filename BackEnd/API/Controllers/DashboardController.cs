@@ -82,11 +82,6 @@ namespace API.Controllers
         // Organisation Dashboard – Overview page
         // Route prefix: api/v1/dashboard/org/{orgId}/
         // ════════════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Returns the four KPI summary cards:
-        ///   Total Revenue | Active Auctions | Pending Orders | Unread Messages
-        /// </summary>
         [HttpGet("api/v1/dashboard/org/{orgId}/overview")]
         public async Task<IActionResult> GetOrgOverview([FromRoute] Guid orgId)
         {
@@ -94,9 +89,6 @@ namespace API.Controllers
             return NewResult(response);
         }
 
-        /// <summary>
-        /// Returns monthly Net Revenue + Auction Volume for the Activity Over Time chart.
-        /// </summary>
         [HttpGet("api/v1/dashboard/org/{orgId}/activity-chart")]
         public async Task<IActionResult> GetOrgActivityChart(
             [FromRoute] Guid orgId,
@@ -105,14 +97,11 @@ namespace API.Controllers
             var response = await Mediator.Send(new GetOrgActivityChartQuery
             {
                 OrganizationId = orgId,
-                Months         = months
+                Months = months
             });
             return NewResult(response);
         }
 
-        /// <summary>
-        /// Returns the most-recent bids placed on this organisation's auctions (Live Bid Activity feed).
-        /// </summary>
         [HttpGet("api/v1/dashboard/org/{orgId}/live-bids")]
         public async Task<IActionResult> GetOrgLiveBids(
             [FromRoute] Guid orgId,
@@ -121,14 +110,11 @@ namespace API.Controllers
             var response = await Mediator.Send(new GetOrgLiveBidsQuery
             {
                 OrganizationId = orgId,
-                Limit          = limit
+                Limit = limit
             });
             return NewResult(response);
         }
-
-        /// <summary>
-        /// Returns the latest orders placed with this organisation (Latest Orders table).
-        /// </summary>
+    
         [HttpGet("api/v1/dashboard/org/{orgId}/latest-orders")]
         public async Task<IActionResult> GetOrgLatestOrders(
             [FromRoute] Guid orgId,
@@ -137,7 +123,7 @@ namespace API.Controllers
             var response = await Mediator.Send(new GetOrgLatestOrdersQuery
             {
                 OrganizationId = orgId,
-                Limit          = limit
+                Limit = limit
             });
             return NewResult(response);
         }
