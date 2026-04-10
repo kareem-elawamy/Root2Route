@@ -1,0 +1,26 @@
+.sidebar-bg {
+  background-color: #f2fbf6; /* نفس اللون الفاتح في الصورة */
+}
+.active-nav-item {
+  background-color: #0fa968; /* الأخضر الأساسي */
+  color: white !important;
+  border-radius: 10px;
+}
+.nav-item-link {
+  color: #5c736a;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+.nav-item-link:hover:not(.active-nav-item) {
+  background-color: #e6f5ec;
+}
+.card-custom {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+.bg-primary-green {
+  background-color: #12b76a; /* الكارت الأخضر */
+  color: white;
+}

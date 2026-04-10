@@ -1,0 +1,138 @@
+<div class="flex flex-grow overflow-hidden p-8 gap-8 bg-surface">
+  <section class="w-80 flex flex-col gap-6 shrink-0">
+    <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm flex flex-col gap-6 border border-outline-variant/10">
+      <div>
+        <h2 class="text-lg font-bold text-emerald-900 font-headline mb-1">Report Configuration</h2>
+        <p class="text-xs text-on-surface-variant font-body">Define parameters for your data engine.</p>
+      </div>
+      <div class="space-y-4">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Date Range</label>
+        <div class="grid grid-cols-1 gap-3">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
+            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="text" [value]="dateFilters.start"/>
+          </div>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">event</span>
+            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="text" [value]="dateFilters.end"/>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Report Type</label>
+        <select class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-emerald-500/20 appearance-none cursor-pointer">
+          @for (type of reportTypes; track type) {
+            <option>{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="space-y-3">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Export Format</label>
+        <div class="flex p-1 bg-surface-container-low rounded-xl">
+          @for (fmt of exportFormats; track fmt.label) {
+            <button class="flex-1 py-2 text-xs rounded-lg {{ fmt.class }}">{{ fmt.label }}</button>
+          }
+        </div>
+      </div>
+      <button class="w-full mt-4 py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-[0_10px_20px_-5px_rgba(0,108,73,0.3)] hover:scale-[0.98] active:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-xl animate-spin" style="font-variation-settings: 'opsz' 20">progress_activity</span>
+        Generate Report
+      </button>
+    </div>
+    <div class="bg-secondary-container/30 rounded-2xl p-5 border border-secondary-container/50">
+      <div class="flex justify-between items-start mb-4">
+        <div class="bg-white p-2 rounded-lg text-emerald-700">
+          <span class="material-symbols-outlined">analytics</span>
+        </div>
+        <span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">LIVE FEED</span>
+      </div>
+      <div class="text-sm font-bold text-emerald-900">Engine Capacity</div>
+      <div class="text-2xl font-extrabold text-emerald-700 mt-1">{{ engineCapacity }}%</div>
+      <div class="mt-3 h-1.5 w-full bg-white rounded-full overflow-hidden">
+        <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="engineCapacity"></div>
+      </div>
+    </div>
+  </section>
+  <section class="flex-grow flex flex-col gap-6 overflow-hidden">
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="text-3xl font-extrabold text-emerald-950 font-headline tracking-tight leading-none">Report Preview</h2>
+        <p class="text-on-surface-variant font-body mt-2">Visualizing results for October 2023 — Financial Summary</p>
+      </div>
+      <div class="flex gap-3">
+        <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-emerald-50 transition-colors text-sm">
+          <span class="material-symbols-outlined text-lg">download</span>
+          Download Report
+        </button>
+        <button class="p-2.5 rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined">print</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="bg-surface-container-lowest rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-outline-variant/5 flex flex-col overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low/50">
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Date</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Transaction ID</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Organization</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Amount</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (trx of transactions; track trx.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-5 text-sm text-on-surface font-medium">{{ trx.date }}</td>
+                <td class="px-6 py-5 text-sm text-slate-500 font-mono">{{ trx.id }}</td>
+                <td class="px-6 py-5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold {{ trx.org.colorClass }}">
+                      {{ trx.org.initials }}
+                    </div>
+                    <span class="text-sm font-semibold text-emerald-900">{{ trx.org.name }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-5 text-sm font-bold text-emerald-950">{{ trx.amount }}</td>
+                <td class="px-6 py-5">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold {{ trx.statusClass }}">
+                    <span class="w-1 h-1 rounded-full {{ trx.statusDot }}"></span>
+                    {{ trx.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-3 gap-6 mb-8">
+      <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Revenue</div>
+        <div class="text-2xl font-extrabold text-emerald-950">{{ summary.revenue }}</div>
+        <div class="mt-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+          <span class="material-symbols-outlined text-xs">trending_up</span>
+          {{ summary.revenueGrowth }}
+        </div>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Transactions</div>
+        <div class="text-2xl font-extrabold text-emerald-950">{{ summary.transactions }}</div>
+        <div class="mt-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+          <span class="material-symbols-outlined text-xs">bolt</span>
+          {{ summary.transactionsAvg }}
+        </div>
+      </div>
+      <div class="bg-primary/5 rounded-2xl p-6 flex flex-col justify-center items-center text-center border border-primary/10">
+        <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-white mb-2 shadow-lg shadow-emerald-200">
+          <span class="material-symbols-outlined">auto_awesome</span>
+        </div>
+        <div class="text-xs font-bold text-emerald-800">Insights Ready</div>
+        <p class="text-[10px] text-emerald-600 mt-1">Smart analysis available for this report.</p>
+      </div>
+    </div>
+  </section>
+</div>

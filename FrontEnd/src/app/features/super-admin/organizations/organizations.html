@@ -1,0 +1,135 @@
+<div class="p-8 pb-24">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Total Organizations</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.total }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Pending Review</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.pending }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-rose-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Suspended</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.suspended }}</h3>
+    </div>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+    <div class="px-6 py-5 flex items-center justify-between bg-white">
+      <h2 class="font-headline font-bold text-lg">Organization Directory</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+          <tr>
+            <th class="px-6 py-4">Organization</th>
+            <th class="px-6 py-4">Type</th>
+            <th class="px-6 py-4">Date Joined</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          
+          @for (org of organizations; track org.id) {
+            <tr (click)="openDetails(org)" class="hover:bg-slate-50 transition-colors cursor-pointer group">
+              <td class="px-6 py-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold {{ org.bgClass }}">
+                    {{ org.initial }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">{{ org.name }}</p>
+                    <p class="text-xs text-slate-500">{{ org.email }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-xs font-medium text-slate-700">{{ org.type }}</td>
+              <td class="px-6 py-4 text-xs text-slate-500">{{ org.date }}</td>
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ org.statusClass }}">
+                  {{ org.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-600">chevron_right</span>
+              </td>
+            </tr>
+          }
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@if (isDrawerOpen && selectedOrg) {
+  <div class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40" (click)="closeDetails()"></div>
+  
+  <div class="fixed right-0 top-0 h-full w-[420px] bg-white z-50 shadow-2xl flex flex-col border-l border-emerald-500/10">
+    
+    <div class="p-8 pb-4">
+      <div class="flex items-center justify-between mb-6">
+        <button (click)="closeDetails()" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+        <span class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest {{ selectedOrg.statusClass }}">
+          {{ selectedOrg.status }}
+        </span>
+      </div>
+      <h2 class="font-headline font-extrabold text-2xl mb-1">Organization Profile</h2>
+      <p class="text-slate-500 text-sm font-medium">{{ selectedOrg.name }} (ID: {{ selectedOrg.id }})</p>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8 space-y-8">
+      
+      <section class="space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 p-4 rounded-2xl">
+            <p class="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">Total Acreage</p>
+            <p class="text-xl font-black text-emerald-700">{{ selectedOrg.details.acreage }}</p>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-2xl">
+            <p class="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">Primary Crop</p>
+            <p class="text-xl font-black text-emerald-700">{{ selectedOrg.details.crop }}</p>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Description</h4>
+          <p class="text-sm text-slate-700 leading-relaxed">{{ selectedOrg.details.desc }}</p>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Compliance Files</h4>
+
+        @for (file of selectedOrg.files; track file.name) {
+          <div class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors group">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mr-4">
+              <span class="material-symbols-outlined text-emerald-700">description</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-bold text-slate-800">{{ file.name }}</p>
+              <p class="text-[10px] text-slate-500">{{ file.size }} • {{ file.details }}</p>
+            </div>
+            <span class="material-symbols-outlined text-slate-300 group-hover:text-emerald-500 transition-colors">download</span>
+          </div>
+        }
+
+        @if (!selectedOrg.files || selectedOrg.files.length === 0) {
+          <p class="text-sm text-slate-500 italic">No compliance files available.</p>
+        }
+      </section>
+      
+    </div>
+
+    <div class="p-8 border-t border-slate-100 bg-white space-y-3">
+      <button (click)="approveOrg()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl hover:bg-emerald-700 transition-colors">
+        Approve Organization
+      </button>
+      <button (click)="rejectOrg()" class="w-full border-2 border-rose-500 text-rose-500 font-bold py-4 rounded-2xl hover:bg-rose-50 transition-colors">
+        Reject Application
+      </button>
+    </div>
+  </div>
+}
