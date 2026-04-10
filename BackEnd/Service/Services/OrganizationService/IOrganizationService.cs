@@ -18,7 +18,7 @@ public interface IOrganizationService
     Task<string> RestoreAsync(Guid id);
     Task<string> UploadLogoAsync(Guid organizationId, IFormFile file);
     Task<object> GetStatisticsAsync(Guid organizationId);
-    Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId);
+    Task<string> ChangeOwnerAsync(Guid organizationId, string email, Guid currentOwnerId);
     Task<bool> IsOwnerAsync(Guid ownerId, Guid organizationId);
     Task<List<Organization>> GetOrganizationsByStatusAsync(OrganizationStatus status);
 

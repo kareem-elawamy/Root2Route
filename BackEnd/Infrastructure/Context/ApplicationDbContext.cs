@@ -55,7 +55,7 @@ namespace Infrastructure.Data
         public DbSet<SystemSetting> SystemSettings { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OrganizationDocument> OrganizationDocuments { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }  
 
         // =========================================================
         // 5. Logistics & Shipping
