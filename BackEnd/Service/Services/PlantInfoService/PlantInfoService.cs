@@ -134,5 +134,17 @@ namespace Service.Services.PlantInfoService
             return await _plantInfoRepo.GetTableNoTracking()
                 .AnyAsync(p => p.Name!.ToLower() == name.ToLower() && !p.IsDeleted);
         }
+
+        public async Task<string> UploadPlantInfoImageAsync(Guid plantInfoId, IFormFile file)
+        {
+            var plantInfo = await _plantInfoRepo.GetByIdAsync(plantInfoId);
+            if (plantInfo == null) return "NotFound";
+            var imageUrl = await _fileService.UploadImageAsync("plant-images", file);
+            plantInfo.ImageUrl = imageUrl;
+            plantInfo.UpdatedAt = DateTime.UtcNow;
+            await _plantInfoRepo.UpdateAsync(plantInfo);
+            return "Success";
+
+        }
     }
 }

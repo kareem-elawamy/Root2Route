@@ -11,10 +11,9 @@ namespace Domain.Models
         public string? IdealSoil { get; set; } // التربة المثالية
         public string MedicalBenefits { get; set; } = string.Empty; // للأعشاب الطبية
 
-        public string? PlantingSeason { get; set; } // موسم الزراعة
+        public string? PlantingSeason { get; set; }
         public string? ImageUrl { get; set; } // رابط صورة للنبات
 
-        // خطوات الزراعة (One-to-Many)
         public ICollection<PlantGuideStep>? GuideSteps { get; set; }
     }
 }

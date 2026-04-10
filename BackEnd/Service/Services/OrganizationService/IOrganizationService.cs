@@ -21,6 +21,7 @@ public interface IOrganizationService
     Task<string> ChangeOwnerAsync(Guid organizationId, string email, Guid currentOwnerId);
     Task<bool> IsOwnerAsync(Guid ownerId, Guid organizationId);
     Task<List<Organization>> GetOrganizationsByStatusAsync(OrganizationStatus status);
+    Task<Guid?> GetFirstOrganizationIdForUserAsync(Guid userId);
 
 
 }

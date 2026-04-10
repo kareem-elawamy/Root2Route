@@ -4,7 +4,9 @@ using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Service;
+using Service.Services;
 using Service.Services.AuthenticationService;
+using Service.Services.OrderService;
 
 namespace Core.Features.authentication.Commands.Handler
 {
@@ -13,11 +15,14 @@ namespace Core.Features.authentication.Commands.Handler
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IAuthenticationService _authService;
+        private readonly IOrganizationService _orgService;
 
         public SignInCommandHandler(UserManager<ApplicationUser> userManager,
                                     SignInManager<ApplicationUser> signInManager,
-                                    IAuthenticationService authService)
+                                    IAuthenticationService authService,
+                                     IOrganizationService orgService)
         {
+            _orgService = orgService;
             _userManager = userManager;
             _signInManager = signInManager;
             _authService = authService;
@@ -38,7 +43,7 @@ namespace Core.Features.authentication.Commands.Handler
                 return BadRequest<JwtAuthResult>("Email is not confirmed");
 
             var accessToken = await _authService.GenerateToken(user, null, request.IsRememberMe);
-
+            
             return Success(accessToken);
         }
     }

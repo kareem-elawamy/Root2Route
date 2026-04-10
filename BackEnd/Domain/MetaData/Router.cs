@@ -28,6 +28,7 @@ namespace Domain.MetaData
             public const string EditPlantInfo = Prefix + "/edit";
             public const string DeletePlantInfo = Prefix + "/delete";
             public const string Paginated = Prefix + "/paginated";
+            public const string UploadPlantInfoImage = Prefix + "/upload-image";
         }
 
         public static class PlantGuideStep
@@ -124,7 +125,7 @@ namespace Domain.MetaData
             public const string SendInvitation = Prefix + "/send";
             public const string GetAllInvitationsForUser = Prefix + "/my";
             public const string AcceptInvitation = Prefix + "/accept";
-            public const string Revoken = Prefix + "/revoke"; 
+            public const string Revoken = Prefix + "/revoke";
         }
 
         public static class Chat

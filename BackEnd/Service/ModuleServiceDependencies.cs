@@ -21,6 +21,8 @@ using Service.Services.ProductService;
 using Service.Services.NotificationService;
 using Service.Services.ShipmentService;
 using Service.Services.ReviewService;
+using Service.Services.DashboardService;
+using Service.Services.OrgDashboardServices;
 
 namespace Service;
 
@@ -45,6 +47,8 @@ public static class ModuleServiceDependencies
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IShipmentService, ShipmentService>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IOrgDashboardServices, OrgDashboardServices>();
         services.AddHostedService<AuctionFinalizerBackgroundService>();
         return services;
     }

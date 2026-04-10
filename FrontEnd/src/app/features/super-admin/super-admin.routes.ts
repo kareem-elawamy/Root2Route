@@ -1,4 +1,14 @@
 import { Routes } from '@angular/router';
+ feature/add-seader
+
+export const superAdminRoutes: Routes = [
+
+  {
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
+  },
+ 
 import { Dashboard } from './dashboard/dashboard';
 import { Organizations } from './organizations/organizations';
 import { Auctions } from './auctions/auctions';
@@ -13,4 +23,5 @@ export const SUPER_ADMIN_ROUTES: Routes = [
   { path: 'ai-lab', component: AiLab },
   { path: 'reports', component: Reports },
   { path: 'settings', component: Settings }
+  main
 ];

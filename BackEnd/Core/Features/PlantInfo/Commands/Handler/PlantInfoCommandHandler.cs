@@ -14,7 +14,8 @@ namespace Core.Features.PlantInfo.Commands.Handler
 {
     public class PlantInfoCommandHandler : ResponseHandler, IRequestHandler<CreatePlantInfoCommand, Response<string>>,
     IRequestHandler<EditPlantInfoCommand, Response<string>>,
-    IRequestHandler<DeletePlantInfoCommand, Response<string>>
+    IRequestHandler<DeletePlantInfoCommand, Response<string>>,
+    IRequestHandler<UploadPlantInfoImageCommand, Response<string>>
     {
         private readonly IPlantInfoService _plantInfoService;
         private readonly IMapper _mapper;
@@ -52,9 +53,17 @@ namespace Core.Features.PlantInfo.Commands.Handler
             var plantInfo = await _plantInfoService.GetPlantInfoByIdAsync(request.Id);
             if (plantInfo == null) return NotFound<string>("Plant Not Found");
             var result = await _plantInfoService.DeletePlantInfoAsync(plantInfo);
-             if (result=="Success") return Deleted<string>();
+            if (result == "Success") return Deleted<string>();
             else return BadRequest<string>();
-            
+
+        }
+
+        public async Task<Response<string>> Handle(UploadPlantInfoImageCommand request, CancellationToken cancellationToken)
+        {
+            var result = await _plantInfoService.UploadPlantInfoImageAsync(request.PlantInfoId, request.Image);
+            if (result == "Success") return Success("Image uploaded successfully.");
+            else if (result == "NotFound") return NotFound<string>("Plant info not found.");
+            else return BadRequest<string>("Failed to upload image.");
         }
     }
 }

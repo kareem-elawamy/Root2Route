@@ -54,7 +54,6 @@ namespace Service.Services.AuctionService
             if (auction.Status != AuctionStatus.Ongoing) throw new InvalidOperationException("Auction is not active");
             if (auction.EndDate <= DateTime.UtcNow) throw new InvalidOperationException("Auction has ended");
 
-            // Shill Bidding Check
             if (auction.Product != null)
             {
                 var isSeller = await _organizationMemberRepository.GetTableNoTracking()
@@ -87,7 +86,6 @@ namespace Service.Services.AuctionService
                 await _auctionRepository.UpdateAsync(auction);
                 await transaction.CommitAsync();
 
-                // Notify the previously outbid bidder (if any)
                 var previousHighBidder = auction.Bids
                     .Where(b => b.BidderId != bidderId)
                     .OrderByDescending(b => b.BidTime)

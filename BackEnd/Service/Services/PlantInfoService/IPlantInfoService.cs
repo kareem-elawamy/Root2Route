@@ -17,6 +17,7 @@ namespace Service.Services.PlantInfoService
         public Task<PlantInfo?> GetPlantInfoByIdAsync(Guid id);
         public Task<string> DeletePlantInfoAsync(PlantInfo plantInfo);
         public IQueryable<PlantInfo> FilterPlantinfoPaginatedQuerable(PlantInfoOrderingEnum orderingEnum, string search);
+        public Task<string> UploadPlantInfoImageAsync(Guid plantInfoId, IFormFile file);
 
 
     }

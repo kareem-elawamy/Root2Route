@@ -1,0 +1,39 @@
+<div class="min-h-screen bg-surface flex flex-col items-center justify-center p-4">
+  <div class="text-center max-w-lg">
+    
+    <!-- Big Icon/Graphic -->
+    <div class="relative inline-block mb-8">
+      <div class="w-32 h-32 bg-primary-container rounded-full flex items-center justify-center animate-pulse-slow">
+        <span class="material-symbols-outlined text-on-primary-container text-[80px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+      </div>
+      <!-- Subtle Decorative badge -->
+      <div class="absolute -top-2 -right-4 bg-error text-on-error font-headline font-bold text-2xl px-3 py-1 rounded-xl shadow-lg rotate-12">
+        404
+      </div>
+    </div>
+
+    <!-- Text Content -->
+    <h1 class="text-4xl font-headline font-extrabold text-on-surface tracking-tight mb-4">
+      Looks like this plot is empty
+    </h1>
+    <p class="text-lg font-body text-on-surface-variant mb-10 leading-relaxed text-center">
+      We couldn't find the page you're looking for. It might have been harvested, moved to another field, or perhaps it never grew here at all.
+    </p>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <button onclick="window.history.back()" 
+        class="w-full sm:w-auto px-6 py-3 bg-surface-container-high border border-outline-variant text-on-surface rounded-xl font-label font-semibold hover:bg-surface-container-highest transition-all shadow-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-outline">arrow_back</span>
+        Go Back
+      </button>
+
+      <a routerLink="/" 
+        class="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl font-label font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">home</span>
+        Return to Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>

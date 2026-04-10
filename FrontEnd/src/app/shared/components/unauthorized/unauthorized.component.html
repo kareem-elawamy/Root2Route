@@ -1,0 +1,39 @@
+<div class="min-h-screen bg-surface flex flex-col items-center justify-center p-4">
+  <div class="text-center max-w-lg">
+    
+    <!-- Big Icon/Graphic -->
+    <div class="relative inline-block mb-8">
+      <div class="w-32 h-32 bg-error-container rounded-[var(--radius-full)] flex items-center justify-center shadow-inner">
+        <span class="material-symbols-outlined text-on-error-container text-[72px]" style="font-variation-settings: 'FILL' 1;">gpp_bad</span>
+      </div>
+      <!-- Lock Badge -->
+      <div class="absolute -bottom-2 -right-2 bg-surface text-error border-4 border-surface font-bold text-2xl w-14 h-14 rounded-full shadow-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+      </div>
+    </div>
+
+    <!-- Text Content -->
+    <h1 class="text-4xl font-headline font-extrabold text-on-surface tracking-tight mb-4">
+      Restricted Territory
+    </h1>
+    <p class="text-lg font-body text-on-surface-variant mb-10 leading-relaxed text-center">
+      You don't have the necessary access rights to enter this section of the platform. If you believe this is a mistake, please reach out to your organization admin.
+    </p>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a routerLink="/" 
+        class="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl font-label font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">dashboard</span>
+        Back to Dashboard
+      </a>
+      
+      <button onclick="window.history.back()" 
+        class="w-full sm:w-auto px-6 py-3 bg-surface-container border border-outline-variant text-on-surface rounded-xl font-label font-semibold hover:bg-surface-container-high transition-all shadow-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-outline">undo</span>
+        Previous Page
+      </button>
+    </div>
+
+  </div>
+</div>

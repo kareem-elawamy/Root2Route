@@ -23,9 +23,7 @@ namespace Core.Features.Organization.Commands.Validations
                 .EmailAddress().WithMessage("Invalid email format.")
                 .MaximumLength(100).WithMessage("Contact email cannot exceed 100 characters.");
 
-            RuleFor(x => x.ContactPhone)
-                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.")
-                .MaximumLength(15).WithMessage("Contact phone cannot exceed 15 characters.");
+            
             RuleFor(x => x.Type)
             .IsInEnum().WithMessage("Invalid organization type.");
 

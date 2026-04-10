@@ -190,7 +190,8 @@ public class OrganizationService : IOrganizationService
         org.OrganizationStatus = OrganizationStatus.Suspended;
 
         var productsToSuspend = await _context.Products.Where(p => p.OrganizationId == id && !p.IsDeleted).ToListAsync();
-        foreach (var product in productsToSuspend) {
+        foreach (var product in productsToSuspend)
+        {
             product.IsDeleted = true;
         }
 
@@ -218,7 +219,7 @@ public class OrganizationService : IOrganizationService
 
     #region Change Owner
 
-    public async Task<string> ChangeOwnerAsync(Guid organizationId, Guid newOwnerId, Guid currentOwnerId)
+    public async Task<string> ChangeOwnerAsync(Guid organizationId, string email, Guid currentOwnerId)
     {
         var org = await _organizationRepository.GetByIdAsync(organizationId);
         if (org == null)
@@ -226,11 +227,11 @@ public class OrganizationService : IOrganizationService
         if (org.OwnerId != currentOwnerId)
             return "Unauthorized: Only the current owner can transfer ownership.";
 
-        var user = await _userManager.FindByIdAsync(newOwnerId.ToString());
+        var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
             return "User Not Found";
 
-        org.OwnerId = newOwnerId;
+        org.OwnerId = user.Id;
         await _organizationRepository.UpdateAsync(org);
 
         return "Owner Updated";
@@ -313,7 +314,7 @@ public class OrganizationService : IOrganizationService
             return false;
 
         return organization.OrganizationStatus == OrganizationStatus.Approved;
-    } 
+    }
     #endregion
     #region Check Organization Existence
     public async Task<bool> DoesOrganizationExistAsync(Guid organizationId)
@@ -321,6 +322,12 @@ public class OrganizationService : IOrganizationService
         return await _organizationRepository.GetTableNoTracking()
             .AnyAsync(x => x.Id == organizationId && !x.IsDeleted);
     }
+
+    public async Task<Guid?> GetFirstOrganizationIdForUserAsync(Guid userId)
+    {
+        var organizations = await _organizationRepository.GetAllOrganizationsByUserId(userId);
+        return organizations.FirstOrDefault()?.Id;
+    }
     #endregion
-    
+
 }

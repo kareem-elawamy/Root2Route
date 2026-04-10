@@ -1,9 +1,12 @@
+using API.Seeder;
 using Core;
 using Core.Filters;
 using Domain.Constants;
+using Domain.Models;
 using Infrastructure;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -131,8 +134,23 @@ builder
     });
 
 var app = builder.Build();
+// Seed Identity Data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        await IdentitySeeder.SeedAsync(userManager, roleManager, builder.Configuration);
+    }
+    catch (Exception ex)
+    {
+        // Log the error (you can use any logging framework you prefer)
+        Console.WriteLine($"Error seeding identity data: {ex.Message}");
+    }
+}
 
-// Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Root2Route API v1"));
 app.UseDeveloperExceptionPage();
@@ -142,13 +160,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// CORS must be BEFORE Authentication & Authorization
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// SignalR hubs use the SignalR CORS policy (supports credentials)
 app.MapHub<AuctionHub>("/hubs/auction").RequireCors("SignalRPolicy");
 
 app.MapControllers();
