@@ -1,0 +1,22 @@
+<div class="container d-flex justify-content-center align-items-center vh-100 bg-light">
+  <div class="card p-5 shadow-lg border-0" style="width: 450px; border-radius: 20px;">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-success mb-2">Root2Route</h2>
+      <p class="text-muted">Welcome back! Please login to your account.</p>
+    </div>
+    
+    <form (ngSubmit)="onLogin()">
+      <div class="mb-3">
+        <label class="form-label fw-semibold text-secondary">Email address / Username</label>
+        
+        <input type="email" name="userName" [(ngModel)]="loginData.userName" class="form-control form-control-lg bg-light" placeholder="admin@root2route.com" required>
+      
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-secondary">Password</label>
+        <input type="password" name="password" [(ngModel)]="loginData.password" class="form-control form-control-lg bg-light" placeholder="********" required>
+      </div>
+      <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm">Login to Dashboard</button>
+    </form>
+  </div>
+</div>

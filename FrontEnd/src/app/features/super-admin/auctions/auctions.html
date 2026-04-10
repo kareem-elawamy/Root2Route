@@ -1,0 +1,137 @@
+<div class="px-8 pb-12 bg-surface">
+  
+  <div class="flex justify-between items-end mb-10 pt-8">
+    <div>
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Live Auctions</h2>
+      <div class="flex items-center gap-3">
+        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
+          {{ activeLots.length }} Active Lots
+        </span>
+        <span class="text-sm text-slate-500">Updated just now</span>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
+        <span class="material-symbols-outlined text-lg">filter_list</span>
+        Refine Grid
+      </button>
+      <button (click)="createNewLot()" class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-emerald-700 transition-all">
+        <span class="material-symbols-outlined text-lg">add</span>
+        Create New Lot
+      </button>
+    </div>
+  </div>
+
+  @if (activeLots.length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 mt-8">
+      <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+        <span class="material-symbols-outlined text-5xl text-slate-300">gavel</span>
+      </div>
+      <h3 class="text-2xl font-extrabold text-slate-800 mb-2">No Active Auctions</h3>
+      <p class="text-slate-500 font-medium mb-8 text-center max-w-md">The marketplace is currently quiet. There are no live auctions running at this moment.</p>
+      <button (click)="createNewLot()" class="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20">
+        <span class="material-symbols-outlined text-xl">add_circle</span>
+        Create the First Lot
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      @for (lot of activeLots; track lot.id) {
+        <div class="group relative flex flex-col bg-white rounded-[2rem] border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl">
+          
+          <div class="h-56 relative overflow-hidden bg-slate-100">
+            <img [src]="lot.image" alt="Crop Image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            
+            <div class="absolute top-4 left-4 flex gap-2">
+              <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{ lot.category }}</span>
+              <span class="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Live
+              </span>
+            </div>
+          </div>
+
+          <div class="p-8 flex-1 flex flex-col">
+            <div class="mb-6">
+              <p class="text-xs font-bold text-emerald-600 mb-1 tracking-widest uppercase">Lot #{{ lot.id }}</p>
+              <h3 class="text-2xl font-bold text-slate-800 leading-tight">{{ lot.title }}</h3>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+              <div>
+                <p class="text-xs text-slate-500 font-medium mb-1">Current Highest Bid</p>
+                <p class="text-3xl font-extrabold text-slate-900 tracking-tight">${{ lot.currentBid }}</p>
+              </div>
+              
+              <div class="pt-4 border-t border-slate-100">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-base">timer</span>
+                    {{ lot.timeLeft }}
+                  </span>
+                  <span class="text-xs font-bold {{ lot.progressClass?.split(' ')[0] || 'text-slate-500' }}">{{ lot.progressPercent || '0%' }}</span>
+                </div>
+                <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full {{ lot.progressClass?.split(' ')[1] || 'bg-slate-300' }}" [style.width]="lot.progressPercent || '0%'"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-auto pt-4 flex gap-3">
+              <button (click)="viewBidHistory(lot.id)" class="flex-1 py-3 bg-slate-50 text-slate-700 text-sm font-bold rounded-xl border border-slate-200 hover:bg-slate-100 transition-all">
+                View Bid History
+              </button>
+              <button class="w-12 h-12 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all">
+                <span class="material-symbols-outlined">favorite</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <section class="mt-16 grid grid-cols-12 gap-8">
+    <div class="col-span-12 lg:col-span-8 p-10 bg-white border border-slate-200 rounded-[2.5rem] relative overflow-hidden shadow-sm">
+      <div class="relative z-10">
+        <h4 class="text-2xl font-bold text-slate-800 mb-6">Market Trends</h4>
+        <div class="flex items-center gap-12">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Avg. Bid Velocity</p>
+            <p class="text-4xl font-extrabold text-emerald-600 tracking-tight">{{ marketStats.velocity }}</p>
+          </div>
+          <div class="w-[1px] h-12 bg-slate-200"></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Bidders</p>
+            <p class="text-4xl font-extrabold text-slate-800 tracking-tight">{{ marketStats.bidders }}</p>
+          </div>
+          <div class="w-[1px] h-12 bg-slate-200"></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Vol. (24h)</p>
+            <p class="text-4xl font-extrabold text-slate-800 tracking-tight">{{ marketStats.volume }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-span-12 lg:col-span-4 p-10 bg-slate-900 rounded-[2.5rem] text-white shadow-xl shadow-slate-900/20">
+      <h4 class="text-xl font-bold mb-4">Terminal Quick Actions</h4>
+      <div class="space-y-3">
+        <button class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
+          <span class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-400">monitoring</span>
+            <span class="text-sm font-medium">Export Auction Logs</span>
+          </span>
+          <span class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors">chevron_right</span>
+        </button>
+        <button class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
+          <span class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-400">verified_user</span>
+            <span class="text-sm font-medium">Verify Pending Bidders</span>
+          </span>
+          <span class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
