@@ -34,11 +34,6 @@ namespace Core.Features.authentication.Commands.Handler
 
             if (user == null)
                 return BadRequest<JwtAuthResult>("User not found");
-            var firstOrganizationId = await _orgService.GetFirstOrganizationIdForUserAsync(user.Id);
-            if (firstOrganizationId == null)
-            {
-                return BadRequest<JwtAuthResult>("User does not belong to any organization. Please contact your administrator.");
-            }
 
             var signInResult = await _userManager.CheckPasswordAsync(user, request.Password);
 
@@ -47,8 +42,8 @@ namespace Core.Features.authentication.Commands.Handler
             if (!user.EmailConfirmed)
                 return BadRequest<JwtAuthResult>("Email is not confirmed");
 
-            var accessToken = await _authService.GenerateToken(user, firstOrganizationId, request.IsRememberMe);
-
+            var accessToken = await _authService.GenerateToken(user, null, request.IsRememberMe);
+            
             return Success(accessToken);
         }
     }

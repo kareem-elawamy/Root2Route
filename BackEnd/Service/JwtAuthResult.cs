@@ -9,8 +9,8 @@ public class JwtAuthResult
     public string? AccessToken { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? ExpireAt { get; set; }
-    public string? Role { get; set; }
     public string? FullName { get; set; }
     public string? Message { get; set; }
     public Guid? FirstOrganizationId { get; set; }
+    public List<string>? Roles { get; set; }
 }

@@ -52,14 +52,14 @@ namespace Service.Services.ChatService
             {
                 var productExists = await _productRepository.GetTableNoTracking()
                     .AnyAsync(p => p.Id == productId.Value && p.OrganizationId == organizationId);
-                
+
                 if (!productExists)
                     throw new InvalidOperationException("The specified product does not intrinsically belong to the target organization.");
             }
 
             var existingRoom = await _chatRoomRepository.GetTableNoTracking()
-                .FirstOrDefaultAsync(c => c.BuyerId == currentUserId 
-                                       && c.OrganizationId == organizationId 
+                .FirstOrDefaultAsync(c => c.BuyerId == currentUserId
+                                       && c.OrganizationId == organizationId
                                        && c.ProductId == productId);
 
             if (existingRoom != null)
@@ -95,7 +95,7 @@ namespace Service.Services.ChatService
 
             bool isBuyer = room.BuyerId == currentUserId;
             bool isSellerMember = room.Organization != null && room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
-            
+
             if (!isBuyer && !isSellerMember)
                 throw new UnauthorizedAccessException("You are not a participant of this chat room.");
 
@@ -139,7 +139,7 @@ namespace Service.Services.ChatService
             await _chatMessageRepository.SaveChangesAsync();
 
             await _hubContext.Clients.Group(chatRoomId.ToString())
-                .SendAsync("ReceiveMessage", new 
+                .SendAsync("ReceiveMessage", new
                 {
                     Id = message.Id,
                     ChatRoomId = message.ChatRoomId,
@@ -190,9 +190,9 @@ namespace Service.Services.ChatService
             if (room.IsClosed)
                 throw new InvalidOperationException("This chat room is closed. Offers cannot be accepted.");
 
-            bool isSellerMember = room.Organization != null && 
+            bool isSellerMember = room.Organization != null &&
                                   room.Organization.Members.Any(m => m.UserId == currentUserId && m.IsActive);
-            
+
             if (!isSellerMember)
                 throw new UnauthorizedAccessException("Only active seller organization members can accept offers.");
 
@@ -206,8 +206,8 @@ namespace Service.Services.ChatService
                 throw new InvalidOperationException("This chat room is not explicitly bound to a product; cannot generate an automated order.");
 
             var hasNewerOffer = await _chatMessageRepository.GetTableNoTracking()
-                .AnyAsync(m => m.ChatRoomId == room.Id 
-                            && m.Type == MessageType.NegotiationOffer 
+                .AnyAsync(m => m.ChatRoomId == room.Id
+                            && m.Type == MessageType.NegotiationOffer
                             && m.SentAt > offerMsg.SentAt);
 
             if (hasNewerOffer)
@@ -267,9 +267,10 @@ namespace Service.Services.ChatService
             await _chatMessageRepository.SaveChangesAsync();
             transaction.Commit();
 
-            var broadcastPayload = new { 
-                OrderId = newOrder.Id, 
-                Message = new 
+            var broadcastPayload = new
+            {
+                OrderId = newOrder.Id,
+                Message = new
                 {
                     Id = systemMessage.Id,
                     ChatRoomId = systemMessage.ChatRoomId,
@@ -284,7 +285,7 @@ namespace Service.Services.ChatService
             await _hubContext.Clients.Group(room.Id.ToString())
                 .SendAsync("ReceiveOfferAccepted", broadcastPayload);
 
-            try 
+            try
             {
                 await _notificationService.SendPushNotificationAsync(room.BuyerId, "Offer Accepted", $"Your offer for {offerMsg.ProposedQuantity} units was securely accepted! Proceed to Secure Checkout.");
             }
@@ -296,8 +297,8 @@ namespace Service.Services.ChatService
         public async Task<string> MarkRoomAsReadAsync(Guid currentUserId, Guid chatRoomId)
         {
             var unreadMessages = await _chatMessageRepository.GetTableAsTracking()
-                .Where(m => m.ChatRoomId == chatRoomId 
-                         && m.SenderId != currentUserId 
+                .Where(m => m.ChatRoomId == chatRoomId
+                         && m.SenderId != currentUserId
                          && !m.IsRead)
                 .ToListAsync();
 
@@ -319,7 +320,7 @@ namespace Service.Services.ChatService
         {
             var room = await _chatRoomRepository.GetTableAsTracking()
                 .Include(r => r.Organization)
-                .ThenInclude(o => o.Members)
+                .ThenInclude(o => o!.Members)
                 .FirstOrDefaultAsync(r => r.Id == chatRoomId);
 
             if (room == null)

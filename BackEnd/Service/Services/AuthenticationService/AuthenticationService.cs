@@ -95,6 +95,7 @@ namespace Service.Services.AuthenticationService
                 ExpireAt = token.ValidTo,
                 FullName = user.FullName,
                 RefreshToken = (await CreateRefreshToken(user, organizationId)).Token,
+                Roles = identityRoles.ToList()
             };
         }
         private async Task<RefreshToken> CreateRefreshToken(ApplicationUser user, Guid? organizationId)
