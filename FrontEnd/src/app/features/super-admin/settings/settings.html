@@ -1,0 +1,137 @@
+<div class="max-w-6xl mx-auto">
+  <div class="mb-12">
+    <h1 class="text-4xl font-extrabold text-on-surface tracking-tight mb-2">System Configuration & Audit</h1>
+    <p class="text-on-surface-variant max-w-2xl">Manage platform-wide financial parameters, infrastructure settings, and
+      monitor administrative activity across the Emerald Field ecosystem.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="lg:col-span-3 space-y-2">
+      <button
+        class="w-full flex items-center gap-3 px-5 py-4 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 text-left transition-all">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="font-semibold">Financials</span>
+      </button>
+      <button
+        class="w-full flex items-center gap-3 px-5 py-4 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-xl text-left transition-all">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-semibold">General</span>
+      </button>
+      <button
+        class="w-full flex items-center gap-3 px-5 py-4 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-xl text-left transition-all">
+        <span class="material-symbols-outlined">history</span>
+        <span class="font-semibold">Audit Logs</span>
+      </button>
+    </div>
+
+    <div class="lg:col-span-9 space-y-8">
+      <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold">Platform Fee Structure</h2>
+          <span
+            class="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">Active
+            Configuration</span>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-on-surface-variant ml-1">PlatformFeePercentage</label>
+            <div class="relative">
+              <input
+                class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-5 pr-12 text-lg font-bold focus:ring-2 focus:ring-primary transition-all"
+                type="text" [value]="financialSettings.platformFeePercentage" />
+              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">%</span>
+            </div>
+            <p class="text-xs text-on-surface-variant/60 ml-1">Commission taken from each farm-to-table transaction.</p>
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-on-surface-variant ml-1">StandardShippingFee</label>
+            <div class="relative">
+              <input
+                class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-10 pr-5 text-lg font-bold focus:ring-2 focus:ring-primary transition-all"
+                type="text" [value]="financialSettings.standardShippingFee" />
+              <span class="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">$</span>
+            </div>
+            <p class="text-xs text-on-surface-variant/60 ml-1">Flat rate for regional logistics fulfillment.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm opacity-50 grayscale pointer-events-none">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold">General System Settings</h2>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">Maintenance Mode</span>
+            <div class="w-12 h-6 bg-surface-container-highest rounded-full relative">
+              <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-on-surface-variant ml-1">Support Email Address</label>
+            <input class="w-full bg-surface-container-low border-none rounded-xl py-4 px-5" type="email"
+              [value]="generalSettings.supportEmail" />
+          </div>
+          <div class="space-y-4">
+            <label class="text-sm font-semibold text-on-surface-variant ml-1">API Key Management</label>
+            <div class="flex items-center gap-3 p-4 bg-surface-container-low rounded-xl">
+              <span class="material-symbols-outlined text-on-surface-variant">key</span>
+              <code class="flex-1 text-sm font-mono truncate">{{ generalSettings.apiKey }}</code>
+              <span class="material-symbols-outlined text-on-surface-variant cursor-pointer">content_copy</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+        <h2 class="text-2xl font-bold mb-8">Administrative Audit Trail</h2>
+        <div class="space-y-0">
+          @for (log of auditLogs; track log.user) {
+          <div class="relative pl-10 pb-10 group">
+            <div class="absolute left-[11px] top-2 bottom-0 w-[2px] bg-outline-variant/30 group-last:hidden"></div>
+            <div
+              class="absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center text-white z-10 {{ log.iconClass }}">
+              <span class="material-symbols-outlined text-[14px]">{{ log.icon }}</span>
+            </div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-on-surface">{{ log.user }}</span>
+                <span class="text-xs font-medium px-2 py-0.5 rounded {{ log.badgeClass }}">{{ log.actionBadge }}</span>
+              </div>
+              <time class="text-sm text-on-surface-variant font-medium">{{ log.time }}</time>
+            </div>
+
+            @if (log.hasDetails) {
+            <div class="p-4 bg-surface-container-low rounded-xl inline-block border border-outline-variant/5">
+              <div class="flex items-center gap-4 text-sm">
+                <span class="text-on-surface-variant">PlatformFee:</span>
+                <span class="line-through text-tertiary">{{ log.oldValue }}</span>
+                <span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_forward</span>
+                <span class="font-bold text-primary">{{ log.newValue }}</span>
+              </div>
+            </div>
+            }
+
+            @if (log.hasMessage) {
+            <p class="text-sm text-on-surface-variant italic">{{ log.message }}</p>
+            }
+
+            @if (log.hasScan) {
+            <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+              <span class="material-symbols-outlined text-[16px] {{ log.scanIconClass }}">{{ log.scanIcon }}</span>
+              <span>{{ log.scanMessage }}</span>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<button
+  class="fixed bottom-10 right-10 bg-primary hover:bg-emerald-700 text-white flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl shadow-emerald-900/40 transition-all hover:scale-105 active:scale-95 group z-50">
+  <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">save</span>
+  <span class="font-bold tracking-tight">Save Changes</span>
+</button>

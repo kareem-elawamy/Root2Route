@@ -1,12 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  imports: [RouterOutlet], 
+  templateUrl: './app.html'
 })
-export class App {
-  protected readonly title = signal('FrontEnd');
+export class App { // رجعنا الاسم هنا لـ App عشان main.ts يلاقيه
+  title = 'Root2Route';
 }

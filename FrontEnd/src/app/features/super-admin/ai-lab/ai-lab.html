@@ -1,0 +1,119 @@
+<div class="p-8 max-w-[1600px] mx-auto space-y-8">
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div
+      class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+      <div class="relative w-32 h-32 mb-4">
+        <svg class="w-full h-full transform -rotate-90">
+          <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-width="8"></circle>
+          <circle class="text-primary-container" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-dasharray="351.85" stroke-dashoffset="20.4" stroke-width="8"></circle>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.modelAverageConfidence
+            }}</span>
+        </div>
+      </div>
+      <h3 class="font-headline font-semibold text-on-surface">Model Average Confidence</h3>
+      <p class="text-xs text-on-surface-variant mt-1">Global performance average</p>
+    </div>
+
+    <div
+      class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+      <div class="relative w-32 h-32 mb-4">
+        <svg class="w-full h-full transform -rotate-90">
+          <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-width="8"></circle>
+          <circle class="text-primary-container" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-dasharray="351.85" stroke-dashoffset="40" stroke-width="8"></circle>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center flex-col">
+          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.totalDiagnoses }}</span>
+        </div>
+      </div>
+      <h3 class="font-headline font-semibold text-on-surface">Total Diagnoses</h3>
+      <p class="text-xs text-on-surface-variant mt-1">Analyzed in the last 24h</p>
+    </div>
+
+    <div
+      class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+      <div class="relative w-32 h-32 mb-4">
+        <svg class="w-full h-full transform -rotate-90">
+          <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-width="8"></circle>
+          <circle class="text-tertiary" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
+            stroke-dasharray="351.85" stroke-dashoffset="340" stroke-width="8"></circle>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center flex-col">
+          <span class="font-headline font-extrabold text-2xl text-tertiary">{{ metrics.accuracyDrift }}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <h3 class="font-headline font-semibold text-on-surface">Accuracy Drift</h3>
+        <span class="material-symbols-outlined text-tertiary text-lg" data-icon="warning">warning</span>
+      </div>
+      <p class="text-xs text-on-surface-variant mt-1">Variance from baseline model</p>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden relative min-h-[500px]">
+      <div class="absolute inset-0 opacity-80">
+<img class="w-full h-full object-cover" data-alt="Satellite terrain map of California agricultural fields with soft glowing orange and red heatmap overlays showing disease density" data-location="California Central Valley" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWL1XDn87nnE4k8caZ53Duf3EwZN9A1P6Oc5gyjyxOZ29JhK5spNeieOFdKomMgYA1PRzsorcR4whowK-f5KJcwKyrOZgu0A7n0Z2zf5-Q8D9JcdBvMOFO5xUhpkB6kkk2OJahY7diy7aSxM1sfp6IAPPTyPCRchezduuRT8xh3Zacf5vq4qhxhgYGXEfhVocRwJelwwGAocCofUFjVpPZbodIQGELyGLfnMly0923CvtzIGjqjk-Z2-Jyj5TnRTQ506Xn_Rmd"/>       </div>
+      <div class="absolute top-6 left-6 z-10 space-y-4">
+        <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-slate-100">
+          <h4 class="font-headline font-bold text-sm mb-3">Disease Heatmap</h4>
+          <div class="space-y-2">
+            @for (disease of diseases; track disease.name) {
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full {{ disease.colorClass }}"></div>
+              <span class="text-xs font-medium">{{ disease.name }}</span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-4 space-y-6">
+      <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-emerald-100">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-headline font-bold text-lg text-emerald-800">AI Playground</h3>
+          <span
+            class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded uppercase tracking-wider">Beta</span>
+        </div>
+        <div
+          class="border-2 border-dashed border-emerald-200 rounded-xl p-8 flex flex-col items-center justify-center bg-emerald-50/30 group hover:bg-emerald-50 transition-colors cursor-pointer mb-6">
+          <span
+            class="material-symbols-outlined text-4xl text-emerald-500 mb-2 group-hover:scale-110 transition-transform"
+            data-icon="upload_file">upload_file</span>
+          <p class="text-sm font-medium text-emerald-800">Drop field leaf images here</p>
+          <p class="text-[10px] text-emerald-600/70 mt-1">Supports JPG, PNG (Max 5MB)</p>
+        </div>
+        <div class="mt-8 p-4 bg-surface rounded-xl border border-slate-100">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+              <span class="material-symbols-outlined text-emerald-600" data-icon="check_circle">check_circle</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Top Prediction</p>
+              <p class="font-headline font-bold text-sm">{{ playgroundResult.topPrediction }}</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <div class="flex justify-between text-[10px] font-medium">
+                <span>Confidence</span>
+                <span>{{ playgroundResult.confidenceLevel }}%</span>
+              </div>
+              <div class="h-1.5 bg-slate-200 rounded-full">
+                <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="playgroundResult.confidenceLevel">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
