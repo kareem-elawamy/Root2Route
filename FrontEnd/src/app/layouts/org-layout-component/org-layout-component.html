@@ -58,11 +58,17 @@
     </nav>
 
     <!-- New Auction CTA -->
-    <div class="mt-4 pt-4 border-t border-outline-variant">
+    <div class="mt-4 pt-4 border-t border-outline-variant space-y-2">
       <button
         class="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-body font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm">
         <span class="material-symbols-outlined text-[20px]">add_circle</span>
         New Auction
+      </button>
+      <!-- Logout -->
+      <button id="sidebar-logout" (click)="logout()"
+        class="w-full py-2.5 px-4 rounded-xl font-body font-semibold text-sm flex items-center gap-2 text-error hover:bg-error-container/30 transition-all">
+        <span class="material-symbols-outlined text-[20px]">logout</span>
+        Log Out
       </button>
     </div>
   </aside>
@@ -181,9 +187,15 @@
         </div>
         <!-- Avatar: Initial fallback -->
         <div
-          class="w-9 h-9 rounded-[var(--radius-full)] bg-primary flex items-center justify-center text-on-primary font-headline font-bold text-sm flex-shrink-0 border-2 border-outline-variant">
+          class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline font-bold text-sm flex-shrink-0 border-2 border-outline-variant">
           {{ userInitial() }}
         </div>
+        <!-- Logout -->
+        <button id="topbar-logout" (click)="logout()"
+          title="Logout"
+          class="text-outline hover:text-error transition-colors p-1.5 rounded-lg hover:bg-error-container/30">
+          <span class="material-symbols-outlined text-[22px]">logout</span>
+        </button>
       </div>
     </div>
   </header>

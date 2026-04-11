@@ -30,15 +30,16 @@
   <!-- KPI Metrics Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     @for (metric of metrics(); track metric.title) {
-      <div
-        class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+    <div
+      class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
       <div class="flex justify-between items-start mb-4">
         <div
           class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:scale-110 transition-transform">
           <span class="material-symbols-outlined">{{ metric.icon }}</span>
         </div>
         <div class="px-2.5 py-1 rounded-full text-xs font-label font-bold" [class.bg-primary-fixed]="metric.isUp"
-          [class.text-on-primary-fixed-variant]="metric.isUp" [class.bg-error-container]="!metric.isUp" [class.text-on-error-container]="!metric.isUp">
+          [class.text-on-primary-fixed-variant]="metric.isUp" [class.bg-error-container]="!metric.isUp"
+          [class.text-on-error-container]="!metric.isUp">
           {{ metric.trend }}
         </div>
       </div>
@@ -99,7 +100,8 @@
       <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-lg font-headline font-bold text-on-surface">Recent Orders</h3>
-          <a routerLink="/org/orders" class="text-sm font-label text-primary font-semibold hover:underline cursor-pointer">View
+          <a routerLink="/org/orders"
+            class="text-sm font-label text-primary font-semibold hover:underline cursor-pointer">View
             All</a>
         </div>
 
@@ -115,8 +117,7 @@
             </thead>
             <tbody>
               @for (order of recentOrders; track order.id) {
-              <tr
-                class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+              <tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
                 <td class="py-3.5 text-sm font-semibold text-on-surface">{{ order.id }}</td>
                 <td class="py-3.5 text-sm text-on-surface-variant">{{ order.product }}</td>
                 <td class="py-3.5 text-sm font-semibold text-on-surface">{{ order.amount }}</td>
@@ -124,7 +125,7 @@
                   <span class="px-2.5 py-1 text-[10px] uppercase font-bold rounded-full inline-block"
                     [class.bg-secondary-container]="order.status === 'Processing'"
                     [class.text-on-secondary-container]="order.status === 'Processing'"
-                    [class.bg-tertiary-container]="order.status === 'Shipped'" 
+                    [class.bg-tertiary-container]="order.status === 'Shipped'"
                     [class.text-on-tertiary-container]="order.status === 'Shipped'"
                     [class.bg-primary-container]="order.status === 'Delivered'"
                     [class.text-on-primary-container]="order.status === 'Delivered'">
@@ -158,8 +159,7 @@
         <div class="flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar font-body">
           @for (bid of liveBids; track bid.auction) {
           <div class="relative pl-4 ml-2 border-l-2 border-outline-variant pb-2">
-            <span
-              class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface border-2 border-primary"></span>
+            <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface border-2 border-primary"></span>
             <div class="mb-1 flex justify-between items-start">
               <p class="text-sm font-bold text-on-surface">{{ bid.bidder }}</p>
               <span class="text-[10px] text-outline font-semibold">{{ bid.time }}</span>
