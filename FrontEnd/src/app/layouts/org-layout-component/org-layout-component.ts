@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, HostListener, ElementRef } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OrgContextService } from '../../core/services/org-context.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -15,15 +15,14 @@ import { MyOrganization } from '../../core/model/Organization/myOrganization';
 export class OrgLayoutComponent implements OnInit {
   private readonly orgCtx = inject(OrgContextService);
   private readonly elRef = inject(ElementRef);
+  private readonly router = inject(Router);
   readonly auth = inject(AuthService);
 
-  // ─── Org Switcher State ───────────────────────────────────────────────────
   readonly organizations = this.orgCtx.organizations;
   readonly activeOrg = this.orgCtx.activeOrg;
   readonly dropdownOpen = signal(false);
   readonly isLoadingOrgs = signal(false);
 
-  // ─── User Info ────────────────────────────────────────────────────────────
   readonly currentUser = this.auth.currentUser;
 
   ngOnInit(): void {
@@ -51,6 +50,11 @@ export class OrgLayoutComponent implements OnInit {
 
   closeDropdown(): void {
     this.dropdownOpen.set(false);
+  }
+
+  logout(): void {
+    this.auth.clearSession();
+    this.router.navigate(['/auth/login']);
   }
 
   switchOrg(orgId: string): void {

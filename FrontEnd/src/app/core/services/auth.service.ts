@@ -1,4 +1,3 @@
- feature/add-seader
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -14,14 +13,13 @@ const TOKEN_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
 const USER_KEY = 'user';
 
-/** Shape of the JWT claims in this system */
 interface JwtClaims {
   sub: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
   organizationId?: string;
   organizationRole?: string;
   permission?: string[];
-  role?: string | string[];   // Identity roles (e.g. "SuperAdmin")
+  role?: string | string[];
   exp: number;
 }
 
@@ -42,6 +40,8 @@ export class AuthService {
   getToken(): string | null {
     return this._token();
   }
+
+
   login(data: LoginData): Observable<ResponseData<LoginResponse>> {
     return new Observable((observer) => {
       fetch(this._url + 'login', {
@@ -86,11 +86,6 @@ export class AuthService {
     this._token.set(data.accessToken);
     this._refreshToken.set(data.refreshToken);
     this._currentUser.set(user);
-
-    // Set org context from JWT claim
-    if (claims.organizationId) {
-      this.orgContext.switchOrganization(claims.organizationId);
-    }
   }
 
   clearSession(): void {
@@ -111,7 +106,7 @@ export class AuthService {
   private navigateAfterLogin(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
 
-    // Check Identity role (SuperAdmin comes from identity roles)
+    // 1. SuperAdmin role → go to super-admin dashboard
     const identityRoles = Array.isArray(claims.role)
       ? claims.role
       : claims.role
@@ -120,13 +115,25 @@ export class AuthService {
 
     if (identityRoles.includes('SuperAdmin')) {
       this.router.navigate(['/super-admin']);
-    } else if (claims.organizationId) {
-      // Org user — go to their org overview
-      this.router.navigate(['/org/overview']);
-    } else {
-      // Fallback: no org and no super-admin role
-      this.router.navigate(['/']);
+      return;
     }
+
+    // 2. Check via API if user owns any organization → go to /org
+    this.orgContext.myOrganization().subscribe({
+      next: (orgs) => {
+        if (orgs && orgs.length > 0) {
+          // orgContext.setOrganizations() already picked the first org as active
+          this.router.navigate(['/org']);
+        } else {
+          // 3. No org → unauthorized
+          this.router.navigate(['/unauthorized']);
+        }
+      },
+      error: () => {
+        // If the API call fails, treat as unauthorized
+        this.router.navigate(['/unauthorized']);
+      },
+    });
   }
 
   // ─── JWT Decode (no library needed) ──────────────────────────────────────
@@ -145,6 +152,18 @@ export class AuthService {
       return {} as JwtClaims;
     }
   }
+  isSuperAdmin(): boolean {
+    const claims = this.decodeToken(this._token()!);
+    const identityRoles = Array.isArray(claims.role)
+      ? claims.role
+      : claims.role
+      ? [claims.role]
+      : [];
+    return identityRoles.includes('SuperAdmin');
+  }
+  isLogin(): boolean{
+    return this.isAuthenticated();
+  }
 
   // ─── Persistence ──────────────────────────────────────────────────────────
   private loadToken(): string | null {
@@ -161,28 +180,3 @@ export class AuthService {
     }
   }
 }
- 
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService {
-  private http = inject(HttpClient);
-  private apiUrl = 'https://root2route.runasp.net/api/v1/auth';
-
-  login(credentials: any): Observable<any> {
-    // السر كله في الـ <any> اللي بعد post دي
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response: any) => {
-        if (response && response.accessToken) {
-          localStorage.setItem('token', response.accessToken);
-          localStorage.setItem('refreshToken', response.refreshToken);
-        }
-      })
-    );
-  }
-}
-  main

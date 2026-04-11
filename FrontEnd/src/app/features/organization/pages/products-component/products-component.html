@@ -1,0 +1,209 @@
+<div class="p-8 max-w-[1400px] mx-auto">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <div>
+      <h2 class="text-3xl font-extrabold font-headline tracking-tight text-on-surface mb-1">Products Management</h2>
+      <p class="text-slate-500 text-sm">Organize and monitor your digital agrarian inventory.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button
+        class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+        <span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+        Filters
+      </button>
+      <button
+        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-semibold shadow-lg shadow-primary/10 hover:opacity-90 transition-opacity">
+        <span class="material-symbols-outlined text-lg" data-icon="add_circle">add_circle</span>
+        Add New Product
+      </button>
+    </div>
+  </div>
+  <!-- Dashboard Stats Summary (Bento Style Lite) -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+    <div class="bg-surface-container-lowest p-5 rounded-xl border border-transparent shadow-sm">
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Items</p>
+      <div class="flex items-end gap-2">
+        <span class="text-2xl font-bold font-headline">1,284</span>
+        <span class="text-emerald-600 text-xs font-medium mb-1">+12%</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Listings</p>
+      <div class="flex items-end gap-2">
+        <span class="text-2xl font-bold font-headline">942</span>
+        <span class="text-slate-400 text-xs font-medium mb-1">Stable</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Low Stock Alerts</p>
+      <div class="flex items-end gap-2">
+        <span class="text-2xl font-bold font-headline text-tertiary">14</span>
+        <span class="text-tertiary text-xs font-medium mb-1">Action Req.</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Inventory Value</p>
+      <div class="flex items-end gap-2">
+        <span class="text-2xl font-bold font-headline">$48.2k</span>
+        <span class="text-emerald-600 text-xs font-medium mb-1">↑ 4.1%</span>
+      </div>
+    </div>
+  </div>
+  <!-- Product Table Container -->
+  <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/50">
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Product</th>
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Category</th>
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Price</th>
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Stock</th>
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Date Added</th>
+            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Status</th>
+            <th class="px-6 py-4 text-right"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <!-- Row 1 -->
+          <tr class="group hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img class="w-full h-full object-cover"
+                    data-alt="High-quality organic fertilizer in a designer minimalist package on a clean studio background"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbcMWnOU3x3aUMRb--Fh5av6KswQWVHCxS3U2_SfUAXxJTXrxDJLYyGqyOS1vHQBeyQi_q9EzbwbOjOD0JY8dGSs9ODppeWKdVKPzYINAU81sCWnDMLi2Jvrrobe4GhPIVh9GtOzFp7yhUZn_io6QHziLKmOgyeLpM3OevIM6r17QcFzV9BvZ00XChB6ZQmU5h557hcU-l7lnjsDIioH-PKrzM6mfowVaqTwC4f977XZq8U-iU9gPaqo8Bk6alFhurCFVc1sxqVlQ" />
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-on-surface">Premium Bio-Humus</p>
+                  <p class="text-xs text-slate-400">SKU: AG-924-BH</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 font-medium">Soil Health</td>
+            <td class="px-6 py-4 text-sm font-bold text-on-surface">$24.00</td>
+            <td class="px-6 py-4 text-sm text-slate-600">842 Units</td>
+            <td class="px-6 py-4 text-sm text-slate-500">Oct 12, 2023</td>
+            <td class="px-6 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
+                Active
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-slate-400" data-icon="more_vert">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          <!-- Row 2 -->
+          <tr class="group hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img class="w-full h-full object-cover"
+                    data-alt="Professional grade digital soil moisture sensor probe with elegant industrial design"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS3o7iSmjyncTvDv293tRxp37fjHtyR9K2fUIsdtUVs4zOKA7oVG6vr1PosZyJBRmIVidobtclr-n_9044Qx7sFNAGN3jIXA2fNShNWxzrSJpibh9HKLUm7w0MjWuJ00iX6-f6LXCRWvqurhNBMbTeYeuxP-UkbeB_yp3RrXC1ClgA4MxfAQcd8GUJdi-3jh_3Udam188P2BNQ1vHzlCD9gKpvtVOJ2R2KflqIkXIedOt-qGbT5PMNwja2O5_A1qBNXwgdLZFlf_w" />
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-on-surface">HydraSense Pro v4</p>
+                  <p class="text-xs text-slate-400">SKU: AG-102-HS</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 font-medium">Equipment</td>
+            <td class="px-6 py-4 text-sm font-bold text-on-surface">$149.99</td>
+            <td class="px-6 py-4 text-sm text-slate-600">12 Units</td>
+            <td class="px-6 py-4 text-sm text-slate-500">Nov 04, 2023</td>
+            <td class="px-6 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider">
+                <span class="w-1 h-1 rounded-full bg-amber-600"></span>
+                Low Stock
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-slate-400" data-icon="more_vert">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          <!-- Row 3 -->
+          <tr class="group hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img class="w-full h-full object-cover"
+                    data-alt="Close-up of heirloom vegetable seeds in small brown paper envelopes with elegant typography"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3uM9vJJKiUZWcCXSbWvNNK1thmYmte4ghBymnZi0i1okDsZGbI4dpR0GdDXFwdkuUt6M0WkbNFfj07W-U83L9-yHk4QceQx_npqq3FrafmTH7RQXXccq7ur_nKc3r8UnjVruvdTHMIgd0nUoJfuA-NLHnU4d5cU1ZOUwcuKzcvgq6ZW4p-oO2Ui7ZCwz6zKBjjrd2K0AC1sESAsDsgi1dep5U3R_02weL4CjbJ0SyJH0AppEtWTI7Y3TyEpIHlL0B46biA2_aU5A" />
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-on-surface">Heritage Seed Mix</p>
+                  <p class="text-xs text-slate-400">SKU: AG-552-SM</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 font-medium">Seeds</td>
+            <td class="px-6 py-4 text-sm font-bold text-on-surface">$18.50</td>
+            <td class="px-6 py-4 text-sm text-slate-600">0 Units</td>
+            <td class="px-6 py-4 text-sm text-slate-500">Oct 28, 2023</td>
+            <td class="px-6 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold uppercase tracking-wider">
+                <span class="w-1 h-1 rounded-full bg-rose-600"></span>
+                Out of Stock
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-slate-400" data-icon="more_vert">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          <!-- Row 4 -->
+          <tr class="group hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                  <img class="w-full h-full object-cover"
+                    data-alt="Modern automation device for greenhouses with illuminated status indicators in a soft lit laboratory environment"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHJDf2SQptWcEqlBPcNqmNSZKxjcJXlmL8IY-knLKgwfZUt5PatSmAWaa501_9G6rKYgroJQDTma2o6nnXxwQOw_blJr-ZCXMn_WKC0GnzJ-_4e-tqJlfIkVJrytLEvLtaixoJF2Z2bYccBbYt7gzhnGE5yo2zLvmOQtw9-SbztJcmTKqW51Bo7fKj6031LVFhvTkdvN7V7f_s-vNusfiN0hpdoEXowUFzDsbuLZEKxi3cC_UznjGTQLP0AAwGI0ZtXMJU5FQ-npI" />
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-on-surface">AutoVent Controller</p>
+                  <p class="text-xs text-slate-400">SKU: AG-009-AC</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 font-medium">Automation</td>
+            <td class="px-6 py-4 text-sm font-bold text-on-surface">$299.00</td>
+            <td class="px-6 py-4 text-sm text-slate-600">45 Units</td>
+            <td class="px-6 py-4 text-sm text-slate-500">Dec 01, 2023</td>
+            <td class="px-6 py-4">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+                <span class="w-1 h-1 rounded-full bg-slate-400"></span>
+                Draft
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-slate-400" data-icon="more_vert">more_vert</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="px-6 py-4 border-t border-slate-50 flex items-center justify-between">
+      <p class="text-xs text-slate-400 font-medium">Showing 1 to 4 of 1,284 products</p>
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">Previous</button>
+        <button
+          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
