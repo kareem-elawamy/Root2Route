@@ -1,80 +1,120 @@
 @import "tailwindcss";
 
-/* ─── Root2Route Design Tokens ───────────────────────────────────────────── */
+/* ─── Root2Route Design Tokens — Green Agrarian Theme ──────────────────────
+   Tailwind v4 CSS-first: these @theme vars generate ALL utility classes.
+   bg-primary → var(--color-primary) = #006c49 (dark forest green)
+────────────────────────────────────────────────────────────────────────────── */
 @theme {
   /* Font Families */
-  --font-headline: "Plus Jakarta Sans", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-label: "Inter", sans-serif;
+  --font-headline: "Manrope", sans-serif;
+  --font-body:     "Inter", sans-serif;
+  --font-label:    "Inter", sans-serif;
 
-  /* Border Radius */
-  --radius: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  /* Border Radius tokens */
+  --radius:      0.25rem;
+  --radius-sm:   0.5rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-xl:   1.25rem;
+  --radius-2xl:  1.5rem;
   --radius-full: 9999px;
 
-  /* Primary */
-  --color-primary: #006948;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #00855d;
-  --color-on-primary-container: #f5fff7;
-  --color-inverse-primary: #68dba9;
-  --color-primary-fixed: #85f8c4;
-  --color-primary-fixed-dim: #68dba9;
-  --color-on-primary-fixed: #002114;
+  /* ── Primary — Forest Green ── */
+  --color-primary:                  #006c49;
+  --color-on-primary:               #ffffff;
+  --color-primary-container:        #10b981;
+  --color-on-primary-container:     #002114;
+  --color-inverse-primary:          #68dba9;
+  --color-primary-fixed:            #85f8c4;
+  --color-primary-fixed-dim:        #68dba9;
+  --color-on-primary-fixed:         #002114;
   --color-on-primary-fixed-variant: #005137;
 
-  /* Secondary */
-  --color-secondary: #565e74;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #dae2fd;
-  --color-on-secondary-container: #5c647a;
-  --color-secondary-fixed: #dae2fd;
-  --color-secondary-fixed-dim: #bec6e0;
-  --color-on-secondary-fixed: #131b2e;
-  --color-on-secondary-fixed-variant: #3f465c;
+  /* ── Secondary — Sage Green ── */
+  --color-secondary:                  #4d6b5c;
+  --color-on-secondary:               #ffffff;
+  --color-secondary-container:        #b7ebce;
+  --color-on-secondary-container:     #3c6c54;
+  --color-secondary-fixed:            #b7ebce;
+  --color-secondary-fixed-dim:        #9acfb3;
+  --color-on-secondary-fixed:         #0a2119;
+  --color-on-secondary-fixed-variant: #365548;
 
-  /* Tertiary */
-  --color-tertiary: #9b3e3b;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #ba5551;
-  --color-on-tertiary-container: #fffbff;
-  --color-tertiary-fixed: #ffdad7;
-  --color-tertiary-fixed-dim: #ffb3ae;
-  --color-on-tertiary-fixed: #410004;
-  --color-on-tertiary-fixed-variant: #7f2928;
+  /* ── Tertiary — Warm Amber ── */
+  --color-tertiary:                  #7d5700;
+  --color-on-tertiary:               #ffffff;
+  --color-tertiary-container:        #ffb93a;
+  --color-on-tertiary-container:     #271900;
+  --color-tertiary-fixed:            #ffdea3;
+  --color-tertiary-fixed-dim:        #ffba3e;
+  --color-on-tertiary-fixed:         #271900;
+  --color-on-tertiary-fixed-variant: #5e4100;
 
-  /* Surface */
-  --color-surface: #f7f9fb;
-  --color-on-surface: #191c1e;
-  --color-surface-variant: #e0e3e5;
-  --color-on-surface-variant: #3d4a42;
-  --color-surface-tint: #006c4a;
-  --color-surface-bright: #f7f9fb;
-  --color-surface-dim: #d8dadc;
-  --color-inverse-surface: #2d3133;
-  --color-inverse-on-surface: #eff1f3;
+  /* ── Surface ── */
+  --color-surface:                   #f7f9fb;
+  --color-on-surface:                #191c1e;
+  --color-surface-variant:           #dce4dd;
+  --color-on-surface-variant:        #3c4a42;
+  --color-surface-tint:              #006c49;
+  --color-surface-bright:            #f7f9fb;
+  --color-surface-dim:               #d8dadc;
+  --color-inverse-surface:           #2d3133;
+  --color-inverse-on-surface:        #eff1f3;
 
-  /* Surface Containers */
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f2f4f6;
-  --color-surface-container: #eceef0;
+  /* ── Surface Containers ── */
+  --color-surface-container-lowest:  #ffffff;
+  --color-surface-container-low:     #f2f4f6;
+  --color-surface-container:         #eceef0;
+  --color-surface-container-high:    #e6e8ea;
   --color-surface-container-highest: #e0e3e5;
-  --color-surface-container-high: #e6e8ea;
 
-  /* Background */
-  --color-background: #f7f9fb;
+  /* ── Background ── */
+  --color-background:    #f7f9fb;
   --color-on-background: #191c1e;
 
-  /* Outline */
-  --color-outline: #6d7a72;
+  /* ── Outline ── */
+  --color-outline:         #6d7a72;
   --color-outline-variant: #bccac0;
 
-  /* Error */
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
+  /* ── Error ── */
+  --color-error:              #ba1a1a;
+  --color-on-error:           #ffffff;
+  --color-error-container:    #ffdad6;
   --color-on-error-container: #93000a;
+}
+
+/* ─── Kill ALL built-in blue — force green across every interactive element ─ */
+
+/* 1. All focus rings → green */
+*:focus-visible {
+  outline: 2px solid #006c49 !important;
+  outline-offset: 2px;
+}
+
+/* 2. Inputs / textareas / selects */
+input,
+textarea,
+select {
+  accent-color: #006c49;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: #006c49 !important;
+  box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.2) !important;
+}
+
+/* 3. Checkboxes & radios */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #006c49;
+}
+
+/* 4. Force Tailwind ring color token to green */
+:root {
+  --tw-ring-color: rgba(0, 108, 73, 0.5);
 }
 
 /* ─── Global Base ─────────────────────────────────────────────────────────── */
@@ -100,4 +140,13 @@ h1, h2, h3, h4, h5, h6, .font-headline {
 
 label, .font-label {
   font-family: var(--font-label);
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
 }

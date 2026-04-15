@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { OverviewComponent } from './pages/overview-component/overview-component';
+import { ProductsComponent } from './pages/products-component/products-component';
 
 export const organizationRoutes: Routes = [
   {
@@ -18,13 +19,10 @@ export const organizationRoutes: Routes = [
   //       (m) => m.AuctionsComponent
   //     ),
   // },
-  // {
-  //   path: 'products',
-  //   loadComponent: () =>
-  //     import('./pages/products/products.component').then(
-  //       (m) => m.ProductsComponent
-  //     ),
-  // },
+  {
+    path: 'products',
+    component: ProductsComponent
+  }
   // {
   //   path: 'orders',
   //   loadComponent: () =>

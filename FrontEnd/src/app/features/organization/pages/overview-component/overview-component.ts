@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -15,13 +15,16 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class OverviewComponent implements OnInit {
   private readonly orgCtx = inject(OrgContextService);
   private readonly auth = inject(AuthService);
-
+  private readonly router = inject(Router);
   readonly activeOrg = this.orgCtx.activeOrg;
   readonly currentUser = this.auth.currentUser;
   readonly overview = this.orgCtx.overview();
   metrics = signal<any[]>([]);
 
   ngOnInit(): void {
+    if (!this.auth.isLogin()) {
+      this.router.navigate(['/login']);
+    }
     this.overview.subscribe((overview) => {
       this.metrics.set([
         { title: 'Total Revenue', value: '$' + overview.totalRevenue, trend: '+14%', isUp: true, icon: 'payments' },
