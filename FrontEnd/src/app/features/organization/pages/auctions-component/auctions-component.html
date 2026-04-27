@@ -1,0 +1,216 @@
+<div class="p-8">
+  <!-- Hero Header Section -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Auctions Control Panel</h1>
+      <p class="text-slate-500 text-lg">Oversee and manage your active agricultural trades in real-time.</p>
+    </div>
+    <button
+      class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-emerald-900/10 hover:bg-primary-container transition-all hover:scale-[1.02]">
+      <span class="material-symbols-outlined mr-2">add_circle</span>
+      Create New Auction
+    </button>
+  </div>
+  <!-- Tab Navigation -->
+  <div class="mb-8">
+    <div class="flex space-x-8">
+      <button class="pb-4 border-b-2 border-primary text-primary font-bold transition-all relative">
+        Live Auctions
+        <span class="ml-2 bg-primary/10 text-[10px] px-2 py-0.5 rounded-full">12</span>
+      </button>
+      <button class="pb-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-medium transition-all">
+        Upcoming
+      </button>
+      <button class="pb-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-medium transition-all">
+        Completed
+      </button>
+    </div>
+  </div>
+  <!-- Auction Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    <!-- Auction Card 1 -->
+    <div
+      class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col h-full">
+      <div class="relative h-64 overflow-hidden">
+        <img alt="Auction Item 1"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          data-alt="aerial sunset view of lush rolling green wheat fields stretching to the horizon with golden evening light"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDPS6dGfVJXxSnqq6NhH48wUCIR5x8gLTTkXMt0Tp6YiEaOj1QBxTAbHy2ky2d5pc0Ck_Ci0VHIUQJWkZ-cQZXj-Yhd6IAbbB98qdhVsRTac-teinzywWXzyrhNjaDX6MhJRVuThrs8Li6qb30_M7020Bvpcc3AXAm2_r4w-_y02DM7bsnoquBuhN9Mi6N1-s1w_V4ff7j_ZopQzCsnhA1f55JOSdc6dO-4YDUdslAnqO-ADGajB2s0NlJ6TTvhPDxsCMNburQJ2U" />
+        <div
+          class="absolute top-4 left-4 flex items-center bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-red-600 pulsate mr-2"></span>
+          <span class="text-[10px] font-bold text-red-600 tracking-wider">LIVE</span>
+        </div>
+        <div
+          class="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl flex items-center justify-between">
+          <span class="text-white/80 text-[10px] font-semibold uppercase tracking-widest">Time Remaining</span>
+          <span class="text-white font-mono font-bold tracking-wider">02h : 15m : 30s</span>
+        </div>
+      </div>
+      <div class="p-6 flex flex-col flex-1">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-on-surface mb-1 leading-tight">Premium Organic Winter Wheat Batch #402</h3>
+          <p class="text-slate-500 text-xs flex items-center">
+            <span class="material-symbols-outlined text-[14px] mr-1">location_on</span>
+            Central Valleys, CA
+          </p>
+        </div>
+        <div
+          class="flex justify-between items-center mb-6 p-4 rounded-xl bg-surface-container-low border border-transparent group-hover:border-primary/10 transition-colors">
+          <div>
+            <p class="text-[10px] font-semibold text-slate-500 uppercase mb-0.5">Current Bid</p>
+            <p class="text-2xl font-extrabold text-primary">$18,450.00</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-semibold text-slate-400 uppercase mb-0.5">Starting Price</p>
+            <p class="text-lg font-bold text-slate-600">$12,000</p>
+          </div>
+        </div>
+        <button
+          class="mt-auto w-full py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">
+          Manage Bids
+        </button>
+      </div>
+    </div>
+    <!-- Auction Card 2 -->
+    <div
+      class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col h-full">
+      <div class="relative h-64 overflow-hidden">
+        <img alt="Auction Item 2"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          data-alt="crates of vibrant fresh organic vegetables including tomatoes peppers and greens at an outdoor farm market"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVZ-y4EDhfDdQdkxtyNRH5SsPCYlnzk7lTbvLxiG-NQeGQ09PWcWVWoptz7Xje-6mxar0nJi5nd4oafkegfAsYaJSgFs-fMzBCGn-M5LHXXOGtsQroWGvTAe2MQyzr8i8ufT-9oFZtJmy8tXLoaW3gt81AwigJLs5dDrDfK0rcKSjHzwhSDAlWvye9G76IADQ2pAnddAkRZq12YVpY4bvE5xMC1yeDKGnzEAAVnpx-fMfavDh36Cf6PPSHzwhwH2vMa5WcOuDqafg" />
+        <div
+          class="absolute top-4 left-4 flex items-center bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-red-600 pulsate mr-2"></span>
+          <span class="text-[10px] font-bold text-red-600 tracking-wider">LIVE</span>
+        </div>
+        <div
+          class="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl flex items-center justify-between">
+          <span class="text-white/80 text-[10px] font-semibold uppercase tracking-widest">Time Remaining</span>
+          <span class="text-white font-mono font-bold tracking-wider">00h : 42m : 15s</span>
+        </div>
+      </div>
+      <div class="p-6 flex flex-col flex-1">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-on-surface mb-1 leading-tight">Artisan Vegetable Harvest Collection - Lot Z
+          </h3>
+          <p class="text-slate-500 text-xs flex items-center">
+            <span class="material-symbols-outlined text-[14px] mr-1">location_on</span>
+            Sonoma Highlands, CA
+          </p>
+        </div>
+        <div
+          class="flex justify-between items-center mb-6 p-4 rounded-xl bg-surface-container-low border border-transparent group-hover:border-primary/10 transition-colors">
+          <div>
+            <p class="text-[10px] font-semibold text-slate-500 uppercase mb-0.5">Current Bid</p>
+            <p class="text-2xl font-extrabold text-primary">$4,200.50</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-semibold text-slate-400 uppercase mb-0.5">Starting Price</p>
+            <p class="text-lg font-bold text-slate-600">$3,500</p>
+          </div>
+        </div>
+        <button
+          class="mt-auto w-full py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">
+          Manage Bids
+        </button>
+      </div>
+    </div>
+    <!-- Auction Card 3 -->
+    <div
+      class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col h-full">
+      <div class="relative h-64 overflow-hidden">
+        <img alt="Auction Item 3"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          data-alt="close-up of raw golden almonds falling from a height into a large wooden bowl with cinematic depth of field"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfFqWlcSjHwDcGrBiK3o1JZBStOrhWHaUPrqmBXLGtMNbqGUtaJtCszbE9HsQsWCYMekLVSRtsvnTheIH-qofE5QVW1PIjhl73GxsZ4xw2dXB6NBmBgTEpR0-IfSIKDXsROpQ1CvnmYSrUpHLI5jdmphfvNTxuGrR66KM1OgUDBpvS9dde3D9iHJkvdhLE42WoHJTNklDv537NjyfA23IVqXNywfvkCCYiHVq8GjQsUNroWr6ZA4Ix2oHekGgpUhrBGvAff8ugT3w" />
+        <div
+          class="absolute top-4 left-4 flex items-center bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-red-600 pulsate mr-2"></span>
+          <span class="text-[10px] font-bold text-red-600 tracking-wider">LIVE</span>
+        </div>
+        <div
+          class="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl flex items-center justify-between">
+          <span class="text-white/80 text-[10px] font-semibold uppercase tracking-widest">Time Remaining</span>
+          <span class="text-white font-mono font-bold tracking-wider">05h : 10m : 02s</span>
+        </div>
+      </div>
+      <div class="p-6 flex flex-col flex-1">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-on-surface mb-1 leading-tight">Wholesale Roasted Almond Bulk Export</h3>
+          <p class="text-slate-500 text-xs flex items-center">
+            <span class="material-symbols-outlined text-[14px] mr-1">location_on</span>
+            Fresno Logistic Hub
+          </p>
+        </div>
+        <div
+          class="flex justify-between items-center mb-6 p-4 rounded-xl bg-surface-container-low border border-transparent group-hover:border-primary/10 transition-colors">
+          <div>
+            <p class="text-[10px] font-semibold text-slate-500 uppercase mb-0.5">Current Bid</p>
+            <p class="text-2xl font-extrabold text-primary">$32,000.00</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-semibold text-slate-400 uppercase mb-0.5">Starting Price</p>
+            <p class="text-lg font-bold text-slate-600">$28,500</p>
+          </div>
+        </div>
+        <button
+          class="mt-auto w-full py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">
+          Manage Bids
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Dashboard Analytics Peek (Asymmetric Layout) -->
+  <div class="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 bg-emerald-900 rounded-3xl p-8 text-white relative overflow-hidden">
+      <div class="relative z-10">
+        <h2 class="text-2xl font-bold mb-4">Market Velocity Report</h2>
+        <p class="text-emerald-100/70 mb-8 max-w-md">Real-time agricultural trade volume has increased by 14% this
+          morning across CA hubs. Review bidding heatmaps for optimal release timing.</p>
+        <div class="flex space-x-12">
+          <div>
+            <p class="text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">Daily Volume</p>
+            <p class="text-3xl font-extrabold">$2.4M</p>
+          </div>
+          <div>
+            <p class="text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">Active Bidders</p>
+            <p class="text-3xl font-extrabold">1,142</p>
+          </div>
+        </div>
+      </div>
+      <!-- Abstract Background Shape -->
+      <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-emerald-700/30 rounded-full blur-3xl"></div>
+    </div>
+    <div class="bg-surface-container-low rounded-3xl p-8 border border-outline-variant/15">
+      <h3 class="font-bold text-on-surface mb-6 flex items-center">
+        <span class="material-symbols-outlined mr-2 text-primary">bolt</span>
+        Quick Insights
+      </h3>
+      <ul class="space-y-6">
+        <li class="flex items-start">
+          <span class="w-8 h-8 rounded-lg bg-white flex items-center justify-center mr-4 shadow-sm text-primary">
+            <span class="material-symbols-outlined text-[18px]">trending_up</span>
+          </span>
+          <div>
+            <p class="text-sm font-bold text-on-surface">Wheat Trend</p>
+            <p class="text-xs text-slate-500">Up 8.2% since yesterday</p>
+          </div>
+        </li>
+        <li class="flex items-start">
+          <span class="w-8 h-8 rounded-lg bg-white flex items-center justify-center mr-4 shadow-sm text-primary">
+            <span class="material-symbols-outlined text-[18px]">timer</span>
+          </span>
+          <div>
+            <p class="text-sm font-bold text-on-surface">Average Closing</p>
+            <p class="text-xs text-slate-500">4h 12m after launch</p>
+          </div>
+        </li>
+      </ul>
+      <button class="mt-8 w-full text-center text-primary font-bold text-sm hover:underline">
+        View Detailed Analytics
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,379 @@
+<div class="p-8">
+  <!-- Header & KPI Section -->
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Shipments</h1>
+      <p class="text-slate-500 font-medium">Real-time agricultural logistics and supply chain tracking.</p>
+    </div>
+    <div class="flex gap-3">
+      <button
+        class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline-variant/30 text-on-surface font-semibold text-sm hover:bg-surface-container transition-all">
+        <span class="material-symbols-outlined text-lg">filter_list</span>
+        Filters
+      </button>
+      <button
+        class="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-container transition-all">
+        <span class="material-symbols-outlined text-lg">local_shipping</span>
+        New Shipment
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-4 gap-6 mb-8">
+    <div class="bg-surface-container-lowest p-6 rounded-2xl flex items-center gap-5 transition-all hover:scale-[1.01]">
+      <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined text-3xl">package_2</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Active Shipments</p>
+        <p class="text-2xl font-extrabold text-on-surface">142</p>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl flex items-center gap-5 transition-all hover:scale-[1.01]">
+      <div class="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+        <span class="material-symbols-outlined text-3xl">navigation</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">In Transit</p>
+        <p class="text-2xl font-extrabold text-on-surface">86</p>
+      </div>
+    </div>
+    <div
+      class="bg-surface-container-lowest p-6 rounded-2xl flex items-center gap-5 border-l-4 border-error transition-all hover:scale-[1.01]">
+      <div class="w-12 h-12 bg-error/10 rounded-2xl flex items-center justify-center text-error">
+        <span class="material-symbols-outlined text-3xl">schedule</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Delayed</p>
+        <p class="text-2xl font-extrabold text-on-surface text-error">12</p>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl flex items-center gap-5 transition-all hover:scale-[1.01]">
+      <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600">
+        <span class="material-symbols-outlined text-3xl">task_alt</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Completed Today</p>
+        <p class="text-2xl font-extrabold text-on-surface">34</p>
+      </div>
+    </div>
+  </div>
+  <!-- Main Dashboard Layout (Asymmetric Bento) -->
+  <div class="grid grid-cols-12 gap-8">
+    <!-- Shipment Table Area (Col 1-8) -->
+    <div class="col-span-12 lg:col-span-8 space-y-6">
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+        <div class="p-6 border-b border-surface-container flex justify-between items-center">
+          <h3 class="text-lg font-bold text-on-surface">Active Logistics Feed</h3>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-semibold text-emerald-600 uppercase tracking-tight">Live Updates</span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-surface-container-low/50">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase">Shipment ID</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase">Route Details</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase">Carrier</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase">Status</th>
+                <th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase">Est. Delivery</th>
+                <th class="px-6 py-4 text-right"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-container">
+              <!-- Row 1 -->
+              <tr class="hover:bg-surface-container-low/30 transition-all group">
+                <td class="px-6 py-5">
+                  <span class="font-bold text-sm text-on-surface">#SHP-1024</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-on-surface">Green Valley Farms</span>
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      Port of Oakland, CA
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm font-medium text-slate-600">AgriLogistics Inc.</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-full uppercase">In
+                    Transit</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm text-on-surface">Oct 24, 2023</span>
+                </td>
+                <td class="px-6 py-5 text-right">
+                  <button
+                    class="p-1.5 hover:bg-surface-container rounded-lg text-slate-400 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 2 -->
+              <tr class="hover:bg-surface-container-low/30 transition-all group">
+                <td class="px-6 py-5">
+                  <span class="font-bold text-sm text-on-surface">#SHP-1021</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-on-surface">Sunny Peak Orchards</span>
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      Chicago Distribution Center
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm font-medium text-slate-600">ColdChain Express</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span
+                    class="px-3 py-1 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full uppercase">Picked
+                    Up</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm text-on-surface">Oct 26, 2023</span>
+                </td>
+                <td class="px-6 py-5 text-right">
+                  <button
+                    class="p-1.5 hover:bg-surface-container rounded-lg text-slate-400 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 3 -->
+              <tr class="hover:bg-surface-container-low/30 transition-all group bg-error/5">
+                <td class="px-6 py-5">
+                  <span class="font-bold text-sm text-on-surface">#SHP-0985</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-on-surface">Blue River Milling</span>
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      Seattle Export Hub
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm font-medium text-slate-600">SwiftGrain Transport</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span
+                    class="px-3 py-1 bg-error/10 text-error text-[10px] font-bold rounded-full uppercase">Delayed</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm font-bold text-error">Oct 21, 2023</span>
+                </td>
+                <td class="px-6 py-5 text-right">
+                  <button
+                    class="p-1.5 hover:bg-surface-container rounded-lg text-slate-400 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+              <!-- Row 4 -->
+              <tr class="hover:bg-surface-container-low/30 transition-all group">
+                <td class="px-6 py-5">
+                  <span class="font-bold text-sm text-on-surface">#SHP-0992</span>
+                </td>
+                <td class="px-6 py-5">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-on-surface">Mountain Range Dairy</span>
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                      <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                      Denver Local Market
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm font-medium text-slate-600">DairyFlow Co.</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span
+                    class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">Delivered</span>
+                </td>
+                <td class="px-6 py-5">
+                  <span class="text-sm text-slate-500">Today, 09:42 AM</span>
+                </td>
+                <td class="px-6 py-5 text-right">
+                  <button
+                    class="p-1.5 hover:bg-surface-container rounded-lg text-slate-400 hover:text-primary transition-all">
+                    <span class="material-symbols-outlined text-lg">more_vert</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="p-4 bg-surface-container-low/20 flex justify-center">
+          <button class="text-sm font-bold text-primary hover:underline">View All Active Shipments</button>
+        </div>
+      </div>
+      <!-- Logistics Overview Cards -->
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+          <h4 class="text-sm font-bold text-on-surface mb-6">Upcoming Deliveries</h4>
+          <div class="space-y-4">
+            <div class="flex items-center gap-4 p-3 hover:bg-surface rounded-xl transition-all">
+              <div
+                class="w-10 h-10 bg-surface-container rounded-lg flex flex-col items-center justify-center text-on-surface leading-none">
+                <span class="text-[10px] font-bold uppercase opacity-50">Oct</span>
+                <span class="text-sm font-extrabold">25</span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold">Bulk Wheat - SHP-1102</p>
+                <p class="text-xs text-slate-500">Scheduled: 02:00 PM</p>
+              </div>
+              <span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+            </div>
+            <div class="flex items-center gap-4 p-3 hover:bg-surface rounded-xl transition-all">
+              <div
+                class="w-10 h-10 bg-surface-container rounded-lg flex flex-col items-center justify-center text-on-surface leading-none">
+                <span class="text-[10px] font-bold uppercase opacity-50">Oct</span>
+                <span class="text-sm font-extrabold">25</span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold">Organic Soy - SHP-1105</p>
+                <p class="text-xs text-slate-500">Scheduled: 04:30 PM</p>
+              </div>
+              <span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+          <div class="flex justify-between items-center mb-6">
+            <h4 class="text-sm font-bold text-on-surface">Carrier Performance</h4>
+            <span class="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">Weekly Avg:
+              94%</span>
+          </div>
+          <div class="space-y-5">
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="font-medium">AgriLogistics</span>
+                <span class="font-bold">98%</span>
+              </div>
+              <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div class="w-[98%] h-full bg-primary"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="font-medium">ColdChain Express</span>
+                <span class="font-bold">82%</span>
+              </div>
+              <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div class="w-[82%] h-full bg-secondary"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="font-medium">SwiftGrain</span>
+                <span class="font-bold">74%</span>
+              </div>
+              <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div class="w-[74%] h-full bg-error"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Side Panel (Col 9-12) -->
+    <div class="col-span-12 lg:col-span-4 space-y-6">
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
+        <div class="p-6">
+          <h3 class="text-lg font-bold text-on-surface mb-2">Real-time Transit View</h3>
+          <p class="text-xs text-slate-500 mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">local_shipping</span>
+            Tracking: <span class="font-bold text-on-surface">#SHP-1024</span>
+          </p>
+        </div>
+        <div class="relative h-64 mx-6 rounded-xl overflow-hidden bg-surface-container-high">
+          <div class="absolute inset-0 bg-cover bg-center opacity-80"
+            data-alt="detailed terrain map of agricultural flatlands with a highlighted winding shipping route and small moving icons"
+            data-location="California Central Valley"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDxLHtFb21-jriOM1G4b4jo-yByESXUfvb1RJ2pYDCQmsymWnSee0SXQZfWWL46BOGQ_l5z3oBBz3pJRLdue9I-6dsyTXZbbcip4Q55zc3fL5Tk9dpZpO2lNHgyMpvPuymFnacNjI6psfFAjmMrwhPlkHsFxQqeKd2ETgxyPk6c8usnMz5GC1VXK-0L5cDE6OtRHgGNOxDQ_z4ruzApV98zp1hN8_7pqS0rFuEvcREL0PW6_tOoQfOFzD0kaO4ndlHc95sGnozf6ss');">
+          </div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <!-- Tracking Pins -->
+          <div class="absolute top-1/4 left-1/4">
+            <div
+              class="w-4 h-4 bg-white rounded-full flex items-center justify-center border-2 border-primary ring-4 ring-primary/20">
+              <div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+            </div>
+          </div>
+          <div class="absolute bottom-1/3 right-1/4">
+            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg animate-bounce">
+              <span class="material-symbols-outlined text-white text-sm"
+                style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+            </div>
+          </div>
+          <!-- Map Controls -->
+          <div class="absolute bottom-4 right-4 flex flex-col gap-2">
+            <button
+              class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-on-surface hover:bg-slate-50">
+              <span class="material-symbols-outlined text-lg">add</span>
+            </button>
+            <button
+              class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-on-surface hover:bg-slate-50">
+              <span class="material-symbols-outlined text-lg">remove</span>
+            </button>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="space-y-6">
+            <div class="flex gap-4 relative">
+              <div class="w-0.5 h-full bg-slate-200 absolute left-[15px] top-4"></div>
+              <div
+                class="relative z-10 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-sm">check</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Departed Green Valley</p>
+                <p class="text-[11px] text-slate-500">Oct 22, 2023 • 08:14 AM</p>
+              </div>
+            </div>
+            <div class="flex gap-4 relative">
+              <div class="w-0.5 h-full bg-slate-200 absolute left-[15px] top-4"></div>
+              <div
+                class="relative z-10 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-sm">check</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Border Crossing - Yuba City</p>
+                <p class="text-[11px] text-slate-500">Oct 23, 2023 • 02:45 PM</p>
+              </div>
+            </div>
+            <div class="flex gap-4 relative">
+              <div
+                class="relative z-10 w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center flex-shrink-0 ring-4 ring-primary/10">
+                <span class="material-symbols-outlined text-sm">navigation</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-on-surface">In Transit - I-80 West</p>
+                <p class="text-[11px] text-primary font-bold">Estimated Arrival: 4 Hours</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Alerts/Info Panel -->
+      <div class="bg-primary p-6 rounded-2xl text-white relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10">
+          <span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+        </div>
+        <h4 class="text-sm font-bold mb-2 uppercase tracking-widest opacity-80">Efficiency Tip</h4>
+        <p class="text-sm leading-relaxed mb-4">Routes via Port of Oakland are experiencing 15% faster clearance times
+          this week. Consider re-routing non-urgent freight.</p>
+        <button
+          class="bg-white/20 hover:bg-white/30 text-xs font-bold py-2 px-4 rounded-lg transition-all backdrop-blur-sm">View
+          Logistics Report</button>
+      </div>
+    </div>
+  </div>
+</div>

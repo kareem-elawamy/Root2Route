@@ -20,12 +20,19 @@ export class OverviewComponent implements OnInit {
   readonly currentUser = this.auth.currentUser;
   readonly overview = this.orgCtx.overview();
   metrics = signal<any[]>([]);
+  chartBars = signal<{ height: number, label: string, value: number }[]>([]);
+  currentMonths = signal(6);
 
   ngOnInit(): void {
     if (!this.auth.isLogin()) {
       this.router.navigate(['/login']);
     }
-    this.overview.subscribe((overview) => {
+    this.overviewLoding();  
+    this.charLoding();
+  }
+overviewLoding(){
+this.overview.subscribe((overview) => {
+
       this.metrics.set([
         { title: 'Total Revenue', value: '$' + overview.totalRevenue, trend: '+14%', isUp: true, icon: 'payments' },
         { title: 'Active Auctions', value: overview.activeAuctions, trend: '+5%', isUp: true, icon: 'gavel' },
@@ -33,8 +40,24 @@ export class OverviewComponent implements OnInit {
         { title: 'Unread Messages', value: overview.unreadMessages, trend: 'New', isUp: true, icon: 'forum' },
       ]);
     });
+}
+charLoding(months?: number){
+  if (months) {
+    this.currentMonths.set(months);
   }
-
+  this.orgCtx.charData(this.orgCtx.getActiveOrgId() ?? '', this.currentMonths()).subscribe((data) => {
+    if (!data || data.length === 0) {
+      this.chartBars.set([]);
+      return;
+    }
+    const maxVal = Math.max(...data.map(d => d.netRevenue));
+    this.chartBars.set(data.map(d => ({
+      height: maxVal > 0 ? Math.max((d.netRevenue / maxVal) * 95, 2) : 2,
+      label: typeof d.date === 'string' ? new Date(d.date).toLocaleDateString('en-US', { month: 'short' }) : d.date,
+      value: d.netRevenue
+    })));
+  });
+}
 
 
   recentOrders = [

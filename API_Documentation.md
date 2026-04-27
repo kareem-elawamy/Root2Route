@@ -116,3 +116,21 @@ The base URL for the API is `api/v1`.
 - `GET /unread-count` - Unread items count
 - `PUT /{id}/read` - Mark one as read
 - `PUT /read-all` - Mark all as read
+
+## 14. Dashboards (`api/v1/dashboard`)
+**Super Admin** (`api/v1/dashboard/superadmin`):
+- `GET /overview-stats` - Get high-level KPIs (Revenue, Fees, Pending Orgs, ML count)
+- `GET /financials?months={n}` - Get revenue and platform fees over time
+- `GET /ml/top-diseases?top={n}` - Get most frequently diagnosed diseases
+- `GET /ml/accuracy-trend?days={n}` - Get ML average confidence over time
+- `GET /ml/disease-heatmap` - Geolocation clustering of diseases
+- `GET /organizations/pending` - List organizations waiting for approval
+- `PUT /organizations/{id}/approve` - Approve an organization
+- `PUT /organizations/{id}/reject?reason={reason}` - Reject an organization
+- `PUT /settings/platform-fee?newFee={fee}` - Update global platform fee percentage
+
+**Organization Owner** (`api/v1/dashboard/org/{orgId}`):
+- `GET /overview` - Org-specific KPIs (Revenue, Orders, Auctions)
+- `GET /activity-chart?months={n}` - Org's monthly sales activity
+- `GET /live-bids?limit={n}` - Feed of live bids on active auctions
+- `GET /latest-orders?limit={n}` - Most recent orders with optional status filter

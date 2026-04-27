@@ -67,10 +67,11 @@ namespace API.Controllers
             [FromForm] CreateOrganizationCommand command)
         {
             var userId = GetCurrentUserId();
+
             if (userId == null) return Unauthorized();
 
             command.OwnerId = userId.Value;
-
+            
             var response = await Mediator.Send(command);
             return NewResult(response);
         }
@@ -151,7 +152,7 @@ namespace API.Controllers
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString))
                 return null;
-
+            
             return Guid.Parse(userIdString);
         }
 

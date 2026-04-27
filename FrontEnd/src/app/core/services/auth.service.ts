@@ -6,6 +6,7 @@ import { LoginData } from '../model/auth/loginData';
 import { LoginResponse } from '../model/auth/loginResponse';
 import { ResponseData } from '../model/response/responseData';
 import { OrgContextService } from './org-context.service';
+import { environment } from '../../../environments/environment';
 
 export type { AuthUser, LoginData };
 
@@ -16,6 +17,7 @@ const USER_KEY = 'user';
 interface JwtClaims {
   sub: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string | string[];
   organizationId?: string;
   organizationRole?: string;
   permission?: string[];
@@ -27,7 +29,7 @@ interface JwtClaims {
 export class AuthService {
   private readonly router = inject(Router);
   private readonly orgContext = inject(OrgContextService);
-  private readonly _url = 'https://root2route.runasp.net/api/v1/auth/';
+  private readonly _url = environment.apiUrl + 'auth/';
 
   private readonly _currentUser = signal<AuthUser | null>(this.loadUser());
   private readonly _token = signal<string | null>(this.loadToken());
@@ -56,11 +58,11 @@ export class AuthService {
           }
           return body as ResponseData<LoginResponse>;
         })
-        .then((response) => {
+        .then(async (response) => {
           this.setSession(response.data);
+          await this.navigateAfterLogin(response.data);
           observer.next(response);
           observer.complete();
-          this.navigateAfterLogin(response.data);
         })
         .catch((err: Error) => {
           observer.error(err);
@@ -103,36 +105,41 @@ export class AuthService {
   }
 
   // ─── Navigation After Login ───────────────────────────────────────────────
-  private navigateAfterLogin(data: LoginResponse): void {
+  private async navigateAfterLogin(data: LoginResponse): Promise<void> {
     const claims = this.decodeToken(data.accessToken);
 
     // 1. SuperAdmin role → go to super-admin dashboard
-    const identityRoles = Array.isArray(claims.role)
-      ? claims.role
-      : claims.role
-      ? [claims.role]
-      : [];
+    const roleClaim = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || claims.role;
+    const identityRoles = Array.isArray(roleClaim)
+      ? roleClaim
+      : roleClaim
+        ? [roleClaim]
+        : [];
 
     if (identityRoles.includes('SuperAdmin')) {
-      this.router.navigate(['/super-admin']);
+      await this.router.navigate(['/super-admin/organizations']);
       return;
     }
 
     // 2. Check via API if user owns any organization → go to /org
-    this.orgContext.myOrganization().subscribe({
-      next: (orgs) => {
-        if (orgs && orgs.length > 0) {
-          // orgContext.setOrganizations() already picked the first org as active
-          this.router.navigate(['/org']);
-        } else {
-          // 3. No org → unauthorized
-          this.router.navigate(['/unauthorized']);
-        }
-      },
-      error: () => {
-        // If the API call fails, treat as unauthorized
-        this.router.navigate(['/unauthorized']);
-      },
+    return new Promise((resolve) => {
+      this.orgContext.myOrganization().subscribe({
+        next: async (orgs) => {
+          if (orgs && orgs.length > 0) {
+            // orgContext.setOrganizations() already picked the first org as active
+            await this.router.navigate(['/org']);
+          } else {
+            // 3. No org → create company
+            await this.router.navigate(['/create-company']);
+          }
+          resolve();
+        },
+        error: async () => {
+          // If the API call fails, treat as unauthorized
+          await this.router.navigate(['/unauthorized']);
+          resolve();
+        },
+      });
     });
   }
 
@@ -154,14 +161,15 @@ export class AuthService {
   }
   isSuperAdmin(): boolean {
     const claims = this.decodeToken(this._token()!);
-    const identityRoles = Array.isArray(claims.role)
-      ? claims.role
-      : claims.role
-      ? [claims.role]
-      : [];
+    const roleClaim = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || claims.role;
+    const identityRoles = Array.isArray(roleClaim)
+      ? roleClaim
+      : roleClaim
+        ? [roleClaim]
+        : [];
     return identityRoles.includes('SuperAdmin');
   }
-  isLogin(): boolean{
+  isLogin(): boolean {
     return this.isAuthenticated();
   }
 

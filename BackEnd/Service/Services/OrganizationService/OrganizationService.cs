@@ -38,66 +38,73 @@ public class OrganizationService : IOrganizationService
 
     public async Task<string> CreateOrganizationAsync(Organization organization, IFormFile? imageFile = null)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        try
+        return await strategy.ExecuteAsync(async () =>
         {
-            var user = await _userManager.FindByIdAsync(organization.OwnerId.ToString());
-            if (user == null)
-                return "Owner Not Found";
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            var nameExists = await _organizationRepository
-                .GetTableNoTracking()
-                .AnyAsync(x => x.Name.ToLower() == organization.Name.ToLower());
-
-            if (nameExists)
-                return "Exists";
-
-            if (imageFile != null)
-                organization.LogoUrl = await _fileService.UploadImageAsync("Logo-images", imageFile);
-
-            organization.Id = Guid.NewGuid();
-            organization.CreatedAt = DateTime.UtcNow;
-            organization.OrganizationStatus = OrganizationStatus.Pending;
-
-            await _organizationRepository.AddAsync(organization);
-
-            var ownerRole = new OrganizationRole
+            try
             {
-                Id = Guid.NewGuid(),
-                Name = "Owner",
-                OrganizationId = organization.Id,
-                IsSystemDefault = true,
-                Permissions = Permissions.GetAllPermissions()
-    .Select(p => new OrganizationRolePermission
-    {
-        Id = Guid.NewGuid(),
-        PermissionsClaim = p
-    }).ToList()
-            };
+                var user = await _userManager.FindByIdAsync(organization.OwnerId.ToString());
+                if (user == null)
+                    return "Owner Not Found";
 
-            await _roleRepository.AddAsync(ownerRole);
+                var nameExists = await _organizationRepository
+                    .GetTableNoTracking()
+                    .AnyAsync(x => x.Name.ToLower() == organization.Name.ToLower());
 
-            var ownerMember = new OrganizationMember
-            {
-                Id = Guid.NewGuid(),
-                OrganizationId = organization.Id,
-                UserId = organization.OwnerId,
-                OrganizationRoles = new List<OrganizationRole> { ownerRole },
-                IsActive = true
-            };
+                if (nameExists)
+                    return "Exists";
 
-            await _memberRepository.AddAsync(ownerMember);
+                if (imageFile != null)
+                    organization.LogoUrl = await _fileService.UploadImageAsync("Logo-images", imageFile);
 
-            await transaction.CommitAsync();
+                organization.Id = Guid.NewGuid();
+                organization.CreatedAt = DateTime.UtcNow;
+                organization.OrganizationStatus = OrganizationStatus.Pending;
+               
+                await _organizationRepository.AddAsync(organization);
 
-            return "Success";
-        }
-        catch
+                var ownerRole = new OrganizationRole
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Owner",
+                    OrganizationId = organization.Id,
+                    IsSystemDefault = true,
+                    Permissions = Permissions.GetAllPermissions()
+        .Select(p => new OrganizationRolePermission
         {
-            await transaction.RollbackAsync();
-            return "Failed";
-        }
+            Id = Guid.NewGuid(),
+            PermissionsClaim = p
+        }).ToList()
+                };
+
+                await _roleRepository.AddAsync(ownerRole);
+
+                var ownerMember = new OrganizationMember
+                {
+                    Id = Guid.NewGuid(),
+                    OrganizationId = organization.Id,
+                    UserId = organization.OwnerId,
+                    OrganizationRoles = new List<OrganizationRole> { ownerRole },
+                    IsActive = true
+                };
+
+                await _memberRepository.AddAsync(ownerMember);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CreateOrganizationAsync Exception: {ex.Message} \n {ex.InnerException?.Message} \n {ex.StackTrace}");
+                await transaction.RollbackAsync();
+                return "Failed";
+            }
+        });
     }
     #endregion
     #region Get Methods

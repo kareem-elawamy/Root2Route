@@ -66,9 +66,26 @@
       <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-lg font-headline font-bold text-on-surface">Revenue & Activity Overview</h3>
-          <button class="text-outline hover:text-primary transition-colors">
-            <span class="material-symbols-outlined">more_horiz</span>
-          </button>
+          <div class="relative group">
+            <button
+              class="text-outline hover:text-primary transition-colors flex items-center gap-1 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant shadow-sm">
+              <span class="text-xs font-semibold">{{ currentMonths() }} Months</span>
+              <span class="material-symbols-outlined text-[18px]">expand_more</span>
+            </button>
+            <!-- Dropdown contents -->
+            <div
+              class="absolute right-0 top-full mt-1 w-32 bg-surface-container-high rounded-lg shadow-lg border border-outline-variant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 overflow-hidden">
+              <button (click)="charLoding(3)"
+                class="w-full text-left px-4 py-2 text-sm font-label font-semibold text-on-surface hover:bg-surface-container-highest transition-colors"
+                [class.bg-surface-container-highest]="currentMonths() === 3">3 Months</button>
+              <button (click)="charLoding(6)"
+                class="w-full text-left px-4 py-2 text-sm font-label font-semibold text-on-surface hover:bg-surface-container-highest transition-colors"
+                [class.bg-surface-container-highest]="currentMonths() === 6">6 Months</button>
+              <button (click)="charLoding(12)"
+                class="w-full text-left px-4 py-2 text-sm font-label font-semibold text-on-surface hover:bg-surface-container-highest transition-colors"
+                [class.bg-surface-container-highest]="currentMonths() === 12">12 Months</button>
+            </div>
+          </div>
         </div>
         <!-- Simple pure HTML/CSS visually appealing graph placeholder -->
         <div
@@ -81,17 +98,23 @@
             <div class="border-b border-dashed border-outline-variant w-full"></div>
           </div>
 
-          <!-- Dummy Bars representing data -->
-          <div class="w-full flex justify-between items-end h-full z-10 px-2 group/chart">
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[30%]"></div>
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[45%]"></div>
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[25%]"></div>
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[60%]"></div>
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[50%]"></div>
-            <div class="w-[8%] bg-primary/40 hover:bg-primary transition-colors rounded-t-md relative h-[80%]"></div>
-            <div
-              class="w-[8%] bg-primary transition-colors rounded-t-md relative h-[95%] shadow-[0_0_15px_rgba(0,105,72,0.4)]">
+          <!-- Dynamic Bars representing data -->
+          <div class="w-full flex justify-between items-end h-full z-10 px-2 group/chart gap-2">
+            @for (bar of chartBars(); track bar.label) {
+            <div [style.height.%]="bar.height"
+              class="w-full bg-primary/40 hover:bg-primary hover:shadow-[0_0_15px_rgba(0,105,72,0.4)] transition-all rounded-t-md relative group/bar flex justify-center cursor-pointer">
+              <!-- Tooltip -->
+              <div
+                class="absolute -top-10 bg-surface-container border border-outline-variant text-[10px] text-on-surface p-1.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none font-bold z-20 flex flex-col items-center">
+                <span>${{ bar.value | number }}</span>
+              </div>
+              <!-- X-axis Label -->
+              <div
+                class="absolute -bottom-6 text-[10px] text-on-surface-variant font-label font-bold text-center w-full">
+                {{ bar.label }}
+              </div>
             </div>
+            }
           </div>
         </div>
       </div>

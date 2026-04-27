@@ -1,80 +1,58 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { MyOrganization } from '../model/Organization/myOrganization';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { OverviewResponse } from '../model/Organization/overviewResponse';
+import { environment } from '../../../environments/environment';
+import { ActivityChartResponse } from '../model/Organization/activity-chart-response';
+
 const ACTIVE_ORG_KEY = 'r2r_active_org_id';
 const ORG_LIST_KEY = 'r2r_org_list';
 
 @Injectable({ providedIn: 'root' })
 export class OrgContextService {
-  private readonly _urlOrganizations = 'https://root2route.runasp.net/api/v1/organizations/';
-  private readonly _urlOverview = 'https://root2route.runasp.net/api/v1/dashboard/org/';
+  private readonly http = inject(HttpClient);
+  private readonly _urlOrganizations = environment.apiUrl + 'organizations/';
+  private readonly _urlOverview = environment.apiUrl + 'dashboard/org/';
   private readonly _activeOrgId = signal<string | null>(this.loadActiveOrgId());
-  private readonly _organizations = signal<MyOrganization[]>(this.loadOrgs());
+  private readonly _organizations = signal<MyOrganization[]>([]);
   private readonly _overview = signal<OverviewResponse | null>(null);
+  private readonly _activeChar = signal<ActivityChartResponse[]>([]);
   readonly activeOrgId = this._activeOrgId.asReadonly();
   readonly organizations = this._organizations.asReadonly();
+  readonly activeChar = this._activeChar.asReadonly();
+  readonly overviewData = this._overview.asReadonly();
   readonly activeOrg = computed(() =>
     this._organizations().find((o) => o.id === this._activeOrgId())
   );
+
   overview(): Observable<OverviewResponse> {
-    return new Observable((observer) => {
-      const token = localStorage.getItem('access_token');
-      fetch(this._urlOverview + this._activeOrgId() + '/overview', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'X-Organization-Id': this._activeOrgId()!,
-        },
-      })
-        .then(async (res) => {
-          const body = await res.json();
-          if (!res.ok) {
-            throw new Error(body?.message || 'Failed to load overview');
-          }
-          console.log(body);
-          return (body.data ?? body) as OverviewResponse;
-        })
-        .then((overview) => {
-          this._overview.set(overview);
-          observer.next(overview);
-          observer.complete();
-        })
-        .catch((err: Error) => {
-          observer.error(err);
-        });
-    });
+    const orgId = this._activeOrgId();
+    if (!orgId) {
+      return throwError(() => new Error('Active organization ID is not set.'));
+    }
+
+    return this.http.get<any>(this._urlOverview + orgId + '/overview').pipe(
+      map(body => (body.data ?? body) as OverviewResponse),
+      tap(overview => this._overview.set(overview))
+    );
+  }
+  charData(orgId: string, months: number): Observable<ActivityChartResponse[]> {
+    if (!orgId) {
+      return throwError(() => new Error('Active organization ID is not set.'));
+    }
+    return this.http.get<any>(this._urlOverview + orgId + '/activity-chart?months=' + months).pipe(
+      map(body => (body.data ?? body) as ActivityChartResponse[]),
+      tap(chartData => this._activeChar.set(chartData))
+    );
   }
   myOrganization(): Observable<MyOrganization[]> {
-    return new Observable((observer) => {
-      const token = localStorage.getItem('access_token');
-      fetch(this._urlOrganizations + 'my', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-        .then(async (res) => {
-          const body = await res.json();
-          if (!res.ok) {
-            throw new Error(body?.message || 'Failed to load organizations');
-          }
-          console.log(body);
-          return (body.data ?? body) as MyOrganization[];
-        })
-        .then((orgs) => {
-          this.setOrganizations(orgs);
-          observer.next(orgs);
-          observer.complete();
-        })
-        .catch((err: Error) => {
-          observer.error(err);
-        });
-    });
+    return this.http.get<any>(this._urlOrganizations + 'my').pipe(
+      map(body => (body.data ?? body) as MyOrganization[]),
+      tap(orgs => this.setOrganizations(orgs))
+    );
   }
-
 
   getActiveOrgId(): string | null {
     return this._activeOrgId();
@@ -86,7 +64,8 @@ export class OrgContextService {
   }
 
   setOrganizations(orgs: MyOrganization[]): void {
-    localStorage.setItem(ORG_LIST_KEY, JSON.stringify(orgs));
+    const orgIds = orgs.map(o => o.id);
+    localStorage.setItem(ORG_LIST_KEY, JSON.stringify(orgIds));
     this._organizations.set(orgs);
 
     if (!this._activeOrgId() && orgs.length > 0) {
@@ -103,10 +82,5 @@ export class OrgContextService {
 
   private loadActiveOrgId(): string | null {
     return localStorage.getItem(ACTIVE_ORG_KEY);
-  }
-
-  private loadOrgs(): MyOrganization[] {
-    const raw = localStorage.getItem(ORG_LIST_KEY);
-    return raw ? (JSON.parse(raw) as MyOrganization[]) : [];
   }
 }

@@ -49,7 +49,6 @@ namespace Core.Features.Organization.Commands.Handler
             if (result == "Failed")
                 return BadRequest<string>("Something went wrong");
 
-            // Return the newly created OrganizationId so the Frontend can call RefreshToken immediately
             return Created(organization.Id.ToString());
         }
         public async Task<Response<string>> Handle(UpdateOrganizations request, CancellationToken cancellationToken)

@@ -1,0 +1,344 @@
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+  <div>
+    <h1 class="text-4xl font-extrabold tracking-tight text-on-surface brand-font mb-2">Orders Management</h1>
+    <p class="text-on-surface-variant max-w-md">Real-time oversight of harvest delivery cycles and auction fulfillments.
+    </p>
+  </div>
+  <div class="flex items-center bg-surface-container-low p-1 rounded-xl">
+    <button
+      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary font-semibold text-sm shadow-sm transition-all">
+      <span class="material-symbols-outlined text-lg">table_rows</span>
+      Table View
+    </button>
+    <button
+      class="flex items-center gap-2 px-4 py-2 rounded-lg text-secondary font-medium text-sm hover:text-primary transition-all">
+      <span class="material-symbols-outlined text-lg">view_kanban</span>
+      Kanban View
+    </button>
+  </div>
+</div>
+<!-- Filter Bar -->
+<div class="bg-surface-container-low rounded-2xl p-4 mb-8 flex flex-wrap items-center gap-4">
+  <div
+    class="flex items-center gap-2 bg-surface-container-lowest px-4 py-2 rounded-xl border border-outline-variant/10">
+    <span class="material-symbols-outlined text-slate-400 text-lg">calendar_today</span>
+    <span class="text-sm font-medium">Oct 01, 2023 - Oct 31, 2023</span>
+    <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
+  </div>
+  <div
+    class="flex items-center gap-2 bg-surface-container-lowest px-4 py-2 rounded-xl border border-outline-variant/10">
+    <span class="text-sm font-medium">Status: All Orders</span>
+    <span class="material-symbols-outlined text-slate-400 text-lg">filter_list</span>
+  </div>
+  <button
+    class="ml-auto flex items-center gap-2 text-primary font-semibold text-sm px-4 py-2 hover:bg-primary/5 rounded-xl transition-all">
+    <span class="material-symbols-outlined">download</span>
+    Export Report
+  </button>
+</div>
+<div class="flex gap-8 items-start">
+  <!-- Table Container (Main List) -->
+  <div class="flex-1 bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm border border-outline-variant/5">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-container-low/50">
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Order ID</th>
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Customer</th>
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Date &amp; Time
+          </th>
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Amount</th>
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Status</th>
+          <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/70"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container">
+        <tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+          <td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#ORD-1029</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-xs font-bold">
+                EM</div>
+              <div>
+                <div class="text-sm font-semibold text-on-surface">Elias Miller</div>
+                <div class="text-xs text-on-surface-variant">Green Valley Farms</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-on-surface-variant">Oct 24, 2023 • 14:20</td>
+          <td class="px-6 py-4 text-sm font-bold text-on-surface">$12,450.00</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 uppercase tracking-tight">Processing</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </td>
+        </tr>
+        <tr
+          class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group bg-surface-container-low/20">
+          <td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#ORD-1028</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <img class="w-8 h-8 rounded-full object-cover"
+                data-alt="Portrait of a female entrepreneur in a sustainable tech workspace with warm natural lighting"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsHwwJbCJn7aBVH6INhI7wz61IiA4IwqP_mu2lOCetqXChIEHe2L95NF8Zbdpmh-HDa-XHDIzk3TGpwB1FT8GCnAq13aoWEbgWAnF_SUIrLZFliyp0aGPOiitnwjdMF80Q-22KVPGh3AF4Si2k1AVv0_CslgPaGi2L1a1--aHVjvOiXoTe69kmXaV_6ve4GBorFSat5pk9xybEMCIF2PZ53Z70c3wswJuEhoK27K7aM29s0-K-rimASffZ4MKpAIx0popFO8pmKyA" />
+              <div>
+                <div class="text-sm font-semibold text-on-surface">Sarah Jenkins</div>
+                <div class="text-xs text-on-surface-variant">Jenki-Root Logistics</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-on-surface-variant">Oct 24, 2023 • 09:12</td>
+          <td class="px-6 py-4 text-sm font-bold text-on-surface">$3,120.00</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 uppercase tracking-tight">Delivered</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </td>
+        </tr>
+        <tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+          <td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#ORD-1027</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary text-xs font-bold">
+                KB</div>
+              <div>
+                <div class="text-sm font-semibold text-on-surface">Karl Barker</div>
+                <div class="text-xs text-on-surface-variant">Independent Distro</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-on-surface-variant">Oct 23, 2023 • 17:45</td>
+          <td class="px-6 py-4 text-sm font-bold text-on-surface">$890.50</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 uppercase tracking-tight">Pending</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </td>
+        </tr>
+        <tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+          <td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#ORD-1026</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary text-xs font-bold">
+                LW</div>
+              <div>
+                <div class="text-sm font-semibold text-on-surface">Linda Wu</div>
+                <div class="text-xs text-on-surface-variant">Urban Roots Co.</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-on-surface-variant">Oct 23, 2023 • 11:30</td>
+          <td class="px-6 py-4 text-sm font-bold text-on-surface">$22,000.00</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 uppercase tracking-tight">Dispatched</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </td>
+        </tr>
+        <tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+          <td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#ORD-1025</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center text-error text-xs font-bold">
+                HM</div>
+              <div>
+                <div class="text-sm font-semibold text-on-surface">Henry Marsh</div>
+                <div class="text-xs text-on-surface-variant">Marsh Organics</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-on-surface-variant">Oct 22, 2023 • 08:20</td>
+          <td class="px-6 py-4 text-sm font-bold text-on-surface">$1,450.00</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 uppercase tracking-tight">Cancelled</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <span
+              class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="px-6 py-4 flex items-center justify-between bg-surface-container-low/20">
+      <span class="text-xs text-on-surface-variant font-medium">Showing 1 to 5 of 48 orders</span>
+      <div class="flex gap-2">
+        <button class="p-1 rounded-lg border border-outline-variant/20 hover:bg-white transition-all">
+          <span class="material-symbols-outlined text-lg">chevron_left</span>
+        </button>
+        <button
+          class="p-1 rounded-lg border border-outline-variant/20 bg-white shadow-sm font-bold text-xs px-3">1</button>
+        <button
+          class="p-1 rounded-lg border border-outline-variant/20 hover:bg-white transition-all text-xs px-3">2</button>
+        <button class="p-1 rounded-lg border border-outline-variant/20 hover:bg-white transition-all">
+          <span class="material-symbols-outlined text-lg">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Detail Panel (Persistent Desktop Slide-over feel) -->
+  <aside
+    class="w-96 shrink-0 bg-surface-container-lowest rounded-3xl p-6 shadow-xl border border-outline-variant/10 sticky top-24">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-lg font-bold brand-font text-on-surface">Order Details</h2>
+        <p class="text-xs text-primary font-mono font-semibold">#ORD-1029</p>
+      </div>
+      <button class="p-2 hover:bg-surface-container rounded-full transition-all">
+        <span class="material-symbols-outlined text-slate-400">close</span>
+      </button>
+    </div>
+    <!-- Customer Summary -->
+    <div class="bg-surface-container-low rounded-2xl p-4 mb-6">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg">EM
+        </div>
+        <div>
+          <p class="text-sm font-bold text-on-surface">Elias Miller</p>
+          <p class="text-xs text-on-surface-variant">elias.miller@greenvalley.com</p>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-outline-variant/20 space-y-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-on-surface-variant">Phone</span>
+          <span class="font-medium">+1 (555) 012-3456</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-on-surface-variant">Tax ID</span>
+          <span class="font-medium font-mono uppercase">US-9821-XX</span>
+        </div>
+      </div>
+    </div>
+    <!-- Items -->
+    <div class="mb-6">
+      <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70 mb-4">Order Items</h3>
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden">
+            <img class="w-full h-full object-cover"
+              data-alt="Close-up of premium organic wheat stalks with golden lighting and shallow depth of field"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2Oob0-lj5fEVQSJySca553Te8Qm3OTYlKdboUyyNt7mowOqI9HKS5SKtXDPK8OUYHNFE0wnDZIGkbfGI1QkZ3xXzLcpGmp1sjE7oHKLriYst_42lNGCbb7nlf8Q3mZ5lEUYrxooSXDfJp7lr7Cqkc4YRSmnSU4AMDH_ZBU1_9ZlL7A52XT7tKOkutaeJnXDBE7QIy1sSknz2z3xftBRBRXSGMiWvpsBtUOi4XckgZ_WuPmCykj027Uaqy9D-ZlbOA7h9FhIJDvdo" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Winter Wheat Bulk</p>
+            <p class="text-xs text-on-surface-variant">500kg • Grade A</p>
+          </div>
+          <p class="text-sm font-bold text-on-surface">$8,500</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden">
+            <img class="w-full h-full object-cover"
+              data-alt="Macro photography of vibrant fresh green beans in a rustic wooden crate"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaDh9baTIm5WFB-D6EL5J8LcNMqTVgD9651BdwtI7OO4DC_XZNoj7A6uzAkFjJJ_DsiGNDYdl-DbWnLm3-gh2aVK0lvD6LtJTd1L0GY3zIr7InIwo8Kbu8nxRmo68W2jXZBDSWzphnFVcIqgMNIJj4rKfU4qpuU9UH6RG-vr4hOKKDAQz_WE7ojjHutEI0vyqHWYoij5rT-hzaeTnQSuebVKmrcVHPQdI3D4qMZq1KI80Yxt7J4qqwdBW1Hky5Uu-Jc59D2B01fp0" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Organic Green Beans</p>
+            <p class="text-xs text-on-surface-variant">200kg • Heirloom</p>
+          </div>
+          <p class="text-sm font-bold text-on-surface">$3,950</p>
+        </div>
+      </div>
+    </div>
+    <!-- Summary & Total -->
+    <div class="border-t border-outline-variant/30 pt-6 space-y-3 mb-8">
+      <div class="flex justify-between text-sm">
+        <span class="text-on-surface-variant">Subtotal</span>
+        <span class="font-medium">$12,450.00</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-on-surface-variant">Shipping Fee</span>
+        <span class="font-medium text-primary">Free</span>
+      </div>
+      <div class="flex justify-between text-lg font-extrabold brand-font text-on-surface pt-2">
+        <span>Total Amount</span>
+        <span>$12,450.00</span>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div class="grid grid-cols-1 gap-3">
+      <button
+        class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary-container shadow-lg shadow-primary/10 transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-lg">sync_alt</span>
+        Update Status
+      </button>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          class="py-3 border border-outline-variant/30 rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">print</span>
+          Invoice
+        </button>
+        <button
+          class="py-3 border border-error/20 text-error rounded-xl text-sm font-semibold hover:bg-error/5 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">cancel</span>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </aside>
+</div>
+<!-- Kanban View (Hidden State Mockup) -->
+<!-- Note: In a real implementation, this would toggle visibility. For design demonstration, I will place a smaller section below or indicate structure -->
+<div class="mt-12 opacity-50 pointer-events-none">
+  <h2 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant/50 mb-6 flex items-center gap-2">
+    <span class="material-symbols-outlined">view_kanban</span>
+    Kanban View Preview
+  </h2>
+  <div class="grid grid-cols-3 gap-6">
+    <!-- Column Pending -->
+    <div class="bg-surface-container-low/50 rounded-2xl p-4 min-h-[300px]">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded">PENDING (12)</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/10 mb-3">
+        <div class="flex justify-between mb-2">
+          <span class="text-xs font-mono font-bold text-primary">#ORD-1102</span>
+          <span class="text-[10px] text-on-surface-variant font-medium">2h ago</span>
+        </div>
+        <p class="text-sm font-bold mb-3">Thomas Wright</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold">$1,200</span>
+          <span class="material-symbols-outlined text-sm text-slate-300">more_horiz</span>
+        </div>
+      </div>
+    </div>
+    <!-- Column Processing -->
+    <div class="bg-surface-container-low/50 rounded-2xl p-4 min-h-[300px]">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded">PROCESSING (5)</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/10 mb-3">
+        <div class="flex justify-between mb-2">
+          <span class="text-xs font-mono font-bold text-primary">#ORD-1029</span>
+          <span class="text-[10px] text-on-surface-variant font-medium">Active</span>
+        </div>
+        <p class="text-sm font-bold mb-3">Elias Miller</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold">$12,450</span>
+          <span class="material-symbols-outlined text-sm text-blue-500"
+            style="font-variation-settings: 'FILL' 1;">bolt</span>
+        </div>
+      </div>
+    </div>
+    <!-- Column Dispatched -->
+    <div class="bg-surface-container-low/50 rounded-2xl p-4 min-h-[300px]">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded">DISPATCHED (3)</span>
+      </div>
+    </div>
+  </div>
+</div>

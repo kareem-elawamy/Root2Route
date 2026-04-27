@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
 
 // ==================== CORS Config ====================
 builder.Services.AddCors(options =>
@@ -85,7 +86,7 @@ builder.Services.AddSwaggerGen(c =>
 // Database Config
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)
+    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure())
 );
 
 // ==================== JWT Config ====================

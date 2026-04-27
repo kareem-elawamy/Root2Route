@@ -14,6 +14,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Service.DTOs;
 using Service.DTOs.DashBoardDto;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Core.Features.DashBoard.Queries.Handlers
 {
@@ -29,62 +30,76 @@ namespace Core.Features.DashBoard.Queries.Handlers
         private readonly IOrganizationRepository _orgRepo;
         private readonly IDiagnosisLogRepository _diagnosisRepo;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
         public DashboardQueryHandler(
             IOrderRepository orderRepo,
             IOrganizationRepository orgRepo,
             IDiagnosisLogRepository diagnosisRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IMemoryCache cache)
         {
             _orderRepo = orderRepo;
             _orgRepo = orgRepo;
             _diagnosisRepo = diagnosisRepo;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<Response<DashboardOverviewDto>> Handle(GetOverviewStatsModel request, CancellationToken cancellationToken)
         {
-            var grossRevenue = await _orderRepo.GetTableNoTracking().SumAsync(o => o.TotalAmount, cancellationToken);
-            var platformFees = await _orderRepo.GetTableNoTracking().SumAsync(o => o.PlatformFee, cancellationToken);
-            var pendingOrgs = await _orgRepo.GetTableNoTracking().CountAsync(o => o.OrganizationStatus == OrganizationStatus.Pending, cancellationToken);
-            var mlDiagnoses = await _diagnosisRepo.GetTableNoTracking().CountAsync(cancellationToken);
-
-            var dto = new DashboardOverviewDto
+            var dto = await _cache.GetOrCreateAsync("Dashboard_OverviewStats", async entry =>
             {
-                GrossRevenue = grossRevenue,
-                PlatformFees = platformFees,
-                PendingOrganizations = pendingOrgs,
-                TotalMLDiagnoses = mlDiagnoses
-            };
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // Cache for 10 minutes
 
-            return Success(dto);
+                var grossRevenue = await _orderRepo.GetTableNoTracking().SumAsync(o => o.TotalAmount, cancellationToken);
+                var platformFees = await _orderRepo.GetTableNoTracking().SumAsync(o => o.PlatformFee, cancellationToken);
+                var pendingOrgs = await _orgRepo.GetTableNoTracking().CountAsync(o => o.OrganizationStatus == OrganizationStatus.Pending, cancellationToken);
+                var mlDiagnoses = await _diagnosisRepo.GetTableNoTracking().CountAsync(cancellationToken);
+
+                return new DashboardOverviewDto
+                {
+                    GrossRevenue = grossRevenue,
+                    PlatformFees = platformFees,
+                    PendingOrganizations = pendingOrgs,
+                    TotalMLDiagnoses = mlDiagnoses
+                };
+            });
+
+            return Success(dto!);
         }
 
         public async Task<Response<IEnumerable<FinancialChartItemDto>>> Handle(GetFinancialsModel request, CancellationToken cancellationToken)
         {
-            var startDate = DateTime.UtcNow.AddMonths(-request.Months);
-
-            var orders = await _orderRepo.GetTableNoTracking()
-                .Where(o => o.OrderDate >= startDate)
-                .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
-                .Select(g => new
-                {
-                    Year = g.Key.Year,
-                    Month = g.Key.Month,
-                    Revenue = g.Sum(o => o.TotalAmount),
-                    Fees = g.Sum(o => o.PlatformFee)
-                })
-                .OrderBy(x => x.Year).ThenBy(x => x.Month)
-                .ToListAsync(cancellationToken);
-
-            var result = orders.Select(o => new FinancialChartItemDto
+            var cacheKey = $"Dashboard_Financials_{request.Months}";
+            var result = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
-                Month = new DateTime(o.Year, o.Month, 1).ToString("MMM yyyy"),
-                Revenue = o.Revenue,
-                Fees = o.Fees
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1); // Cache for 1 hour
+
+                var startDate = DateTime.UtcNow.AddMonths(-request.Months);
+
+                var orders = await _orderRepo.GetTableNoTracking()
+                    .Where(o => o.OrderDate >= startDate)
+                    .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
+                    .Select(g => new
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Revenue = g.Sum(o => o.TotalAmount),
+                        Fees = g.Sum(o => o.PlatformFee)
+                    })
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToListAsync(cancellationToken);
+
+                return orders.Select(o => new FinancialChartItemDto
+                {
+                    Month = new DateTime(o.Year, o.Month, 1).ToString("MMM yyyy"),
+                    Revenue = o.Revenue,
+                    Fees = o.Fees
+                }).ToList(); // Materialize to list for caching
             });
 
-            return Success(result);
+            return Success<IEnumerable<FinancialChartItemDto>>(result!);
         }
 
         public async Task<Response<IEnumerable<DiseaseInsightDto>>> Handle(GetTopDiseasesModel request, CancellationToken cancellationToken)
@@ -147,22 +162,27 @@ namespace Core.Features.DashBoard.Queries.Handlers
 
         public async Task<Response<IEnumerable<DiseaseHeatmapDto>>> Handle(GetDiseaseHeatmapQuery request, CancellationToken cancellationToken)
         {
-            var logs = await _diagnosisRepo.GetTableNoTracking()
-                .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
-                .GroupBy(d => new { d.Prediction, d.Latitude, d.Longitude, d.City, d.Region })
-                .Select(g => new DiseaseHeatmapDto
-                {
-                    DiseaseName = g.Key.Prediction,
-                    Latitude = g.Key.Latitude.Value,
-                    Longitude = g.Key.Longitude.Value,
-                    City = g.Key.City,
-                    Region = g.Key.Region,
-                    Count = g.Count()
-                })
-                .OrderByDescending(x => x.Count)
-                .ToListAsync(cancellationToken);
+            var logs = await _cache.GetOrCreateAsync("Dashboard_DiseaseHeatmap", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6); // Heatmap doesn't change wildly, cache 6 hours
 
-            return Success<IEnumerable<DiseaseHeatmapDto>>(logs);
+                return await _diagnosisRepo.GetTableNoTracking()
+                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+                    .GroupBy(d => new { d.Prediction, d.Latitude, d.Longitude, d.City, d.Region })
+                    .Select(g => new DiseaseHeatmapDto
+                    {
+                        DiseaseName = g.Key.Prediction,
+                        Latitude = g.Key.Latitude.Value,
+                        Longitude = g.Key.Longitude.Value,
+                        City = g.Key.City,
+                        Region = g.Key.Region,
+                        Count = g.Count()
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .ToListAsync(cancellationToken);
+            });
+
+            return Success<IEnumerable<DiseaseHeatmapDto>>(logs!);
         }
     }
 }

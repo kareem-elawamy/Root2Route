@@ -10,14 +10,13 @@ namespace Domain.Models
         public string? ContactEmail { get; set; }
         public string? ContactPhone { get; set; }
         public string? LogoUrl { get; set; }
-
-        [Required] // ضيف دي
+        [Required] 
         public OrganizationType Type { get; set; }
         public Guid OwnerId { get; set; }
         public ApplicationUser? Owner { get; set; }
         public OrganizationStatus OrganizationStatus { get; set; }
         public ICollection<OrganizationMember> Members { get; set; } =
             new List<OrganizationMember>();
-        public ICollection<Product> Products { get; set; } = new List<Product>(); // المنتجات المعروضة
+        public ICollection<Product> Products { get; set; } = new List<Product>(); 
     }
 }

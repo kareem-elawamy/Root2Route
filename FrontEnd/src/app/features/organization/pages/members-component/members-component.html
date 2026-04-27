@@ -1,0 +1,318 @@
+<div class="flex justify-between items-end mb-10">
+  <div>
+    <h2 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface mb-2" style="">Team &amp; Roles</h2>
+    <p class="text-slate-500 max-w-md" style="">Manage your organization's human capital, define granular access levels,
+      and ensure secure operations.</p>
+  </div>
+  <div class="flex gap-3">
+    <button
+      class="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant text-on-surface font-semibold rounded-xl text-sm hover:bg-surface-container-low transition-all flex items-center gap-2"
+      style="">
+      <span class="material-symbols-outlined text-lg" data-icon="download" style="">download</span> Export Audit Log
+    </button>
+    <button
+      class="px-5 py-2.5 bg-primary text-on-primary font-semibold rounded-xl text-sm shadow-md hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
+      style="">
+      <span class="material-symbols-outlined text-lg" data-icon="person_add" style="">person_add</span> Invite New User
+    </button>
+  </div>
+</div>
+<!-- Layout Grid: Tabbed Content & Secondary Actions -->
+<div class="grid grid-cols-12 gap-8">
+  <!-- Tabbed Interface (Main Column) -->
+  <div class="col-span-12 lg:col-span-9 space-y-8">
+    <!-- Custom Tabs Navigation -->
+    <div class="flex items-center gap-8 border-b border-slate-200 mb-6 overflow-x-auto whitespace-nowrap">
+      <button
+        class="pb-4 text-emerald-700 border-b-2 border-emerald-700 font-semibold text-sm transition-all flex items-center gap-2"
+        style="">
+        <span class="material-symbols-outlined text-lg" data-icon="groups" style="">groups</span> Members
+      </button>
+      <button
+        class="pb-4 text-slate-500 hover:text-emerald-600 font-medium text-sm transition-all flex items-center gap-2 border-b-2 border-transparent"
+        style="">
+        <span class="material-symbols-outlined text-lg" data-icon="admin_panel_settings"
+          style="">admin_panel_settings</span> Roles &amp; Permissions
+      </button>
+      <button
+        class="pb-4 text-slate-500 hover:text-emerald-600 font-medium text-sm transition-all flex items-center gap-2 border-b-2 border-transparent relative"
+        style="">
+        <span class="material-symbols-outlined text-lg" data-icon="mail" style="">mail</span> Pending Invitations
+        <span class="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded-full font-bold"
+          style="">3</span>
+      </button>
+    </div>
+    <!-- Section: Members List (Editorial Table Design) -->
+    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-slate-50">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/50">
+            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider" style="">User</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider" style="">Role</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider" style="">Status</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider" style="">Activity</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right" style="">Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <!-- User Row -->
+          <tr class="group hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-3">
+                <img alt="Member" class="w-10 h-10 rounded-full border border-slate-100"
+                  data-alt="portrait of a focused young female agricultural scientist in a white lab coat"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqrP61-K5i8eb7vxnyJ9F4inltXYYHlkwQdqlUIa4g0olSUJHdKN2NhCksV6ChBxhIPCLL5eBIUlmqt3A2NBdavQZMaN8UddwGNWlY4WSvFT4drWfbjAZVQjA2VxSOr4eTU70goWSOG_cwOYE7kHXAxs4vh9X828XtUarKa17qa9IG5WJdIX1AlDbKuBtfmlPjULypeJg06A7Hfw9e8y4kMk4WQkx4ABrcPqrWpE_wvywuAXIZZcYggkGzvCvUQ9hy7cHhNCMqnRE"
+                  style="">
+                <div>
+                  <p class="font-semibold text-on-surface text-sm" style="">Elena Rodriguez</p>
+                  <p class="text-xs text-slate-400" style="">elena.r@root2route.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-5" style="">
+              <span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-lg uppercase"
+                style="">Admin</span>
+            </td>
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <span class="text-xs font-medium text-slate-600" style="">Active</span>
+              </div>
+            </td>
+            <td class="px-6 py-5 text-xs text-slate-500 font-medium" style="">2 mins ago</td>
+            <td class="px-6 py-5 text-right" style="">
+              <button class="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-400" style="">
+                <span class="material-symbols-outlined text-lg" data-icon="more_vert" style="">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          <!-- User Row -->
+          <tr class="group hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-3">
+                <img alt="Member" class="w-10 h-10 rounded-full border border-slate-100"
+                  data-alt="warm portrait of an elderly man with sun-weathered skin and a kind smile, representing a traditional farmer"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhO8NsUpMpYXFWWm1OD2DDo-G9ZYpHfKYC91wFBGs5kVD7EAgjw_XDHKGmL-NUiXdKjBOOhF0D5t5DHGHTlKNuuEVqU0718FO-i8CVrCco-zfCoPzckWLMkEWu1lTlnyz29g3nMH7AY-vPCEq6DaHIgrQaJVE-4MhHb0QEmjUdxw2hnqiOf8fGQGF8eG5fMiDVoNYfaN01hkytS_2wNMJ-2zRP3CY-l2XsXqEX3-Az62ik_CGm2K8_NY8HRa1tBwAVZekFO43d6nA"
+                  style="">
+                <div>
+                  <p class="font-semibold text-on-surface text-sm" style="">Marcus Thorne</p>
+                  <p class="text-xs text-slate-400" style="">m.thorne@root2route.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-5" style="">
+              <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg uppercase"
+                style="">Moderator</span>
+            </td>
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                <span class="text-xs font-medium text-slate-600" style="">Active</span>
+              </div>
+            </td>
+            <td class="px-6 py-5 text-xs text-slate-500 font-medium" style="">Yesterday, 14:20</td>
+            <td class="px-6 py-5 text-right" style="">
+              <button class="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-400" style="">
+                <span class="material-symbols-outlined text-lg" data-icon="more_vert" style="">more_vert</span>
+              </button>
+            </td>
+          </tr>
+          <!-- User Row -->
+          <tr class="group hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs"
+                  style="">SJ</div>
+                <div>
+                  <p class="font-semibold text-on-surface text-sm" style="">Sarah Jenkins</p>
+                  <p class="text-xs text-slate-400" style="">sarah.j@gmail.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-5" style="">
+              <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg uppercase"
+                style="">Viewer</span>
+            </td>
+            <td class="px-6 py-5" style="">
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                <span class="text-xs font-medium text-slate-400" style="">Inactive</span>
+              </div>
+            </td>
+            <td class="px-6 py-5 text-xs text-slate-500 font-medium" style="">Mar 12, 2024</td>
+            <td class="px-6 py-5 text-right" style="">
+              <button class="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-400" style="">
+                <span class="material-symbols-outlined text-lg" data-icon="more_vert" style="">more_vert</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-xs text-slate-400" style="">Showing 3 of 12 members</span>
+        <div class="flex gap-2">
+          <button class="p-1 hover:bg-slate-200 rounded text-slate-400" style=""><span
+              class="material-symbols-outlined text-lg" data-icon="chevron_left" style="">chevron_left</span></button>
+          <button class="p-1 hover:bg-slate-200 rounded text-slate-400" style=""><span
+              class="material-symbols-outlined text-lg" data-icon="chevron_right" style="">chevron_right</span></button>
+        </div>
+      </div>
+    </div>
+    <!-- Section: Roles & Permissions Matrix -->
+    <div class="bg-surface-container-lowest rounded-2xl p-8 border border-slate-50 space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-bold font-headline text-on-surface" style="">Permissions Matrix</h3>
+          <p class="text-sm text-slate-500" style="">Configure access levels for each system role.</p>
+        </div>
+        <button
+          class="px-4 py-2 border border-emerald-600/20 text-emerald-700 bg-emerald-50/50 font-semibold rounded-xl text-sm hover:bg-emerald-50 transition-all flex items-center gap-2"
+          style="">
+          <span class="material-symbols-outlined text-lg" data-icon="add" style="">add</span> Create New Role
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr>
+              <th class="py-4 text-xs font-bold text-slate-400 uppercase tracking-wider" style="">Module</th>
+              <th class="py-4 px-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider" style="">Admin
+              </th>
+              <th class="py-4 px-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider" style="">
+                Moderator</th>
+              <th class="py-4 px-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider" style="">
+                Viewer</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <tr>
+              <td class="py-5" style="">
+                <p class="font-semibold text-sm text-on-surface" style="">Manage Products</p>
+                <p class="text-xs text-slate-400" style="">Add, edit, or remove inventory items</p>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded border border-slate-300"></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-5" style="">
+                <p class="font-semibold text-sm text-on-surface" style="">View Orders</p>
+                <p class="text-xs text-slate-400" style="">View transaction history and invoices</p>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-5" style="">
+                <p class="font-semibold text-sm text-on-surface" style="">Manage Team</p>
+                <p class="text-xs text-slate-400" style="">Invite members and edit permissions</p>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-500 text-white"><span
+                    class="material-symbols-outlined text-[14px]" data-icon="check"
+                    style="font-variation-settings: &quot;wght&quot; 700;">check</span></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded border border-slate-300"></div>
+              </td>
+              <td class="py-5 px-4 text-center" style="">
+                <div class="inline-flex items-center justify-center w-5 h-5 rounded border border-slate-300"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Sidebar Info/Action Panel -->
+  <div class="col-span-12 lg:col-span-3 space-y-8">
+    <!-- Security Card: Transfer Ownership -->
+    <div class="bg-white rounded-2xl p-6 border-l-4 border-error shadow-sm">
+      <div class="flex items-center gap-3 text-error mb-4">
+        <span class="material-symbols-outlined" data-icon="warning" data-weight="fill"
+          style="font-variation-settings: &quot;FILL&quot; 1;">warning</span>
+        <h4 class="font-bold font-headline text-sm uppercase tracking-wider" style="">Critical Action</h4>
+      </div>
+      <p class="text-on-surface font-semibold text-sm mb-2" style="">Transfer Organization Owner</p>
+      <p class="text-xs text-slate-500 leading-relaxed mb-6" style="">
+        This action will revoke your administrative control over Root2Route. This is permanent and requires multi-factor
+        authentication.
+      </p>
+      <button class="w-full py-2.5 bg-error text-on-error font-bold rounded-xl text-xs hover:opacity-90 transition-all"
+        style="">
+        Transfer Ownership
+      </button>
+    </div>
+    <!-- Bento Info Card: Audit Log -->
+    <div class="bg-emerald-900 rounded-2xl p-6 text-white overflow-hidden relative group">
+      <div class="relative z-10">
+        <h4 class="font-headline font-bold text-lg mb-2" style="">Security Audit</h4>
+        <p class="text-emerald-100/70 text-xs mb-6" style="">Last 24 hours of activity in your organization.</p>
+        <div class="space-y-4">
+          <div class="flex gap-3">
+            <div class="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-400"></div>
+            <p class="text-[11px] leading-tight" style="">Admin <span class="font-bold" style="">E. Rodriguez</span>
+              updated permissions for Marcus Thorne.</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-400/40"></div>
+            <p class="text-[11px] leading-tight opacity-70" style="">System detected login from <span class="font-bold"
+                style="">new device</span> in Portland, OR.</p>
+          </div>
+        </div>
+        <button
+          class="mt-8 text-xs font-bold text-emerald-300 hover:text-white flex items-center gap-1 transition-colors"
+          style="">
+          View full logs <span class="material-symbols-outlined text-sm" data-icon="arrow_forward"
+            style="">arrow_forward</span>
+        </button>
+      </div>
+      <!-- Decorative Background Element -->
+      <div class="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform duration-500">
+        <span class="material-symbols-outlined text-[120px]" data-icon="shield" style="">shield</span>
+      </div>
+    </div>
+    <!-- Card: Pending Invitations Summary -->
+    <div class="bg-surface-container-low rounded-2xl p-6">
+      <h4 class="font-bold font-headline text-sm text-on-surface mb-4" style="">Quick Stats</h4>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-500 font-medium" style="">Total Seats</span>
+          <span class="text-xs font-bold text-on-surface" style="">12 / 20</span>
+        </div>
+        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div class="h-full bg-primary w-[60%]"></div>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-slate-500 font-medium" style="">Custom Roles</span>
+          <span class="text-xs font-bold text-on-surface" style="">4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>>
