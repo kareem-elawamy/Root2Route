@@ -22,5 +22,7 @@ namespace Service.Services.ProductService
 
         Task<bool> IsBarcodeExistAsync(string barcode);
         Task<bool> ChangeProductStatusAsync(Guid productId, ProductStatus newStatus, string? rejectionReason = null);
+        Task<List<Product>> GetProductsByOrganizationIdAsync(Guid organizationId, int pageNumber, int pageSize);
+        Task<ProductOverView> GetProductOverviewByOrganizationIdAsync(Guid organizationId);
     }
 }

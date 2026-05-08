@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using API.Controllers.Shared;
 using Core.Features.DashBoard.Queries.Models;
+using Core.Features.Product.Queries.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -114,7 +115,7 @@ namespace API.Controllers
             });
             return NewResult(response);
         }
-    
+
         [HttpGet("api/v1/dashboard/org/{orgId}/latest-orders")]
         public async Task<IActionResult> GetOrgLatestOrders(
             [FromRoute] Guid orgId,
@@ -125,6 +126,18 @@ namespace API.Controllers
                 OrganizationId = orgId,
                 Limit = limit
             });
+            return NewResult(response);
+        }
+        [HttpGet("api/v1/dashboard/org/{orgId}/product-overview")]
+        public async Task<IActionResult> GetOrgProductOverview([FromRoute] Guid orgId)
+        {
+            var response = await Mediator.Send(new GetProductOverviewModel { OrganizationId = orgId });
+            return NewResult(response);
+        }
+        [HttpGet("api/v1/dashboard/org/{orgId}/products")]
+        public async Task<IActionResult> GetOrgProducts([FromRoute] Guid orgId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var response = await Mediator.Send(new GetProductByOrganizationId { OrganizationId = orgId, PageNumber = pageNumber, PageSize = pageSize });
             return NewResult(response);
         }
     }

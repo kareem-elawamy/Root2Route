@@ -2,6 +2,12 @@ import { Injectable, signal, computed } from '@angular/core';
 import { MyOrganization } from '../model/Organization/myOrganization';
 import { Observable } from 'rxjs';
 import { OverviewResponse } from '../model/Organization/overviewResponse';
+import { LatestOrder } from '../model/Organization/latestOrder';
+import { LiveBid } from '../model/Organization/liveBid';
+import { ActivityChartItem } from '../model/Organization/activityChartItem';
+import { ProductOverviewResponse } from '../model/Organization/productOverviewResponse';
+import { ProductResponse } from '../model/Organization/productResponse';
+
 const ACTIVE_ORG_KEY = 'r2r_active_org_id';
 const ORG_LIST_KEY = 'r2r_org_list';
 
@@ -17,6 +23,7 @@ export class OrgContextService {
   readonly activeOrg = computed(() =>
     this._organizations().find((o) => o.id === this._activeOrgId())
   );
+
   overview(): Observable<OverviewResponse> {
     return new Observable((observer) => {
       const token = localStorage.getItem('access_token');
@@ -33,7 +40,6 @@ export class OrgContextService {
           if (!res.ok) {
             throw new Error(body?.message || 'Failed to load overview');
           }
-          console.log(body);
           return (body.data ?? body) as OverviewResponse;
         })
         .then((overview) => {
@@ -46,6 +52,174 @@ export class OrgContextService {
         });
     });
   }
+
+  activityChart(months: number = 6): Observable<ActivityChartItem[]> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch(`${this._urlOverview}${this._activeOrgId()}/activity-chart?months=${months}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Organization-Id': this._activeOrgId()!,
+        },
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to load activity chart');
+          }
+          return (body.data ?? body) as ActivityChartItem[];
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
+  liveBids(limit: number = 20): Observable<LiveBid[]> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch(`${this._urlOverview}${this._activeOrgId()}/live-bids?limit=${limit}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Organization-Id': this._activeOrgId()!,
+        },
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to load live bids');
+          }
+          return (body.data ?? body) as LiveBid[];
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
+  latestOrders(limit: number = 10): Observable<LatestOrder[]> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch(`${this._urlOverview}${this._activeOrgId()}/latest-orders?limit=${limit}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Organization-Id': this._activeOrgId()!,
+        },
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to load latest orders');
+          }
+          return (body.data ?? body) as LatestOrder[];
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
+  productOverview(): Observable<ProductOverviewResponse> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch(`${this._urlOverview}${this._activeOrgId()}/product-overview`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Organization-Id': this._activeOrgId()!,
+        },
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to load product overview');
+          }
+          return (body.data ?? body) as ProductOverviewResponse;
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
+  products(pageNumber: number = 1, pageSize: number = 10): Observable<ProductResponse[]> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch(`${this._urlOverview}${this._activeOrgId()}/products?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Organization-Id': this._activeOrgId()!,
+        },
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to load products');
+          }
+          return (body.data ?? body) as ProductResponse[];
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
+  addProduct(formData: FormData): Observable<any> {
+    return new Observable((observer) => {
+      const token = localStorage.getItem('access_token');
+      fetch('https://root2route.runasp.net/api/v1/product/Add', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Failed to add product');
+          }
+          return body;
+        })
+        .then((data) => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
   myOrganization(): Observable<MyOrganization[]> {
     return new Observable((observer) => {
       const token = localStorage.getItem('access_token');
@@ -61,7 +235,6 @@ export class OrgContextService {
           if (!res.ok) {
             throw new Error(body?.message || 'Failed to load organizations');
           }
-          console.log(body);
           return (body.data ?? body) as MyOrganization[];
         })
         .then((orgs) => {
@@ -74,7 +247,6 @@ export class OrgContextService {
         });
     });
   }
-
 
   getActiveOrgId(): string | null {
     return this._activeOrgId();

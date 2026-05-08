@@ -73,7 +73,7 @@ namespace Service.Services.ProductService
             var totalCount = await query.CountAsync();
 
             var products = await query
-                .OrderByDescending(p => p.Id) 
+                .OrderByDescending(p => p.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -123,6 +123,39 @@ namespace Service.Services.ProductService
 
             return await _productRepository.GetTableNoTracking()
                 .AnyAsync(p => p.Barcode == barcode);
+        }
+
+        public Task<List<Product>> GetProductsByOrganizationIdAsync(Guid organizationId, int pageNumber, int pageSize)
+        {
+            return _productRepository.GetTableNoTracking()
+                .Include(p => p.Images)
+                .Where(p => p.OrganizationId == organizationId)
+                .OrderByDescending(p => p.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public Task<ProductOverView> GetProductOverviewByOrganizationIdAsync(Guid organizationId)
+        {
+
+            if (organizationId == Guid.Empty) return null!;
+            var organizationExists = _productRepository.GetTableNoTracking()
+                .Any(p => p.OrganizationId == organizationId);
+            if (!organizationExists) return null!;
+            var overview = _productRepository.GetTableNoTracking()
+                .Where(p => p.OrganizationId == organizationId)
+                .GroupBy(p => 1)
+                .Select(g => new ProductOverView
+                {
+                    TotalProducts = g.Count(),
+                    ActiveProducts = g.Count(p => p.Status == ProductStatus.Approved),
+                    LowStockProducts = g.Count(p => p.StockQuantity < 10), // مثلاً نعتبر أقل من 10 قطع "Low Stock"
+                    InventoryValue = g.Sum(p => p.StockQuantity * (p.IsAvailableForDirectSale ? p.DirectSalePrice : 0)) // قيمة المخزون بناءً على سعر البيع المباشر فقط
+                })
+                .FirstOrDefaultAsync();
+
+            return overview;
         }
     }
 }
