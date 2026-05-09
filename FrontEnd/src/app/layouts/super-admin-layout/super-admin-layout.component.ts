@@ -1,33 +1,24 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
-/**
- * Super Admin Layout Shell.
- * Wraps all super-admin routes with the shared sidebar, topbar, etc.
- * Sub-components (sidebar, navbar) will be added here as the feature grows.
- */
+// 🟢 اتأكد إن السطر ده موجود عشان نستخدم خدمة المصادقة
+import { AuthService } from '../../core/services/auth.service';
+
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `
-    <div class="super-admin-layout">
-      <!-- TODO: <app-super-admin-sidebar /> -->
-      <!-- TODO: <app-super-admin-topbar /> -->
-      <main class="layout-content">
-        <router-outlet />
-      </main>
-    </div>
-  `,
-  styles: [`
-    .super-admin-layout {
-      display: flex;
-      min-height: 100vh;
-    }
-    .layout-content {
-      flex: 1;
-      overflow: auto;
-    }
-  `],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './main-layout.html'
 })
-export class SuperAdminLayoutComponent {}
+export class SuperAdminLayoutComponent {
+  private router = inject(Router);
+  private authService = inject(AuthService); // 🟢 بنحقن الخدمة هنا
+
+  logout() {
+    // 1. بننادي على الفانكشن اللي التيم عاملها بتمسح كل حاجة من الذاكرة
+    this.authService.clearSession();
+
+    // 2. بنخرج لصفحة اللوجين
+    this.router.navigate(['/auth/login']);
+  }
+}

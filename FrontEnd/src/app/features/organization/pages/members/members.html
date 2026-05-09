@@ -1,0 +1,170 @@
+<div class="px-8 pb-12 bg-surface">
+
+  <div class="flex justify-between items-end mb-10 pt-8">
+    <div>
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Team & Roles</h2>
+      <p class="text-sm text-slate-500">Manage your organization's members and invitations.</p>
+    </div>
+    <div class="flex gap-3">
+      <!-- Tab Switcher -->
+      <div class="inline-flex rounded-xl border border-slate-200 p-1 bg-white">
+        <button (click)="setTab('members')"
+          [class.bg-slate-900]="activeTab() === 'members'"
+          [class.text-white]="activeTab() === 'members'"
+          [class.bg-white]="activeTab() !== 'members'"
+          [class.text-slate-600]="activeTab() !== 'members'"
+          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
+          Members
+        </button>
+        <button (click)="setTab('invitations')"
+          [class.bg-slate-900]="activeTab() === 'invitations'"
+          [class.text-white]="activeTab() === 'invitations'"
+          [class.bg-white]="activeTab() !== 'invitations'"
+          [class.text-slate-600]="activeTab() !== 'invitations'"
+          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
+          Invitations
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (activeTab() === 'members') {
+    <!-- Members Tab -->
+    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+            <tr>
+              <th class="px-8 py-5">User</th>
+              <th class="px-8 py-5">Role</th>
+              <th class="px-8 py-5">Joined At</th>
+              <th class="px-8 py-5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (member of members; track member.id) {
+            <tr class="hover:bg-slate-50 transition-colors group">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+                    {{ member.userName?.charAt(0) || 'U' }}
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-slate-700">{{ member.userName || 'Unknown' }}</span>
+                    <span class="text-[11px] text-slate-500">{{ member.userEmail || 'N/A' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-8 py-5">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-700">
+                  {{ member.roleName || 'Member' }}
+                </span>
+              </td>
+              <td class="px-8 py-5">
+                <span class="text-sm text-slate-600">{{ member.joinedAt | date:'mediumDate' }}</span>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <button (click)="removeMember(member.id)"
+                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
+                  <span class="material-symbols-outlined text-[18px]">person_remove</span>
+                </button>
+              </td>
+            </tr>
+            }
+            @if (members.length === 0) {
+              <tr>
+                <td colspan="4" class="py-16 text-center">
+                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">group</span>
+                  <p class="text-slate-500 font-medium">No members found.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <!-- Invitations Tab -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Invite Form -->
+      <div class="lg:col-span-1 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 h-fit">
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Invite Member</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Email Address</label>
+            <input type="email" [(ngModel)]="newInvite.email" placeholder="user@example.com"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Role (Optional)</label>
+            <input type="text" [(ngModel)]="newInvite.roleId" placeholder="Role ID"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
+          </div>
+          <button (click)="sendInvite()"
+            [disabled]="!newInvite.email"
+            class="w-full py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all disabled:bg-slate-300 disabled:shadow-none">
+            Send Invitation
+          </button>
+        </div>
+      </div>
+
+      <!-- Invitations List -->
+      <div class="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+              <tr>
+                <th class="px-8 py-5">Invitee</th>
+                <th class="px-8 py-5">Status</th>
+                <th class="px-8 py-5">Date</th>
+                <th class="px-8 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (invite of invitations; track invite.id) {
+              <tr class="hover:bg-slate-50 transition-colors group">
+                <td class="px-8 py-5">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-slate-700">{{ invite.inviteeEmail }}</span>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
+                    [class.bg-amber-100]="invite.status === 'Pending'"
+                    [class.text-amber-700]="invite.status === 'Pending'"
+                    [class.bg-emerald-100]="invite.status === 'Accepted'"
+                    [class.text-emerald-700]="invite.status === 'Accepted'"
+                    [class.bg-rose-100]="invite.status === 'Expired' || invite.status === 'Revoked'"
+                    [class.text-rose-700]="invite.status === 'Expired' || invite.status === 'Revoked'">
+                    {{ invite.status }}
+                  </span>
+                </td>
+                <td class="px-8 py-5">
+                  <span class="text-sm text-slate-600">{{ invite.createdAt | date:'mediumDate' }}</span>
+                </td>
+                <td class="px-8 py-5 text-right">
+                  @if (invite.status === 'Pending') {
+                    <button (click)="revokeInvitation(invite.id)"
+                      class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <span class="material-symbols-outlined text-[18px]">cancel</span>
+                    </button>
+                  }
+                </td>
+              </tr>
+              }
+              @if (invitations.length === 0) {
+                <tr>
+                  <td colspan="4" class="py-16 text-center">
+                    <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">mail</span>
+                    <p class="text-slate-500 font-medium">No invitations found.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

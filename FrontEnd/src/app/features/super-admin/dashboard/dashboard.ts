@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from './dashboard.service';
 
@@ -10,10 +10,17 @@ import { DashboardService } from './dashboard.service';
 })
 export class Dashboard implements OnInit {
   private dashboardService = inject(DashboardService);
+  private cdr = inject(ChangeDetectorRef); // 🟢 "المنبه" اللي بيفوق الشاشة
 
-  overviewStats: any;
-  // مسحنا الداتا الوهمية وخليناه فاضي في الأول
-  organizations: any[] = [];
+  // 1. بندي قيم مبدئية عشان الـ HTML ميضربش إيرور
+  overviewStats = {
+    grossRevenue: 0,
+    platformFees: 0,
+    pendingOrganizations: 0,
+    totalMLDiagnoses: 0
+  };
+
+  organizations: any[] = []; // مصفوفة فاضية لحد ما الداتا تيجي
 
   ngOnInit() {
     this.fetchOverviewStats();
@@ -23,7 +30,18 @@ export class Dashboard implements OnInit {
   fetchOverviewStats() {
     this.dashboardService.getOverviewStats().subscribe({
       next: (response: any) => {
-        this.overviewStats = response.data;
+        // بنقرأ الداتا من الأوبجيكت اللي الـ .NET بيرجعه
+        const actualData = response.data || response;
+
+        if (actualData) {
+          this.overviewStats.grossRevenue = actualData.grossRevenue || 0;
+          this.overviewStats.platformFees = actualData.platformFees || 0;
+          this.overviewStats.pendingOrganizations = actualData.pendingOrganizations || 0;
+          this.overviewStats.totalMLDiagnoses = actualData.totalMLDiagnoses || 0;
+        }
+
+        // 🟢 إجبار الأنجولار يعرض الداتا الجديدة فوراً
+        this.cdr.detectChanges();
       },
       error: (error: any) => {
         console.error('Error fetching overview stats', error);
@@ -34,10 +52,10 @@ export class Dashboard implements OnInit {
   fetchPendingOrganizations() {
     this.dashboardService.getPendingOrganizations().subscribe({
       next: (response: any) => {
-        // بنحط الداتا اللي راجعة في المتغير بتاعنا
-        // فرضنا إن الباك إند بيبعت لستة المنظمات جوه response.data برضو
         this.organizations = response.data || [];
-        console.log('Pending Orgs:', this.organizations); // عشان نشوف شكل الداتا
+
+        // 🟢 إجبار الأنجولار يعرض لستة الشركات فوراً
+        this.cdr.detectChanges();
       },
       error: (error: any) => {
         console.error('Error fetching pending orgs', error);

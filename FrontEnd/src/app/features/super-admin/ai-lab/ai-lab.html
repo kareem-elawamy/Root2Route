@@ -6,8 +6,9 @@
         <svg class="w-full h-full transform -rotate-90">
           <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
             stroke-width="8"></circle>
-          <circle class="text-primary-container" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
-            stroke-dasharray="351.85" stroke-dashoffset="20.4" stroke-width="8"></circle>
+          <circle class="text-primary-container transition-all duration-1000 ease-in-out" cx="64" cy="64"
+            fill="transparent" r="56" stroke="currentColor" stroke-dasharray="351.85"
+            [attr.stroke-dashoffset]="metrics.confidenceOffset" stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
           <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.modelAverageConfidence
@@ -24,8 +25,9 @@
         <svg class="w-full h-full transform -rotate-90">
           <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
             stroke-width="8"></circle>
-          <circle class="text-primary-container" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
-            stroke-dasharray="351.85" stroke-dashoffset="40" stroke-width="8"></circle>
+          <circle class="text-primary-container transition-all duration-1000 ease-in-out" cx="64" cy="64"
+            fill="transparent" r="56" stroke="currentColor" stroke-dasharray="351.85"
+            [attr.stroke-dashoffset]="metrics.diagnosesOffset" stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center flex-col">
           <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.totalDiagnoses }}</span>
@@ -41,8 +43,9 @@
         <svg class="w-full h-full transform -rotate-90">
           <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
             stroke-width="8"></circle>
-          <circle class="text-tertiary" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
-            stroke-dasharray="351.85" stroke-dashoffset="340" stroke-width="8"></circle>
+          <circle class="text-tertiary transition-all duration-1000 ease-in-out" cx="64" cy="64" fill="transparent"
+            r="56" stroke="currentColor" stroke-dasharray="351.85" [attr.stroke-dashoffset]="metrics.driftOffset"
+            stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center flex-col">
           <span class="font-headline font-extrabold text-2xl text-tertiary">{{ metrics.accuracyDrift }}</span>
@@ -59,7 +62,11 @@
   <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
     <div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden relative min-h-[500px]">
       <div class="absolute inset-0 opacity-80">
-<img class="w-full h-full object-cover" data-alt="Satellite terrain map of California agricultural fields with soft glowing orange and red heatmap overlays showing disease density" data-location="California Central Valley" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWL1XDn87nnE4k8caZ53Duf3EwZN9A1P6Oc5gyjyxOZ29JhK5spNeieOFdKomMgYA1PRzsorcR4whowK-f5KJcwKyrOZgu0A7n0Z2zf5-Q8D9JcdBvMOFO5xUhpkB6kkk2OJahY7diy7aSxM1sfp6IAPPTyPCRchezduuRT8xh3Zacf5vq4qhxhgYGXEfhVocRwJelwwGAocCofUFjVpPZbodIQGELyGLfnMly0923CvtzIGjqjk-Z2-Jyj5TnRTQ506Xn_Rmd"/>       </div>
+        <img class="w-full h-full object-cover"
+          data-alt="Satellite terrain map of California agricultural fields with soft glowing orange and red heatmap overlays showing disease density"
+          data-location="California Central Valley"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWL1XDn87nnE4k8caZ53Duf3EwZN9A1P6Oc5gyjyxOZ29JhK5spNeieOFdKomMgYA1PRzsorcR4whowK-f5KJcwKyrOZgu0A7n0Z2zf5-Q8D9JcdBvMOFO5xUhpkB6kkk2OJahY7diy7aSxM1sfp6IAPPTyPCRchezduuRT8xh3Zacf5vq4qhxhgYGXEfhVocRwJelwwGAocCofUFjVpPZbodIQGELyGLfnMly0923CvtzIGjqjk-Z2-Jyj5TnRTQ506Xn_Rmd" />
+      </div>
       <div class="absolute top-6 left-6 z-10 space-y-4">
         <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-slate-100">
           <h4 class="font-headline font-bold text-sm mb-3">Disease Heatmap</h4>
@@ -107,7 +114,8 @@
                 <span>{{ playgroundResult.confidenceLevel }}%</span>
               </div>
               <div class="h-1.5 bg-slate-200 rounded-full">
-                <div class="h-full bg-emerald-500 rounded-full" [style.width.%]="playgroundResult.confidenceLevel">
+                <div class="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-in-out"
+                  [style.width.%]="playgroundResult.confidenceLevel">
                 </div>
               </div>
             </div>

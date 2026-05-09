@@ -1,0 +1,141 @@
+<div class="px-8 pb-12 bg-surface">
+
+  <div class="flex justify-between items-end mb-10 pt-8">
+    <div>
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Orders Management</h2>
+      <div class="flex items-center gap-3">
+        <span
+          class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
+          {{ stats.total }} Total Orders
+        </span>
+        <span class="text-sm text-slate-500">Received by your organization</span>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button
+        class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
+        <span class="material-symbols-outlined text-lg">filter_list</span>
+        Filters
+      </button>
+      <button
+        class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+        <span class="material-symbols-outlined text-lg">download</span>
+        Export Orders
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-slate-600">shopping_cart</span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Orders</p>
+          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.total }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-amber-600">pending</span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Pending</p>
+          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.pending }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Completed</p>
+          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.completed }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
+          <span class="material-symbols-outlined text-rose-600">cancel</span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Cancelled</p>
+          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.cancelled }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+          <tr>
+            <th class="px-8 py-5">Order ID</th>
+            <th class="px-8 py-5">Date</th>
+            <th class="px-8 py-5">Receiver</th>
+            <th class="px-8 py-5">Total</th>
+            <th class="px-8 py-5">Status</th>
+            <th class="px-8 py-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+
+          @for (order of orders; track order.id) {
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-8 py-5">
+              <span class="text-sm font-extrabold text-slate-800">#{{ order.id.split('-')[0] }}</span>
+            </td>
+            <td class="px-8 py-5">
+              <span class="text-sm text-slate-600">{{ order.orderDate | date:'mediumDate' }}</span>
+            </td>
+            <td class="px-8 py-5">
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-700">{{ order.receiverName || 'N/A' }}</span>
+                <span class="text-[11px] text-slate-500">{{ order.shippingCity || 'N/A' }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-5">
+              <span class="text-sm font-extrabold text-emerald-700">${{ order.finalTotal || order.totalAmount }}</span>
+            </td>
+            <td class="px-8 py-5">
+              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest {{ order.statusClass }}">
+                {{ order.status }}
+              </span>
+            </td>
+            <td class="px-8 py-5 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </button>
+                <button
+                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+
+          @if (orders.length === 0) {
+            <tr>
+              <td colspan="6" class="py-16 text-center">
+                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">shopping_cart</span>
+                <p class="text-slate-500 font-medium">No orders found for this organization.</p>
+              </td>
+            </tr>
+          }
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

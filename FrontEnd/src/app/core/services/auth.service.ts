@@ -20,9 +20,10 @@ interface JwtClaims {
   organizationRole?: string;
   permission?: string[];
   role?: string | string[];
+  Role?: string | string[]; // <--- السطر ده اللي هيحل الإيرور
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string | string[];
   exp: number;
 }
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly router = inject(Router);
@@ -40,7 +41,6 @@ export class AuthService {
   getToken(): string | null {
     return this._token();
   }
-
 
   login(data: LoginData): Observable<ResponseData<LoginResponse>> {
     return new Observable((observer) => {
@@ -106,23 +106,27 @@ export class AuthService {
   private navigateAfterLogin(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
 
-    // 1. SuperAdmin role → go to super-admin dashboard
-    const identityRoles = Array.isArray(claims.role)
-      ? claims.role
-      : claims.role
-      ? [claims.role]
+    // بنجيب الرول سواء مبعوث صريح أو بالاسم الطويل بتاع .NET
+    const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+    const identityRoles = Array.isArray(rawRole)
+      ? rawRole
+      : rawRole
+      ? [rawRole]
       : [];
 
+    // 1. SuperAdmin role → go to super-admin dashboard
     if (identityRoles.includes('SuperAdmin')) {
-      this.router.navigate(['/super-admin']);
+      this.router.navigate(['/super-admin/dashboard']);
       return;
     }
 
     // 2. Check via API if user owns any organization → go to /org
     this.orgContext.myOrganization().subscribe({
-      next: (orgs) => {
+      next: (response: any) => {
+        // بنقرأ الـ data من الـ Result Wrapper
+        const orgs = response?.data || response;
         if (orgs && orgs.length > 0) {
-          // orgContext.setOrganizations() already picked the first org as active
           this.router.navigate(['/org']);
         } else {
           // 3. No org → unauthorized
@@ -130,7 +134,6 @@ export class AuthService {
         }
       },
       error: () => {
-        // If the API call fails, treat as unauthorized
         this.router.navigate(['/unauthorized']);
       },
     });
@@ -152,16 +155,23 @@ export class AuthService {
       return {} as JwtClaims;
     }
   }
+
   isSuperAdmin(): boolean {
-    const claims = this.decodeToken(this._token()!);
-    const identityRoles = Array.isArray(claims.role)
-      ? claims.role
-      : claims.role
-      ? [claims.role]
+    const token = this._token();
+    if (!token) return false;
+
+    const claims = this.decodeToken(token);
+    const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    
+    const identityRoles = Array.isArray(rawRole)
+      ? rawRole
+      : rawRole
+      ? [rawRole]
       : [];
     return identityRoles.includes('SuperAdmin');
   }
-  isLogin(): boolean{
+
+  isLogin(): boolean {
     return this.isAuthenticated();
   }
 

@@ -48,6 +48,7 @@ export class LoginComponent {
     this.loginService.login(data).subscribe({
       next: () => {
         this.isLoading.set(false);
+        // التوجيه بيحصل أوتوماتيك جوه السيرفيس دلوقتي بمجرد ما الرد يرجع
       },
       error: (err: Error) => {
         this.isLoading.set(false);

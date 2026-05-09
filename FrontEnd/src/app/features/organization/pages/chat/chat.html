@@ -1,0 +1,135 @@
+<div class="flex h-[calc(100vh-64px)] bg-surface">
+
+  <!-- Sidebar: Chat Rooms -->
+  <div class="w-80 border-r border-slate-200 flex flex-col bg-white">
+    <div class="p-6 border-b border-slate-100">
+      <h2 class="text-2xl font-extrabold tracking-tight text-on-surface font-headline mb-1">Messages</h2>
+      <p class="text-xs text-slate-500 font-medium">Chat &amp; Offers</p>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto">
+      @for (room of rooms; track room.id) {
+        <button (click)="selectRoom(room)"
+          [class.bg-slate-50]="activeRoom()?.id === room.id"
+          class="w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-left">
+          <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
+            {{ room.otherParticipantName?.charAt(0) || 'C' }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-slate-800 truncate">{{ room.otherParticipantName || 'Chat Room' }}</p>
+            <p class="text-xs text-slate-500 truncate">{{ room.lastMessage || 'No messages yet' }}</p>
+          </div>
+          @if (room.unreadCount > 0) {
+            <span class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {{ room.unreadCount }}
+            </span>
+          }
+        </button>
+      }
+      @if (rooms.length === 0) {
+        <div class="p-6 text-center text-slate-500">
+          <span class="material-symbols-outlined text-3xl text-slate-300 mb-2">forum</span>
+          <p class="text-sm">No active chats.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Area: Active Chat -->
+  <div class="flex-1 flex flex-col bg-slate-50">
+    @if (activeRoom()) {
+      <!-- Chat Header -->
+      <div class="p-4 bg-white border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
+            {{ activeRoom()?.otherParticipantName?.charAt(0) || 'C' }}
+          </div>
+          <div>
+            <p class="text-sm font-bold text-slate-800">{{ activeRoom()?.otherParticipantName }}</p>
+            <p class="text-xs text-emerald-600 font-medium">Active</p>
+          </div>
+        </div>
+        <button class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        @for (msg of messages; track msg.id) {
+          <div [class.justify-end]="msg.isMine" class="flex items-end gap-2">
+            @if (!msg.isMine) {
+              <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-[10px] font-bold">
+                {{ msg.senderName?.charAt(0) || 'O' }}
+              </div>
+            }
+            <div [class.bg-slate-900]="msg.isMine"
+                 [class.text-white]="msg.isMine"
+                 [class.bg-white]="!msg.isMine"
+                 [class.text-slate-800]="!msg.isMine"
+                 [class.border]="!msg.isMine"
+                 [class.border-slate-200]="!msg.isMine"
+                 class="max-w-[70%] p-3 rounded-2xl shadow-sm text-sm">
+              <p>{{ msg.content }}</p>
+              
+              <!-- Offer Card -->
+              @if (msg.hasOffer) {
+                <div class="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800">
+                  <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Special Offer</p>
+                  <p class="text-lg font-black text-emerald-700">${{ msg.offerAmount }}</p>
+                  <p class="text-xs text-slate-600 mt-1">{{ msg.offerDetails }}</p>
+                  
+                  @if (!msg.isMine && msg.offerStatus === 'Pending') {
+                    <div class="flex gap-2 mt-3">
+                      <button (click)="acceptOffer(msg.offerId)"
+                        class="flex-1 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition-colors">
+                        Accept
+                      </button>
+                      <button (click)="rejectOffer(msg.offerId)"
+                        class="flex-1 py-1.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-lg hover:bg-slate-50 transition-colors">
+                        Reject
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="mt-2 text-xs font-bold uppercase tracking-widest text-center"
+                         [class.text-emerald-600]="msg.offerStatus === 'Accepted'"
+                         [class.text-rose-600]="msg.offerStatus === 'Rejected'">
+                      Offer {{ msg.offerStatus }}
+                    </div>
+                  }
+                </div>
+              }
+              
+              <p [class.text-slate-300]="msg.isMine" [class.text-slate-400]="!msg.isMine" class="text-[10px] mt-1 text-right">
+                {{ msg.createdAt | date:'shortTime' }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Input Area -->
+      <div class="p-4 bg-white border-t border-slate-200">
+        <div class="flex items-center gap-3">
+          <button class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">
+            <span class="material-symbols-outlined">attach_file</span>
+          </button>
+          <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..."
+            (keyup.enter)="sendMessage()"
+            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
+          <button (click)="sendMessage()"
+            [disabled]="!newMessage.trim()"
+            class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 transition-colors disabled:bg-slate-300">
+            <span class="material-symbols-outlined">send</span>
+          </button>
+        </div>
+      </div>
+    @} @else {
+      <div class="flex-1 flex flex-col items-center justify-center text-slate-500">
+        <span class="material-symbols-outlined text-5xl text-slate-300 mb-2">chat</span>
+        <p class="font-medium">Select a chat to start messaging</p>
+      </div>
+    }
+  </div>
+
+</div>
