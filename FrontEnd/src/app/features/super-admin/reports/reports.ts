@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportsService } from './reports.service';
 
@@ -9,57 +9,56 @@ import { ReportsService } from './reports.service';
   templateUrl: './reports.html'
 })
 export class Reports implements OnInit {
-  // Configuration
-  dateFilters = {
-    start: 'Oct 01, 2023',
-    end: 'Oct 31, 2023'
-  };
+  private reportsService = inject(ReportsService);
+  private cdr = inject(ChangeDetectorRef);
 
-  reportTypes = [
-    'Financial Summary',
-    'Operational Metrics',
-    'User Activity'
-  ];
+  // 🟢 السطر ده هو اللي كان ناقص ومخلي الأنجولار يزعل
+  engineCapacity: number = 0;
 
+  // إعدادات الـ UI الثابتة
+  dateFilters = { start: 'Oct 01, 2023', end: 'Oct 31, 2023' };
+  reportTypes = ['Financial Summary', 'Operational Metrics', 'User Activity'];
   exportFormats = [
     { label: 'PDF', class: 'bg-white text-emerald-700 shadow-sm font-bold' },
     { label: 'Excel', class: 'text-slate-500 hover:text-emerald-600 transition-colors font-medium' },
     { label: 'CSV', class: 'text-slate-500 hover:text-emerald-600 transition-colors font-medium' }
   ];
 
-  // Engine Status
-  engineCapacity: number = 0;
-
-  // Summary Metrics
+  // الداتا اللي هتيجي من الباك إند
   summary: any = {
-    revenue: '$0.00',
+    revenue: 0,
+    platformFees: 0,
     revenueGrowth: '0% VS LAST MONTH',
-    transactions: '0',
     transactionsAvg: 'AVERAGE 0/DAY'
   };
-
-  // Transactions Data
   transactions: any[] = [];
 
-  constructor(private reportsService: ReportsService) {}
-
   ngOnInit(): void {
+    // 1. جلب الإحصائيات العامة
     this.reportsService.getOverviewStats().subscribe({
-      next: (data: any) => {
-        if (data.engineCapacity !== undefined) {
-          this.engineCapacity = data.engineCapacity;
+      next: (response: any) => {
+        const actualData = response.data || response;
+
+        // ربط القيم اللي الباك إند بيبعتها فعلاً
+        this.summary.revenue = actualData.grossRevenue || 0;
+        this.summary.platformFees = actualData.platformFees || 0;
+
+        // لو الباك إند بعت engineCapacity في المستقبل، السطر ده هيشغلها:
+        if (actualData.engineCapacity !== undefined) {
+          this.engineCapacity = actualData.engineCapacity;
         }
-        if (data.summary) {
-          this.summary = data.summary;
-        }
+
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Error fetching overview stats:', error)
     });
 
+    // 2. جلب المعاملات المالية
     this.reportsService.getFinancials().subscribe({
-      next: (data: any) => {
-        // Handle returning an array directly or an object with a transactions property
-        this.transactions = data.transactions || Array.isArray(data) ? data : [];
+      next: (response: any) => {
+        const actualData = response.data || response;
+        this.transactions = actualData.transactions || (Array.isArray(actualData) ? actualData : []);
+        this.cdr.detectChanges();
       },
       error: (error) => console.error('Error fetching financials:', error)
     });

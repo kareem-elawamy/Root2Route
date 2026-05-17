@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuctionService } from './auction.service'; 
+import { AuctionService } from './auction.service';
 
 @Component({
   selector: 'app-auctions',
@@ -10,11 +10,13 @@ import { AuctionService } from './auction.service';
 })
 export class Auctions implements OnInit {
   private auctionService = inject(AuctionService);
+  private cdr = inject(ChangeDetectorRef); // 🟢 1. حقنّا المنبه بتاع الأنجولار
 
-  marketStats = {
-    velocity: '+12.4%',
-    bidders: '1,248',
-    volume: '$842k'
+  // 2. قيم مبدئية للإحصائيات عشان الـ HTML ميضربش إيرور
+  marketStats: any = {
+    velocity: '0%',
+    bidders: '0',
+    volume: '$0'
   };
 
   activeLots: any[] = [];
@@ -24,13 +26,83 @@ export class Auctions implements OnInit {
   }
 
   loadAuctions() {
-    // رجعنا نكلم السيرفر الحقيقي تاني
     this.auctionService.getActiveAuctions().subscribe({
       next: (response: any) => {
-        this.activeLots = response.data || response || []; 
-        
-        // هيطبع الداتا الحقيقية في الكونسول
+        const actualData = response.data || response;
+
+        // ربط لستة المزادات (بنتأكد إنها مصفوفة)
+        const items = actualData.activeLots || (Array.isArray(actualData) ? actualData : []);
+
+        this.activeLots = items.map((lot: any) => {
+          // حساب الوقت المتبقي
+          const now = new Date();
+          const end = new Date(lot.endDate);
+          const start = new Date(lot.startDate);
+          
+          let timeLeftStr = 'N/A';
+          let progressPercent = '0%';
+          let progressClass = 'text-slate-500 bg-slate-300';
+          
+          if (end > now) {
+            const diffMs = end.getTime() - now.getTime();
+            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffHrs / 24);
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            
+            if (diffDays > 0) {
+              timeLeftStr = `${diffDays} days left`;
+            } else if (diffHrs > 0) {
+              timeLeftStr = `${diffHrs} hours left`;
+            } else {
+              timeLeftStr = `${diffMins} mins left`;
+            }
+
+            const totalMs = end.getTime() - start.getTime();
+            const elapsedMs = Math.max(0, now.getTime() - start.getTime());
+            const percent = totalMs > 0 ? Math.min(100, (elapsedMs / totalMs) * 100) : 0;
+            progressPercent = `${percent.toFixed(0)}%`;
+            
+            if (percent > 80) {
+              progressClass = 'text-rose-500 bg-rose-500';
+            } else if (percent > 50) {
+              progressClass = 'text-amber-500 bg-amber-500';
+            } else {
+              progressClass = 'text-emerald-500 bg-emerald-500';
+            }
+          } else if (lot.endDate) {
+            timeLeftStr = 'Ended';
+            progressPercent = '100%';
+            progressClass = 'text-slate-500 bg-slate-500';
+          }
+
+          return {
+            ...lot,
+            title: lot.title || lot.productName || 'Unnamed Lot',
+            currentBid: lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0,
+            timeLeft: timeLeftStr,
+            progressPercent: progressPercent,
+            progressClass: progressClass,
+            category: lot.productName || 'General',
+          };
+        });
+
+        // ربط الإحصائيات لو الباك إند بيبعتها
+        if (actualData.marketStats) {
+          this.marketStats.velocity = actualData.marketStats.velocity || '0%';
+          this.marketStats.bidders = actualData.marketStats.bidders || '0';
+          this.marketStats.volume = actualData.marketStats.volume || '$0';
+        } else {
+          // Calculate dummy stats based on active lots
+          this.marketStats.bidders = items.length > 0 ? (items.length * 3).toString() : '0';
+          const volume = items.reduce((sum: number, lot: any) => sum + (lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0), 0);
+          this.marketStats.volume = `$${volume.toLocaleString()}`;
+          this.marketStats.velocity = items.length > 0 ? '+12%' : '0%';
+        }
+
         console.log('Active Auctions:', this.activeLots);
+
+        // 🟢 3. الضربة القاضية: حدّث الشاشة حالا!
+        this.cdr.detectChanges();
       },
       error: (error: any) => {
         console.error('Error fetching auctions', error);
