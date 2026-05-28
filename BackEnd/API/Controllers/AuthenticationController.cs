@@ -2,6 +2,7 @@ using API.Controllers.Shared;
 using Core.Features.authentication.Commands.Models;
 using Core.Features.Authentication.Commands.Models;
 using Domain.MetaData;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -49,6 +50,19 @@ namespace API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
         {
+            var response = await Mediator.Send(command);
+            return NewResult(response);
+        }
+
+        [Authorize]
+        [HttpPost(Router.Authentication.ChangePassword)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+        {
+            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            command.UserId = userId;
             var response = await Mediator.Send(command);
             return NewResult(response);
         }

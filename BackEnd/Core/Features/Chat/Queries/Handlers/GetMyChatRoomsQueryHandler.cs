@@ -39,7 +39,7 @@ namespace Core.Features.Chat.Queries.Handlers
                     BuyerId = r.BuyerId,
                     OrganizationId = r.OrganizationId,
                     OrganizationName = r.Organization != null ? r.Organization.Name : "Unknown Organization",
-                    ChatTitle = r.BuyerId == request.CurrentUserId
+                    OtherPartyName = r.BuyerId == request.CurrentUserId
                         ? (r.Organization != null ? r.Organization.Name : "Unknown Organization")
                         : (r.Buyer != null ? r.Buyer.FullName ?? r.Buyer.UserName ?? "Unknown Buyer" : "Unknown Buyer"),
                     ProductName = r.Product != null ? r.Product.Name : null,

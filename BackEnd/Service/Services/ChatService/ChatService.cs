@@ -9,6 +9,7 @@ using Infrastructure.Repositories.ChatMessageRepository;
 using Infrastructure.Repositories.ChatRoomRepository;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
+using Infrastructure.Repositories.ShippingAddressRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace Service.Services.ChatService
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly IProductRepository _productRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly IShippingAddressRepository _shippingAddressRepository;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly INotificationService _notificationService;
         private readonly IFileService _fileService;
@@ -33,6 +35,7 @@ namespace Service.Services.ChatService
             IChatMessageRepository chatMessageRepository,
             IProductRepository productRepository,
             IOrderRepository orderRepository,
+            IShippingAddressRepository shippingAddressRepository,
             IHubContext<ChatHub> hubContext,
             INotificationService notificationService,
             IFileService fileService)
@@ -41,6 +44,7 @@ namespace Service.Services.ChatService
             _chatMessageRepository = chatMessageRepository;
             _productRepository = productRepository;
             _orderRepository = orderRepository;
+            _shippingAddressRepository = shippingAddressRepository;
             _hubContext = hubContext;
             _notificationService = notificationService;
             _fileService = fileService;
@@ -174,8 +178,10 @@ namespace Service.Services.ChatService
         {
             var offerMsg = await _chatMessageRepository.GetTableAsTracking()
                 .Include(m => m.ChatRoom)
-                .ThenInclude(r => r.Organization)
-                .ThenInclude(o => o.Members)
+                    .ThenInclude(r => r!.Organization)
+                        .ThenInclude(o => o!.Members)
+                .Include(m => m.ChatRoom)
+                    .ThenInclude(r => r!.Buyer)
                 .FirstOrDefaultAsync(m => m.Id == offerMessageId);
 
             if (offerMsg == null || offerMsg.ChatRoom == null)
@@ -225,6 +231,9 @@ namespace Service.Services.ChatService
             product.StockQuantity -= offerMsg.ProposedQuantity.Value;
             await _productRepository.UpdateAsync(product);
 
+            var defaultAddress = await _shippingAddressRepository.GetTableNoTracking()
+                .FirstOrDefaultAsync(a => a.UserId == room.BuyerId && a.IsDefault);
+
             var newOrder = new Order
             {
                 Id = Guid.NewGuid(),
@@ -232,6 +241,10 @@ namespace Service.Services.ChatService
                 OrganizationId = room.OrganizationId,
                 TotalAmount = offerMsg.ProposedPrice.Value * offerMsg.ProposedQuantity.Value,
                 Status = OrderStatus.Pending,
+                ReceiverName = defaultAddress?.Label ?? room.Buyer?.FullName ?? "Unknown",
+                ReceiverPhone = defaultAddress?.Phone ?? room.Buyer?.PhoneNumber ?? "Unknown",
+                ShippingCity = defaultAddress?.City ?? "N/A",
+                ShippingStreet = defaultAddress?.Street ?? room.Buyer?.Address ?? "N/A",
                 OrderItems = new List<OrderItem>
                 {
                     new OrderItem

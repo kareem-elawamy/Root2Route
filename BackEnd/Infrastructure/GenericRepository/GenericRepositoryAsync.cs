@@ -125,6 +125,11 @@ namespace Infrastructure.Base
             await _dbContext.Database.CommitTransactionAsync();
         }
 
+        public void ClearTracker()
+        {
+            _dbContext.ChangeTracker.Clear();
+        }
+
         #endregion
     }
 }

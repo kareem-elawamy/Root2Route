@@ -168,7 +168,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Root2Route API v1"));
-app.UseDeveloperExceptionPage();
+
+app.UseMiddleware<API.Middlewares.ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -22,9 +22,18 @@ export class OverviewComponent implements OnInit {
   readonly activeOrg = this.orgCtx.activeOrg;
   readonly currentUser = this.auth.currentUser;
   metrics = signal<any[]>([]);
+  chartData = signal<any[]>([
+    { month: 'Jan', netRevenue: 12000 },
+    { month: 'Feb', netRevenue: 15000 },
+    { month: 'Mar', netRevenue: 18000 },
+    { month: 'Apr', netRevenue: 14000 },
+    { month: 'May', netRevenue: 22000 },
+    { month: 'Jun', netRevenue: 26000 },
+    { month: 'Jul', netRevenue: 30000 }
+  ]);
 
-  recentOrders: any[] = [];
-  liveBids: any[] = [];
+  recentOrders = signal<any[]>([]);
+  liveBids = signal<any[]>([]);
 
   constructor() {
     effect(() => {
@@ -64,7 +73,7 @@ export class OverviewComponent implements OnInit {
     this.dashboardService.getLatestOrders(orgId).subscribe({
       next: (response: any) => {
         const data = response?.data || response || [];
-        this.recentOrders = Array.isArray(data) ? data : [];
+        this.recentOrders.set(Array.isArray(data) ? data : []);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -76,12 +85,28 @@ export class OverviewComponent implements OnInit {
     this.dashboardService.getLiveBids(orgId).subscribe({
       next: (response: any) => {
         const data = response?.data || response || [];
-        this.liveBids = Array.isArray(data) ? data : [];
+        this.liveBids.set(Array.isArray(data) ? data : []);
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error fetching live bids', err);
       }
     });
+  }
+
+  getStatusLabel(status: number): string {
+    switch (status) {
+      case 1: return 'Pending';
+      case 2: return 'Processing';
+      case 3: return 'Completed';
+      case 4: return 'Cancelled';
+      default: return 'Unknown';
+    }
+  }
+
+  formatTime(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 }

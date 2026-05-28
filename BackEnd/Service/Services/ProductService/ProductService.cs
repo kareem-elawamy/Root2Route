@@ -59,6 +59,9 @@ namespace Service.Services.ProductService
                 query = query.Where(p => p.Status == status.Value);
             }
 
+            // Always hide out-of-stock products from the public marketplace
+            query = query.Where(p => p.StockQuantity > 0);
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(p => p.Name.Contains(search) ||

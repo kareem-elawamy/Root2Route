@@ -45,70 +45,88 @@ namespace Service.Services.AuctionService
 
         public async Task PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount)
         {
-            var auction = await _auctionRepository.GetTableAsTracking()
-                .Include(a => a.Product)
-                .Include(a => a.Bids)
-                .FirstOrDefaultAsync(a => a.Id == auctionId);
-            
-            if (auction == null) throw new KeyNotFoundException("Auction not found");
-            if (auction.Status != AuctionStatus.Ongoing) throw new InvalidOperationException("Auction is not active");
-            if (auction.EndDate <= DateTime.UtcNow) throw new InvalidOperationException("Auction has ended");
-
-            if (auction.Product != null)
+            int maxRetries = 3;
+            for (int i = 0; i < maxRetries; i++)
             {
-                var isSeller = await _organizationMemberRepository.GetTableNoTracking()
-                    .AnyAsync(m => m.OrganizationId == auction.Product.OrganizationId && m.UserId == bidderId && m.IsActive);
-                if (isSeller) throw new UnauthorizedAccessException("You cannot bid on your own organization's auction.");
-            }
-
-            var minRequiredBid = auction.CurrentHighestBid == 0 
-                ? auction.StartPrice 
-                : auction.CurrentHighestBid + auction.MinimumBidIncrement;
+                var auction = await _auctionRepository.GetTableAsTracking()
+                    .Include(a => a.Product)
+                    .Include(a => a.Bids)
+                    .FirstOrDefaultAsync(a => a.Id == auctionId);
                 
-            if (amount < minRequiredBid)
-                throw new InvalidOperationException($"Minimum bid is {minRequiredBid}");
+                if (auction == null) throw new KeyNotFoundException("Auction not found");
+                if (auction.Status != AuctionStatus.Ongoing) throw new InvalidOperationException("Auction is not active");
+                if (auction.EndDate <= DateTime.UtcNow) throw new InvalidOperationException("Auction has ended");
 
-            using var transaction = await _auctionRepository.BeginTransactionAsync();
-            try
-            {
-                var bid = new Bid
+                if (auction.Product != null)
                 {
-                    AuctionId = auctionId,
-                    BidderId = bidderId,
-                    Amount = amount,
-                    BidTime = DateTime.UtcNow
-                };
-
-                auction.CurrentHighestBid = amount;
-                auction.HighestBidderId = bidderId;
-                auction.Bids.Add(bid);
-
-                await _auctionRepository.UpdateAsync(auction);
-                await transaction.CommitAsync();
-
-                var previousHighBidder = auction.Bids
-                    .Where(b => b.BidderId != bidderId)
-                    .OrderByDescending(b => b.BidTime)
-                    .Select(b => b.BidderId)
-                    .FirstOrDefault();
-
-                if (previousHighBidder != Guid.Empty && previousHighBidder != bidderId)
-                {
-                    try
-                    {
-                        await _notificationService.SendPushNotificationAsync(
-                            previousHighBidder,
-                            "You've been outbid! 🔔",
-                            $"Someone placed a higher bid on '{auction.Product?.Name ?? "this auction"}'. Place a new bid to stay in the lead!",
-                            auction.Id.ToString());
-                    }
-                    catch { }
+                    var isSeller = await _organizationMemberRepository.GetTableNoTracking()
+                        .AnyAsync(m => m.OrganizationId == auction.Product.OrganizationId && m.UserId == bidderId && m.IsActive);
+                    if (isSeller) throw new UnauthorizedAccessException("You cannot bid on your own organization's auction.");
                 }
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
+
+                var minRequiredBid = auction.CurrentHighestBid == 0 
+                    ? auction.StartPrice 
+                    : auction.CurrentHighestBid + auction.MinimumBidIncrement;
+                    
+                if (amount < minRequiredBid)
+                    throw new InvalidOperationException($"Minimum bid is {minRequiredBid}");
+
+                using var transaction = await _auctionRepository.BeginTransactionAsync();
+                try
+                {
+                    var bid = new Bid
+                    {
+                        AuctionId = auctionId,
+                        BidderId = bidderId,
+                        Amount = amount,
+                        BidTime = DateTime.UtcNow
+                    };
+
+                    auction.CurrentHighestBid = amount;
+                    auction.HighestBidderId = bidderId;
+                    auction.Bids.Add(bid);
+
+                    await _auctionRepository.UpdateAsync(auction);
+                    await transaction.CommitAsync();
+
+                    var previousHighBidder = auction.Bids
+                        .Where(b => b.BidderId != bidderId)
+                        .OrderByDescending(b => b.BidTime)
+                        .Select(b => b.BidderId)
+                        .FirstOrDefault();
+
+                    if (previousHighBidder != Guid.Empty && previousHighBidder != bidderId)
+                    {
+                        try
+                        {
+                            await _notificationService.SendPushNotificationAsync(
+                                previousHighBidder,
+                                "You've been outbid! 🔔",
+                                $"Someone placed a higher bid on '{auction.Product?.Name ?? "this auction"}'. Place a new bid to stay in the lead!",
+                                auction.Id.ToString());
+                        }
+                        catch { }
+                    }
+                    
+                    return; // Success, exit retry loop
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await transaction.RollbackAsync();
+                    _auctionRepository.ClearTracker();
+                    
+                    if (i == maxRetries - 1)
+                    {
+                        throw new InvalidOperationException("Due to high bidding volume, your bid could not be processed. Please try again.");
+                    }
+                    
+                    await Task.Delay(50); // Short delay before retrying
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
         }
 

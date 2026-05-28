@@ -35,6 +35,7 @@ namespace Core.Features.Orders.Queries.Handlers
         public async Task<Response<OrderResponse>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
             var order = await _orderRepository.GetTableNoTracking()
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Organization)

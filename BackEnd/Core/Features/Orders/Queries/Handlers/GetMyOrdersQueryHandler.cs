@@ -32,6 +32,7 @@ namespace Core.Features.Orders.Queries.Handlers
                 .ToListAsync(cancellationToken);
 
             var orders = await _orderRepository.GetTableNoTracking()
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Organization)

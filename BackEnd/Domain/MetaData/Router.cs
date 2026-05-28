@@ -18,6 +18,13 @@ namespace Domain.MetaData
             public const string resendOtp = Prefix + "/resend-otp";
             public const string ForgetPassword = Prefix + "/forget-password";
             public const string ResetPassword = Prefix + "/reset-password";
+            public const string ChangePassword = Prefix + "/change-password";
+        }
+
+        public static class User
+        {
+            public const string Prefix = rule + "/users";
+            public const string DeleteAccount = Prefix + "/me";
         }
 
         public static class PlantInfo

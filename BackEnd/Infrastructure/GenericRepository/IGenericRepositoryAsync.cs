@@ -23,6 +23,7 @@ namespace Infrastructure.Base
         Task DeleteAsync(T entity);
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitAsync();
+        void ClearTracker();
     }
 
 }

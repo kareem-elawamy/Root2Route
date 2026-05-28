@@ -1,4 +1,4 @@
-﻿using Core.Base;
+using Core.Base;
 using Core.Features.authentication.Commands.Models;
 using Domain.Models;
 using MediatR;
@@ -34,6 +34,9 @@ namespace Core.Features.authentication.Commands.Handler
 
             if (user == null)
                 return BadRequest<JwtAuthResult>("User not found");
+
+            if (user.IsDeleted)
+                return BadRequest<JwtAuthResult>("This account has been deleted");
 
             var signInResult = await _userManager.CheckPasswordAsync(user, request.Password);
 

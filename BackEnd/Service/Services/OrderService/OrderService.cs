@@ -88,6 +88,10 @@ namespace Service.Services.OrderService
                             p => p.StockQuantity,
                             p => p.StockQuantity - requestedQuantity
                         )
+                        .SetProperty(
+                            p => p.IsAvailableForDirectSale,
+                            p => p.StockQuantity - requestedQuantity > 0 ? p.IsAvailableForDirectSale : false
+                        )
                     );
 
                 if (rowsAffected == 0)
@@ -191,6 +195,7 @@ namespace Service.Services.OrderService
         {
             var query = _orderRepository
                 .GetTableNoTracking()
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Shipment)
