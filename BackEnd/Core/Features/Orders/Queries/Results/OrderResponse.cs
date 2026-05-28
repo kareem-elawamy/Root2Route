@@ -49,6 +49,10 @@ namespace Core.Features.Orders.Queries.Results
         public decimal ShippingFees { get; set; }
         public decimal FinalTotal => TotalAmount + ShippingFees;
 
+        public string? CarrierName { get; set; }
+        public string? TrackingNumber { get; set; }
+        public string? DriverPhone { get; set; }
+
         public List<OrderItemResponse> Items { get; set; } = new();
         public List<OrderStatusHistoryResponse> StatusHistory { get; set; } = new();
         public PaymentResponse? Payment { get; set; }

@@ -120,6 +120,47 @@ namespace Service.Services.AuctionService
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
+        public async Task<List<Auction>> GetAllAuctionsAsync(AuctionFilter? filter = null, int pageNumber = 1, int pageSize = 10)
+        {
+            var query = _auctionRepository.GetTableNoTracking()
+                .Include(a => a.Product)
+                .Include(a => a.HighestBidder)
+                .AsQueryable();
+
+            if (filter != null)
+            {
+                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                    query = query.Where(a => a.Title.Contains(filter.SearchTerm) || (a.Product != null && a.Product.Name.Contains(filter.SearchTerm)));
+
+                if (filter.MinPrice.HasValue)
+                    query = query.Where(a => a.CurrentHighestBid >= filter.MinPrice.Value || (a.CurrentHighestBid == 0 && a.StartPrice >= filter.MinPrice.Value));
+
+                if (filter.MaxPrice.HasValue)
+                    query = query.Where(a => a.CurrentHighestBid <= filter.MaxPrice.Value || (a.CurrentHighestBid == 0 && a.StartPrice <= filter.MaxPrice.Value));
+
+                if (!string.IsNullOrEmpty(filter.SortBy))
+                {
+                    query = filter.SortBy.ToLower() switch
+                    {
+                        "price_asc" => query.OrderBy(a => a.CurrentHighestBid == 0 ? a.StartPrice : a.CurrentHighestBid),
+                        "price_desc" => query.OrderByDescending(a => a.CurrentHighestBid == 0 ? a.StartPrice : a.CurrentHighestBid),
+                        "endtime" => query.OrderBy(a => a.EndDate),
+                        _ => query.OrderByDescending(a => a.StartDate)
+                    };
+                }
+                else
+                {
+                    query = query.OrderByDescending(a => a.StartDate);
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(a => a.StartDate);
+            }
+
+            return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        }
+
         public async Task<List<Auction>> GetActiveAuctionsAsync(AuctionFilter? filter = null, int pageNumber = 1, int pageSize = 10)
         {
             var query = _auctionRepository.GetTableNoTracking()
@@ -175,6 +216,19 @@ namespace Service.Services.AuctionService
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+        }
+
+        public async Task ActivateScheduledAuctionsAsync()
+        {
+            var auctionsToActivate = await _auctionRepository.GetTableAsTracking()
+                .Where(a => a.Status == AuctionStatus.Upcoming && a.StartDate <= DateTime.UtcNow)
+                .ToListAsync();
+
+            foreach (var auction in auctionsToActivate)
+            {
+                auction.Status = AuctionStatus.Ongoing;
+                await _auctionRepository.UpdateAsync(auction);
+            }
         }
 
         public async Task FinalizeExpiredAuctionsAsync()

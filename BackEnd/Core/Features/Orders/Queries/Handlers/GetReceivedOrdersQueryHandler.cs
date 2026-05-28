@@ -37,6 +37,9 @@ namespace Core.Features.Orders.Queries.Handlers
                 BuyerId = o.BuyerId,
                 OrganizationId = o.OrganizationId,
                 OrganizationName = o.Organization?.Name,
+                CarrierName = o.Shipment?.CarrierName,
+                TrackingNumber = o.Shipment?.TrackingNumber,
+                DriverPhone = o.Shipment?.DriverPhone,
 
                 Items = o.OrderItems!
                     .Where(i => i.Product?.OrganizationId == request.OrganizationId)

@@ -23,6 +23,7 @@ namespace Service.BackgroundServices
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var auctionService = scope.ServiceProvider.GetRequiredService<IAuctionService>();
+                    await auctionService.ActivateScheduledAuctionsAsync();
                     await auctionService.FinalizeExpiredAuctionsAsync();
                 }
 

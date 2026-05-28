@@ -10,8 +10,10 @@ namespace Service.Services.AuctionService
         Task<Guid> CreateAuctionAsync(Auction auction);
         Task PlaceBidAsync(Guid auctionId, Guid bidderId, decimal amount);
         Task<Auction?> GetAuctionByIdAsync(Guid id);
+        Task<List<Auction>> GetAllAuctionsAsync(AuctionFilter? filter = null, int pageNumber = 1, int pageSize = 10);
         Task<List<Auction>> GetActiveAuctionsAsync(AuctionFilter? filter = null, int pageNumber = 1, int pageSize = 10);
         Task<List<Auction>> GetCompletedAuctionsAsync(int pageNumber = 1, int pageSize = 10);
+        Task ActivateScheduledAuctionsAsync();
         Task FinalizeExpiredAuctionsAsync();
         Task<List<Bid>> GetBidsForAuctionAsync(Guid auctionId);
         Task UpdateAuctionAsync(Guid auctionId, Auction updatedData, Guid sellerId);
