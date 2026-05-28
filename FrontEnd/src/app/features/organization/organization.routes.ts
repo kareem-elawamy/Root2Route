@@ -12,29 +12,42 @@ export const organizationRoutes: Routes = [
     path: 'overview',
     component: OverviewComponent
   },
-  // {
-  //   path: 'auctions',
-  //   loadComponent: () =>
-  //     import('./pages/auctions/auctions.component').then(
-  //       (m) => m.AuctionsComponent
-  //     ),
-  // },
+  {
+    path: 'auctions',
+    loadComponent: () =>
+      import('./pages/auctions/auctions').then(
+        (m) => m.AuctionsComponent
+      ),
+  },
   {
     path: 'products',
     component: ProductsComponent
-  }
-  // {
-  //   path: 'orders',
-  //   loadComponent: () =>
-  //     import('./pages/orders/orders.component').then((m) => m.OrdersComponent),
-  // },
-  // {
-  //   path: 'members',
-  //   loadComponent: () =>
-  //     import('./pages/members/members.component').then(
-  //       (m) => m.MembersComponent
-  //     ),
-  // },
+  },
+  {
+    path: 'orders',
+    loadComponent: () =>
+      import('./pages/orders/orders').then((m) => m.OrdersComponent),
+  },
+  {
+    path: 'members',
+    loadComponent: () =>
+      import('./pages/members/members').then((m) => m.MembersComponent),
+  },
+  {
+    path: 'chat',
+    loadComponent: () =>
+      import('./pages/chat/chat').then((m) => m.ChatComponent),
+  },
+  {
+    path: 'reviews',
+    loadComponent: () =>
+      import('./pages/reviews/reviews').then((m) => m.ReviewsComponent),
+  },
+  {
+    path: 'shipments',
+    loadComponent: () =>
+      import('./pages/shipments/shipments').then((m) => m.ShipmentsComponent),
+  },
   // {
   //   path: 'settings',
   //   loadComponent: () =>

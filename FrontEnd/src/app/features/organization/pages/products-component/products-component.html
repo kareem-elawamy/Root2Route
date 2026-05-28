@@ -1,189 +1,194 @@
-<div class="p-8 max-w-[1400px] mx-auto">
-  <!-- Page Header -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+<div class="space-y-6 animate-fade-in pb-10">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────── -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
-      <h2 class="text-3xl font-extrabold font-headline tracking-tight text-on-surface mb-1">Products Management</h2>
-      <p class="text-slate-500 text-sm">Organize and monitor your digital agrarian inventory.</p>
+      <h1 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-1">
+        Products Management
+      </h1>
+      <p class="text-sm font-body text-on-surface-variant font-medium">
+        Organize and monitor your digital agrarian inventory.
+      </p>
     </div>
     <div class="flex items-center gap-3">
       <button
-        class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
-        <span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+        class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-sm font-label font-semibold hover:bg-surface-container-low transition-colors shadow-sm">
+        <span class="material-symbols-outlined text-lg">filter_list</span>
         Filters
       </button>
-      <button (click)="openAddModal()"
-        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-semibold shadow-lg shadow-primary/10 hover:opacity-90 transition-opacity">
-        <span class="material-symbols-outlined text-lg" data-icon="add_circle">add_circle</span>
+      <button
+        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold shadow-md shadow-primary/20 hover:opacity-90 transition-opacity">
+        <span class="material-symbols-outlined text-lg">add_circle</span>
         Add New Product
       </button>
     </div>
   </div>
-  <!-- Dashboard Stats Summary -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-transparent shadow-sm">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Items</p>
-      <div class="flex items-end gap-2">
-        <span class="text-2xl font-bold font-headline">{{ overview()?.totalProducts || 0 }}</span>
+
+  <!-- ── KPI Cards ────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    @for (kpi of kpis(); track kpi.label) {
+    <div
+      class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-4">
+        <div
+          class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined">{{ kpi.icon || 'info' }}</span>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-label font-bold"
+          [class.bg-primary-fixed]="kpi.isUp"
+          [class.text-on-primary-fixed-variant]="kpi.isUp"
+          [class.bg-error-container]="!kpi.isUp"
+          [class.text-on-error-container]="!kpi.isUp">
+          {{ kpi.trend || '—' }}
+        </span>
+      </div>
+      <div class="font-body">
+        <p class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">
+          {{ kpi.label || 'Metric' }}
+        </p>
+        <p class="text-2xl font-headline font-bold text-on-surface">
+          {{ kpi.value || '0' }}
+        </p>
+      </div>
+      <!-- Decorative ghost icon -->
+      <div class="absolute -bottom-6 -right-6 text-primary/5 pointer-events-none">
+        <span class="material-symbols-outlined text-8xl" style="font-variation-settings:'FILL' 1">
+          {{ kpi.icon || 'info' }}
+        </span>
       </div>
     </div>
-    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Listings</p>
-      <div class="flex items-end gap-2">
-        <span class="text-2xl font-bold font-headline">{{ overview()?.activeProducts || 0 }}</span>
-      </div>
-    </div>
-    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Low Stock Alerts</p>
-      <div class="flex items-end gap-2">
-        <span class="text-2xl font-bold font-headline text-tertiary">{{ overview()?.lowStockProducts || 0 }}</span>
-      </div>
-    </div>
-    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Inventory Value</p>
-      <div class="flex items-end gap-2">
-        <span class="text-2xl font-bold font-headline">${{ (overview()?.inventoryValue || 0).toLocaleString() }}</span>
-      </div>
-    </div>
+    }
   </div>
-  <!-- Product Table Container -->
-  <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm">
+
+  <!-- ── Product Table ─────────────────────────────────────────────────── -->
+  <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant">
+
+    <!-- Table Toolbar -->
+    <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+      <h2 class="text-base font-headline font-bold text-on-surface">All Products</h2>
+      <div
+        class="flex items-center gap-2 px-3 py-2 bg-surface-container-low rounded-xl border border-outline-variant text-sm text-on-surface-variant w-64">
+        <span class="material-symbols-outlined text-[18px]">search</span>
+        <span class="font-body text-xs">Search products…</span>
+      </div>
+    </div>
+
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="bg-surface-container-low/50">
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Product</th>
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Category</th>
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Price</th>
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Stock</th>
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Date Added</th>
-            <th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400">Status</th>
+          <tr class="bg-surface-container-low/60">
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Product</th>
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Category</th>
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Price</th>
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Stock</th>
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Date Added</th>
+            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Status</th>
             <th class="px-6 py-4 text-right"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
-          @for (product of products(); track product.id) {
-          <tr class="group hover:bg-slate-50/50 transition-colors">
+        <tbody class="divide-y divide-outline-variant/30 font-body">
+
+          @for (product of productsList; track product.id) {
+          <tr class="group hover:bg-surface-container-low/40 transition-colors">
+
+            <!-- Product Name + SKU + Image -->
             <td class="px-6 py-4">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                <div class="w-12 h-12 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 border border-outline-variant">
+                  @if (product.imageUrl) {
                   <img class="w-full h-full object-cover"
-                    [src]="product.mainImageUrl || 'https://placehold.co/400x400?text=Product'" [alt]="product.name" />
+                    [src]="product.imageUrl"
+                    [alt]="product.name || 'Product image'" />
+                  } @else {
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-outline text-2xl">image_not_supported</span>
+                  </div>
+                  }
                 </div>
                 <div>
-                  <p class="text-sm font-bold text-on-surface">{{ product.name }}</p>
-                  <p class="text-xs text-slate-400">SKU: {{ product.barcode || 'N/A' }}</p>
+                  <p class="text-sm font-bold text-on-surface">{{ product.name || 'Unnamed Product' }}</p>
+                  <p class="text-xs text-on-surface-variant">SKU: {{ product.sku || 'N/A' }}</p>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600 font-medium">{{ product.productType || 'Uncategorized' }}</td>
-            <td class="px-6 py-4 text-sm font-bold text-on-surface">${{ product.directSalePrice.toLocaleString() }}</td>
-            <td class="px-6 py-4 text-sm text-slate-600">{{ product.stockQuantity }} Units</td>
-            <td class="px-6 py-4 text-sm text-slate-500">{{ product.expiryDate | date:'shortDate' }}</td>
-            <td class="px-6 py-4">
-              <span
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                [class.bg-emerald-50]="product.stockQuantity > 10" [class.text-emerald-700]="product.stockQuantity > 10"
-                [class.bg-amber-50]="product.stockQuantity <= 10 && product.stockQuantity > 0"
-                [class.text-amber-700]="product.stockQuantity <= 10 && product.stockQuantity > 0"
-                [class.bg-rose-50]="product.stockQuantity === 0" [class.text-rose-700]="product.stockQuantity === 0">
-                <span class="w-1 h-1 rounded-full" [class.bg-emerald-600]="product.stockQuantity > 10"
-                  [class.bg-amber-600]="product.stockQuantity <= 10 && product.stockQuantity > 0"
-                  [class.bg-rose-600]="product.stockQuantity === 0"></span>
-                {{ product.stockQuantity > 0 ? (product.stockQuantity <= 10 ? 'Low Stock' : 'Active' ) : 'Out of Stock'
-                  }} </span>
+
+            <!-- Category -->
+            <td class="px-6 py-4 text-sm text-on-surface-variant font-medium">
+              {{ product.category || 'Uncategorized' }}
             </td>
+
+            <!-- Price -->
+            <td class="px-6 py-4 text-sm font-bold text-on-surface">
+              ${{ (product.price ?? 0) | number:'1.2-2' }}
+            </td>
+
+            <!-- Stock -->
+            <td class="px-6 py-4 text-sm text-on-surface-variant">
+              {{ (product.stock ?? 0) | number }} Units
+            </td>
+
+            <!-- Date Added -->
+            <td class="px-6 py-4 text-sm text-on-surface-variant">
+              {{ product.dateAdded || '—' }}
+            </td>
+
+            <!-- Status Badge -->
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider"
+                [ngClass]="getStatusClasses(product.status || 'Draft')">
+                <span class="w-1.5 h-1.5 rounded-full"
+                  [ngClass]="getDotClasses(product.status || 'Draft')"></span>
+                {{ product.status || 'Unknown' }}
+              </span>
+            </td>
+
+            <!-- Actions -->
             <td class="px-6 py-4 text-right">
-              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                <span class="material-symbols-outlined text-slate-400" data-icon="more_vert">more_vert</span>
+              <button class="p-2 hover:bg-surface-container rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                <span class="material-symbols-outlined text-outline">more_vert</span>
               </button>
             </td>
           </tr>
           }
+
+          @empty {
+          <tr>
+            <td colspan="7" class="px-6 py-16 text-center">
+              <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl text-outline"
+                  style="font-variation-settings:'FILL' 0">inventory_2</span>
+                <p class="text-sm font-semibold font-body">No products found</p>
+                <p class="text-xs font-body">Add your first product to get started.</p>
+                <button
+                  class="mt-2 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold hover:opacity-90 transition-opacity">
+                  <span class="material-symbols-outlined text-base">add_circle</span>
+                  Add Product
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+
         </tbody>
       </table>
     </div>
-    <div class="px-6 py-4 border-t border-slate-50 flex items-center justify-between">
-      <p class="text-xs text-slate-400 font-medium">Page {{ currentPage }}</p>
-      <div class="flex gap-2">
-        <button (click)="prevPage()" [disabled]="currentPage === 1"
-          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50">Previous</button>
-        <button (click)="nextPage()"
-          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">Next</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Add Product Modal -->
-  @if (showAddModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-surface-container-lowest rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-      <div class="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-surface-container-lowest z-10">
-        <h3 class="text-xl font-bold text-on-surface">Add New Product</h3>
-        <button (click)="closeAddModal()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-          <span class="material-symbols-outlined text-slate-400">close</span>
+    <!-- Pagination Footer -->
+    <div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
+      <p class="text-xs text-on-surface-variant font-body font-medium">
+        Showing {{ productsList.length || 0 }} of {{ kpis()[0]?.value || '0' }} products
+      </p>
+      <div class="flex gap-2">
+        <button
+          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
+          Previous
+        </button>
+        <button
+          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
+          Next
         </button>
       </div>
-      
-      <form [formGroup]="productForm" (ngSubmit)="submitProduct()" class="p-6 space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Name</label>
-            <input type="text" formControlName="name" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" placeholder="e.g. Organic Soil">
-          </div>
-          
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Quantity</label>
-            <input type="number" formControlName="stockQuantity" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-          </div>
-
-          <div class="space-y-1.5 md:col-span-2">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</label>
-            <textarea formControlName="description" rows="3" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" placeholder="Briefly describe the product..."></textarea>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Direct Sale Price</label>
-            <input type="number" formControlName="directSalePrice" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Start Bidding Price</label>
-            <input type="number" formControlName="startBiddingPrice" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Type</label>
-            <select formControlName="productType" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-              <option [value]="0">Soil</option>
-              <option [value]="1">Fertilizer</option>
-              <option [value]="2">Equipment</option>
-              <option [value]="3">Seeds</option>
-            </select>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Images</label>
-            <input type="file" multiple (change)="onFileSelected($event)" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20">
-          </div>
-        </div>
-
-        <div class="flex items-center gap-6 pt-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" formControlName="isAvailableForDirectSale" class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
-            <span class="text-sm font-medium text-slate-600">Direct Sale</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" formControlName="isAvailableForAuction" class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
-            <span class="text-sm font-medium text-slate-600">Auction</span>
-          </label>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-          <button type="button" (click)="closeAddModal()" class="px-6 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-          <button type="submit" [disabled]="productForm.invalid" class="px-8 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-semibold shadow-lg shadow-primary/10 hover:opacity-90 transition-opacity disabled:opacity-50">Create Product</button>
-        </div>
-      </form>
     </div>
+
   </div>
-  }
 </div>

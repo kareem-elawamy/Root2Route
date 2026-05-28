@@ -1,0 +1,64 @@
+<div class="px-8 pb-12 bg-surface">
+
+  <div class="flex justify-between items-end mb-10 pt-8">
+    <div>
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Customer Reviews</h2>
+      <p class="text-sm text-slate-500">What customers are saying about your organization.</p>
+    </div>
+    <div class="flex gap-3">
+      <div class="bg-white px-4 py-2 rounded-xl border border-slate-200 flex items-center gap-2">
+        <span class="text-2xl font-black text-slate-800">{{ stats.average }}</span>
+        <div class="flex text-amber-400">
+          @for (star of getStars(stats.average); track $index) {
+            <span class="material-symbols-outlined text-[20px]">star</span>
+          }
+          @for (star of getEmptyStars(stats.average); track $index) {
+            <span class="material-symbols-outlined text-[20px]">star_border</span>
+          }
+        </div>
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Average</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-100">
+      <h3 class="text-lg font-bold text-slate-800">All Reviews ({{ stats.total }})</h3>
+    </div>
+    
+    <div class="divide-y divide-slate-100">
+      @for (review of reviews; track review.id) {
+        <div class="p-6 hover:bg-slate-50 transition-colors">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
+                {{ review.userName?.charAt(0) || 'U' }}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-slate-800">{{ review.userName || 'Anonymous' }}</p>
+                <div class="flex text-amber-400 text-[16px]">
+                  @for (star of getStars(review.rating); track $index) {
+                    <span class="material-symbols-outlined text-[16px]">star</span>
+                  }
+                  @for (star of getEmptyStars(review.rating); track $index) {
+                    <span class="material-symbols-outlined text-[16px]">star_border</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <span class="text-xs text-slate-500">{{ review.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed">{{ review.comment || 'No comment provided.' }}</p>
+        </div>
+      }
+      
+      @if (reviews.length === 0) {
+        <div class="py-16 text-center text-slate-500">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">star</span>
+          <p class="font-medium">No reviews yet.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

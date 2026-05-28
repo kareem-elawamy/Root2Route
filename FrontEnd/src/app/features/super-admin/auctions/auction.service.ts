@@ -14,4 +14,8 @@ export class AuctionService {
   getActiveAuctions(): Observable<any> {
     return this.http.get(`${this.baseUrl}/GetActive`);
   }
+
+  getOrganizationAuctions(organizationId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/my-organization/${organizationId}`);
+  }
 }
