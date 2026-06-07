@@ -1,0 +1,47 @@
+<div class="min-h-screen bg-surface flex flex-col p-8">
+  <header class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-headline font-bold text-on-surface">My Invitations</h1>
+      <p class="text-outline mt-2">Manage your pending organization invitations.</p>
+    </div>
+    <button (click)="logout()" class="px-4 py-2 border border-outline rounded-xl text-on-surface hover:bg-surface-container-high transition-colors font-semibold text-sm flex items-center gap-2">
+      <span class="material-symbols-outlined text-[20px]">logout</span>
+      Logout
+    </button>
+  </header>
+
+  <main class="max-w-4xl w-full mx-auto">
+    @if (isLoading) {
+      <div class="flex items-center justify-center p-12">
+        <span class="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 gap-4">
+        @for (invite of invitations; track invite.id) {
+          @if (invite.status === 'Pending') {
+            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant flex justify-between items-center">
+              <div>
+                <p class="font-headline font-bold text-on-surface text-lg">You have been invited!</p>
+                <p class="text-on-surface-variant mt-1 text-sm">
+                  You received an invitation to join an organization.
+                </p>
+                <p class="text-xs text-outline mt-2">Sent on {{ invite.createdAt | date }}</p>
+              </div>
+              <button (click)="acceptInvitation(invite.id, invite.token)" class="px-6 py-2 bg-primary text-on-primary rounded-xl font-bold shadow-md hover:opacity-90 transition-opacity">
+                Accept Invitation
+              </button>
+            </div>
+          }
+        }
+        
+        @if (invitations.length === 0) {
+          <div class="text-center p-12 bg-surface-container rounded-2xl border border-dashed border-outline">
+            <span class="material-symbols-outlined text-outline text-5xl mb-4">mail</span>
+            <h3 class="text-xl font-headline font-bold text-on-surface">No Pending Invitations</h3>
+            <p class="text-on-surface-variant mt-2">You don't have any pending invitations to join an organization.</p>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

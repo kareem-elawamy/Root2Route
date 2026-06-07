@@ -150,3 +150,12 @@ label, .font-label {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
 }
+
+/* ─── Global Redesign Imports (Hot-Reload Fix) ─── */
+@import "./app/layouts/super-admin-layout/main-layout.css";
+@import "./app/features/super-admin/dashboard/dashboard.css";
+@import './app/features/organization/pages/overview-component/overview-component.css';
+@import './app/features/organization/pages/products-component/products-component.css';
+@import './app/features/organization/pages/auctions/auctions.css';
+@import './app/features/organization/pages/members/members.css';
+@import './app/features/organization/pages/roles/roles.css';

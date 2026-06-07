@@ -1,0 +1,51 @@
+.m3-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.m3-permission-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.m3-permission-item:hover {
+  background: var(--color-surface-container-high);
+}
+
+.m3-permission-item.selected {
+  background: var(--color-primary-container);
+  border-color: var(--color-primary);
+}
+
+.m3-permission-item.selected .m3-permission-text {
+  color: var(--color-on-primary-container);
+  font-weight: 700;
+}
+
+.m3-permission-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.m3-permission-text {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+}
+
+.m3-role-permissions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

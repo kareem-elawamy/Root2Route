@@ -18,7 +18,8 @@ interface JwtClaims {
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
   organizationId?: string;
   organizationRole?: string;
-  permission?: string[];
+  permission?: string | string[];
+  Permission?: string | string[];
   role?: string | string[];
   Role?: string | string[]; // <--- السطر ده اللي هيحل الإيرور
   'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string | string[];
@@ -70,11 +71,20 @@ export class AuthService {
 
   setSession(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
+    const rawPerm = claims.permission || claims['Permission'] || [];
+    const perms = Array.isArray(rawPerm) ? rawPerm : [rawPerm];
+
+    const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    const identityRoles = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
+    
+    // If user is Owner, they might need all permissions or we can add a bypass later
+    // but at least let's capture permissions correctly
     const user: AuthUser = {
       id: claims.sub ?? '',
       email: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? '',
       name: data.fullName ?? '',
-      permissions: Array.isArray(claims.permission) ? claims.permission : [],
+      permissions: perms,
+      roles: identityRoles
     };
 
     // Persist tokens & user
@@ -99,6 +109,10 @@ export class AuthService {
   }
 
   hasPermission(permission: string): boolean {
+    const roles = this._currentUser()?.roles ?? [];
+    if (roles.includes('Owner') || roles.includes('OrganizationOwner') || roles.includes('SuperAdmin') || roles.includes('Admin')) {
+      return true;
+    }
     return this.permissions().includes(permission);
   }
 
@@ -115,22 +129,22 @@ export class AuthService {
       ? [rawRole]
       : [];
 
-    // 1. SuperAdmin role → go to super-admin dashboard
+    // 1. SuperAdmin role → go to admin-dashboard
     if (identityRoles.includes('SuperAdmin')) {
-      this.router.navigate(['/super-admin/dashboard']);
+      this.router.navigate(['/admin-dashboard']);
       return;
     }
 
-    // 2. Check via API if user owns any organization → go to /org
+    // 2. Check via API if user owns any organization → go to company-dashboard
     this.orgContext.myOrganization().subscribe({
       next: (response: any) => {
         // بنقرأ الـ data من الـ Result Wrapper
         const orgs = response?.data || response;
         if (orgs && orgs.length > 0) {
-          this.router.navigate(['/org']);
+          this.router.navigate(['/company-dashboard']);
         } else {
-          // 3. No org → unauthorized
-          this.router.navigate(['/unauthorized']);
+          // 3. No org → go to user dashboard (invitations)
+          this.router.navigate(['/user/invitations']);
         }
       },
       error: () => {

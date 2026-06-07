@@ -1,58 +1,57 @@
-<div class="space-y-6 animate-fade-in pb-10">
+<div class="m3-dashboard-container">
 
   <!-- ── Page Header ──────────────────────────────────────────────────── -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-    <div>
-      <h1 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-1">
-        Products Management
-      </h1>
-      <p class="text-sm font-body text-on-surface-variant font-medium">
+  <header class="m3-dashboard-header">
+    <div class="m3-header-text">
+      <h1 class="m3-display-small">Products Management</h1>
+      <p class="m3-body-large">
         Organize and monitor your digital agrarian inventory.
       </p>
     </div>
-    <div class="flex items-center gap-3">
-      <button
-        class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-sm font-label font-semibold hover:bg-surface-container-low transition-colors shadow-sm">
-        <span class="material-symbols-outlined text-lg">filter_list</span>
-        Filters
+    <div class="m3-header-actions" style="position: relative;">
+      <button class="m3-outlined-button" (click)="toggleFilterDropdown($event)">
+        <span class="material-symbols-outlined m3-button-icon">filter_list</span>
+        {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
       </button>
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold shadow-md shadow-primary/20 hover:opacity-90 transition-opacity">
-        <span class="material-symbols-outlined text-lg">add_circle</span>
+
+      @if (isFilterDropdownOpen()) {
+        <div class="m3-dropdown-menu" style="top: 3rem; right: 10rem;">
+          <button class="m3-dropdown-item" (click)="setFilter('All')">All Products</button>
+          <div class="m3-dropdown-divider"></div>
+          <button class="m3-dropdown-item" (click)="setFilter('Active')">Active Only</button>
+          <button class="m3-dropdown-item" (click)="setFilter('Draft')">Drafts Only</button>
+          <div class="m3-dropdown-divider"></div>
+          <button class="m3-dropdown-item" (click)="setFilter('Raw Crop')">Raw Crops</button>
+          <button class="m3-dropdown-item" (click)="setFilter('Processed')">Processed</button>
+          <button class="m3-dropdown-item" (click)="setFilter('Tool')">Tools</button>
+        </div>
+      }
+
+      <button class="m3-filled-button" (click)="openCreateModal()">
+        <span class="material-symbols-outlined m3-button-icon">add_circle</span>
         Add New Product
       </button>
     </div>
-  </div>
+  </header>
 
   <!-- ── KPI Cards ────────────────────────────────────────────────────── -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+  <div class="m3-kpi-grid">
     @for (kpi of kpis(); track kpi.label) {
-    <div
-      class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-      <div class="flex justify-between items-start mb-4">
-        <div
-          class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:scale-110 transition-transform">
+    <div class="m3-card m3-kpi-card group">
+      <div class="m3-kpi-card-header">
+        <div class="m3-kpi-icon-wrapper group-hover-scale">
           <span class="material-symbols-outlined">{{ kpi.icon || 'info' }}</span>
         </div>
-        <span class="px-2.5 py-1 rounded-full text-xs font-label font-bold"
-          [class.bg-primary-fixed]="kpi.isUp"
-          [class.text-on-primary-fixed-variant]="kpi.isUp"
-          [class.bg-error-container]="!kpi.isUp"
-          [class.text-on-error-container]="!kpi.isUp">
+        <span class="m3-trend-chip" [class.m3-trend-up]="kpi.isUp" [class.m3-trend-down]="!kpi.isUp">
           {{ kpi.trend || '—' }}
         </span>
       </div>
-      <div class="font-body">
-        <p class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">
-          {{ kpi.label || 'Metric' }}
-        </p>
-        <p class="text-2xl font-headline font-bold text-on-surface">
-          {{ kpi.value || '0' }}
-        </p>
+      <div class="m3-kpi-card-body">
+        <p class="m3-kpi-label">{{ kpi.label || 'Metric' }}</p>
+        <p class="m3-kpi-value">{{ kpi.value || '0' }}</p>
       </div>
-      <!-- Decorative ghost icon -->
-      <div class="absolute -bottom-6 -right-6 text-primary/5 pointer-events-none">
-        <span class="material-symbols-outlined text-8xl" style="font-variation-settings:'FILL' 1">
+      <div class="m3-kpi-ghost-icon">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">
           {{ kpi.icon || 'info' }}
         </span>
       </div>
@@ -60,135 +59,194 @@
     }
   </div>
 
-  <!-- ── Product Table ─────────────────────────────────────────────────── -->
-  <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant">
-
-    <!-- Table Toolbar -->
-    <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
-      <h2 class="text-base font-headline font-bold text-on-surface">All Products</h2>
-      <div
-        class="flex items-center gap-2 px-3 py-2 bg-surface-container-low rounded-xl border border-outline-variant text-sm text-on-surface-variant w-64">
-        <span class="material-symbols-outlined text-[18px]">search</span>
-        <span class="font-body text-xs">Search products…</span>
+  <!-- ── Product Data Table ─────────────────────────────────────────────────── -->
+  <div class="m3-card m3-table-card">
+    <div class="m3-table-toolbar">
+      <h2 class="m3-title-large">{{ showPending() ? 'Pending Products' : 'All Products' }}</h2>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button class="m3-outlined-button" [style.background]="showPending() ? 'var(--color-primary-container)' : 'transparent'" (click)="togglePending()">
+          <span class="material-symbols-outlined m3-button-icon">pending_actions</span>
+          {{ showPending() ? 'Show All' : 'Show Pending' }}
+        </button>
+        <div class="m3-search-bar">
+          <span class="material-symbols-outlined m3-search-icon">search</span>
+          <input type="text" class="m3-search-input" placeholder="Search products…" 
+                 [value]="searchTerm()" (input)="onSearchChange($event)" />
+        </div>
       </div>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+    <div class="m3-table-container">
+      <table class="m3-data-table">
         <thead>
-          <tr class="bg-surface-container-low/60">
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Product</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Category</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Price</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Stock</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Date Added</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Status</th>
-            <th class="px-6 py-4 text-right"></th>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Date Added</th>
+            <th>Status</th>
+            <th class="m3-table-actions-header"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-outline-variant/30 font-body">
-
+        <tbody>
           @for (product of productsList; track product.id) {
-          <tr class="group hover:bg-surface-container-low/40 transition-colors">
-
-            <!-- Product Name + SKU + Image -->
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 border border-outline-variant">
+          <tr>
+            <td>
+              <div class="m3-product-cell">
+                <div class="m3-product-image">
                   @if (product.imageUrl) {
-                  <img class="w-full h-full object-cover"
-                    [src]="product.imageUrl"
-                    [alt]="product.name || 'Product image'" />
+                  <img [src]="product.imageUrl" [alt]="product.name" />
                   } @else {
-                  <div class="w-full h-full flex items-center justify-center">
-                    <span class="material-symbols-outlined text-outline text-2xl">image_not_supported</span>
+                  <div class="m3-product-image-placeholder">
+                    <span class="material-symbols-outlined">image_not_supported</span>
                   </div>
                   }
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-on-surface">{{ product.name || 'Unnamed Product' }}</p>
-                  <p class="text-xs text-on-surface-variant">SKU: {{ product.sku || 'N/A' }}</p>
+                <div class="m3-product-info">
+                  <p class="m3-product-name">{{ product.name }}</p>
+                  <p class="m3-product-sku">SKU: {{ product.sku }}</p>
                 </div>
               </div>
             </td>
-
-            <!-- Category -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant font-medium">
-              {{ product.category || 'Uncategorized' }}
+            <td class="m3-category-cell">{{ product.category }}</td>
+            <td class="m3-price-cell">${{ product.price | number:'1.2-2' }}</td>
+            <td class="m3-stock-cell">{{ product.stock | number }} Units</td>
+            <td class="m3-date-cell">{{ product.dateAdded }}</td>
+            <td>
+              <div class="m3-status-chip {{ getStatusClasses(product.status) }}">
+                <span class="m3-status-dot {{ getDotClasses(product.status) }}"></span>
+                {{ product.status }}
+              </div>
             </td>
-
-            <!-- Price -->
-            <td class="px-6 py-4 text-sm font-bold text-on-surface">
-              ${{ (product.price ?? 0) | number:'1.2-2' }}
-            </td>
-
-            <!-- Stock -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant">
-              {{ (product.stock ?? 0) | number }} Units
-            </td>
-
-            <!-- Date Added -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant">
-              {{ product.dateAdded || '—' }}
-            </td>
-
-            <!-- Status Badge -->
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider"
-                [ngClass]="getStatusClasses(product.status || 'Draft')">
-                <span class="w-1.5 h-1.5 rounded-full"
-                  [ngClass]="getDotClasses(product.status || 'Draft')"></span>
-                {{ product.status || 'Unknown' }}
-              </span>
-            </td>
-
-            <!-- Actions -->
-            <td class="px-6 py-4 text-right">
-              <button class="p-2 hover:bg-surface-container rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                <span class="material-symbols-outlined text-outline">more_vert</span>
+            <td class="m3-table-actions" style="position: relative;">
+              <button class="m3-icon-button m3-row-action" (click)="toggleDropdown(product.id, $event)">
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
+              
+              <!-- Dropdown http://localhost:4200/org/orders -->
+              @if (activeDropdownId() === product.id) {
+              <div class="m3-dropdown-menu">
+                <button class="m3-dropdown-item" (click)="changeStatus(product.id, 1)">
+                  <span class="material-symbols-outlined">check_circle</span> Mark Active
+                </button>
+                <button class="m3-dropdown-item" (click)="changeStatus(product.id, 0)">
+                  <span class="material-symbols-outlined">pause_circle</span> Mark Draft
+                </button>
+                <div class="m3-dropdown-divider"></div>
+                <button class="m3-dropdown-item m3-text-error" (click)="deleteProduct(product.id)">
+                  <span class="material-symbols-outlined">delete</span> Delete
+                </button>
+              </div>
+              }
             </td>
           </tr>
           }
 
           @empty {
           <tr>
-            <td colspan="7" class="px-6 py-16 text-center">
-              <div class="flex flex-col items-center gap-3 text-on-surface-variant">
-                <span class="material-symbols-outlined text-5xl text-outline"
-                  style="font-variation-settings:'FILL' 0">inventory_2</span>
-                <p class="text-sm font-semibold font-body">No products found</p>
-                <p class="text-xs font-body">Add your first product to get started.</p>
-                <button
-                  class="mt-2 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold hover:opacity-90 transition-opacity">
-                  <span class="material-symbols-outlined text-base">add_circle</span>
+            <td colspan="7">
+              <div class="m3-empty-state">
+                <span class="material-symbols-outlined m3-empty-icon" style="font-variation-settings:'FILL' 0">inventory_2</span>
+                <p class="m3-empty-title">No products found</p>
+                <p class="m3-empty-desc">You don't have any products in your inventory yet.</p>
+                <button class="m3-filled-button m3-mt-4" (click)="openCreateModal()">
+                  <span class="material-symbols-outlined m3-button-icon">add_circle</span>
                   Add Product
                 </button>
               </div>
             </td>
           </tr>
           }
-
         </tbody>
       </table>
     </div>
 
     <!-- Pagination Footer -->
-    <div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
-      <p class="text-xs text-on-surface-variant font-body font-medium">
-        Showing {{ productsList.length || 0 }} of {{ kpis()[0]?.value || '0' }} products
+    <div class="m3-table-footer">
+      <p class="m3-pagination-text">
+        Showing {{ productsList.length }} products
       </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
-          Previous
-        </button>
-        <button
-          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
-          Next
-        </button>
-      </div>
     </div>
-
   </div>
 </div>
+
+<!-- ── Add Product Modal ── -->
+@if (isCreateModalOpen()) {
+<div class="m3-modal-backdrop">
+  <div class="m3-modal-surface">
+    <div class="m3-modal-header">
+      <h2 class="m3-modal-title">Create New Product</h2>
+      <button class="m3-icon-button" (click)="closeCreateModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form (submit)="submitProduct($event)" class="m3-modal-body">
+      
+      <div class="m3-form-group">
+        <label class="m3-form-label">Product Name *</label>
+        <input type="text" name="prodName" required class="m3-form-input" placeholder="e.g., Premium Wheat Seed" />
+      </div>
+
+      <div class="m3-form-group">
+        <label class="m3-form-label">Description</label>
+        <textarea name="prodDesc" class="m3-form-input m3-textarea" placeholder="Describe your product..."></textarea>
+      </div>
+
+      <div class="m3-form-row">
+        <div class="m3-form-group flex-1">
+          <label class="m3-form-label">Product Type</label>
+          <select name="prodType" class="m3-form-input">
+            <option value="0">Raw Crop</option>
+            <option value="1">Processed</option>
+            <option value="2">Tool</option>
+            <option value="3">Chemical</option>
+          </select>
+        </div>
+        <div class="m3-form-group flex-1">
+          <label class="m3-form-label">Stock Quantity</label>
+          <input type="number" name="prodStock" required class="m3-form-input" placeholder="e.g., 100" min="0" />
+        </div>
+      </div>
+
+      <div class="m3-divider"></div>
+      
+      <div class="m3-form-group">
+        <label class="m3-toggle-label">
+          <input type="checkbox" name="isDirect" class="m3-toggle-input" checked />
+          <span class="m3-toggle-text">Available for Direct Sale</span>
+        </label>
+        <input type="number" step="0.01" name="directPrice" class="m3-form-input m3-mt-2" placeholder="Direct Sale Price ($)" />
+      </div>
+
+      <div class="m3-form-group">
+        <label class="m3-toggle-label">
+          <input type="checkbox" name="isAuction" class="m3-toggle-input" />
+          <span class="m3-toggle-text">Available for Auction</span>
+        </label>
+        <input type="number" step="0.01" name="auctionPrice" class="m3-form-input m3-mt-2" placeholder="Start Bidding Price ($)" />
+      </div>
+
+      <div class="m3-divider"></div>
+
+      <div class="m3-form-group">
+        <label class="m3-form-label">Product Image</label>
+        <input type="file" name="prodImage" accept="image/*" class="m3-form-file" />
+      </div>
+
+      <div class="m3-modal-footer">
+        <button type="button" class="m3-text-button" (click)="closeCreateModal()">Cancel</button>
+        <button type="submit" class="m3-filled-button" [disabled]="isCreatingProduct()">
+          @if (isCreatingProduct()) {
+            Saving...
+          } @else {
+            Create Product
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+}

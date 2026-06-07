@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { ProductService } from '../../../super-admin/products/product.service';
 
 export interface Product {
   id: string;
@@ -11,7 +12,7 @@ export interface Product {
   price: number;
   stock: number;
   dateAdded: string;
-  status: 'Active' | 'Low Stock' | 'Out of Stock' | 'Draft';
+  status: string;
   imageUrl: string;
 }
 
@@ -27,16 +28,15 @@ export interface ProductKpi {
 @Component({
   selector: 'app-products-component',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './products-component.html',
   styleUrl: './products-component.css',
 })
 export class ProductsComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly productService = inject(ProductService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly orgCtx = inject(OrgContextService);
 
-  // ── KPI Signal ──────────────────────────────────────────────────────────────
   readonly kpis = signal<ProductKpi[]>([
     { label: 'Total Items',      value: '0',   trend: '+0%',       isUp: true,  icon: 'inventory_2',    accentClass: 'text-primary' },
     { label: 'Active Listings',  value: '0',   trend: 'Stable',    isUp: true,  icon: 'store',          accentClass: 'text-secondary' },
@@ -44,139 +44,246 @@ export class ProductsComponent implements OnInit {
     { label: 'Inventory Value',  value: '$0',  trend: '↑ 0%',      isUp: true,  icon: 'payments',       accentClass: 'text-primary' },
   ]);
 
-  // ── Products Array ──────────────────────────────────────────────────────────
   productsList: Product[] = [];
+  allProducts: Product[] = [];
 
-  // ── Fallback seed data (used when API returns empty) ────────────────────────
-  private readonly fallbackProducts: Product[] = [
-    {
-      id: '1',
-      name: 'Premium Bio-Humus',
-      sku: 'AG-924-BH',
-      category: 'Soil Health',
-      price: 24.00,
-      stock: 842,
-      dateAdded: 'Oct 12, 2023',
-      status: 'Active',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbcMWnOU3x3aUMRb--Fh5av6KswQWVHCxS3U2_SfUAXxJTXrxDJLYyGqyOS1vHQBeyQi_q9EzbwbOjOD0JY8dGSs9ODppeWKdVKPzYINAU81sCWnDMLi2Jvrrobe4GhPIVh9GtOzFp7yhUZn_io6QHziLKmOgyeLpM3OevIM6r17QcFzV9BvZ00XChB6ZQmU5h557hcU-l7lnjsDIioH-PKrzM6mfowVaqTwC4f977XZq8U-iU9gPaqo8Bk6alFhurCFVc1sxqVlQ',
-    },
-    {
-      id: '2',
-      name: 'HydraSense Pro v4',
-      sku: 'AG-102-HS',
-      category: 'Equipment',
-      price: 149.99,
-      stock: 12,
-      dateAdded: 'Nov 04, 2023',
-      status: 'Low Stock',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAS3o7iSmjyncTvDv293tRxp37fjHtyR9K2fUIsdtUVs4zOKA7oVG6vr1PosZyJBRmIVidobtclr-n_9044Qx7sFNAGN3jIXA2fNShNWxzrSJpibh9HKLUm7w0MjWuJ00iX6-f6LXCRWvqurhNBMbTeYeuxP-UkbeB_yp3RrXC1ClgA4MxfAQcd8GUJdi-3jh_3Udam188P2BNQ1vHzlCD9gKpvtVOJ2R2KflqIkXIedOt-qGbT5PMNwja2O5_A1qBNXwgdLZFlf_w',
-    },
-    {
-      id: '3',
-      name: 'Heritage Seed Mix',
-      sku: 'AG-552-SM',
-      category: 'Seeds',
-      price: 18.50,
-      stock: 0,
-      dateAdded: 'Oct 28, 2023',
-      status: 'Out of Stock',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3uM9vJJKiUZWcCXSbWvNNK1thmYmte4ghBymnZi0i1okDsZGbI4dpR0GdDXFwdkuUt6M0WkbNFfj07W-U83L9-yHk4QceQx_npqq3FrafmTH7RQXXccq7ur_nKc3r8UnjVruvdTHMIgd0nUoJfuA-NLHnU4d5cU1ZOUwcuKzcvgq6ZW4p-oO2Ui7ZCwz6zKBjjrd2K0AC1sESAsDsgi1dep5U3R_02weL4CjbJ0SyJH0AppEtWTI7Y3TyEpIHlL0B46biA2_aU5A',
-    },
-    {
-      id: '4',
-      name: 'AutoVent Controller',
-      sku: 'AG-009-AC',
-      category: 'Automation',
-      price: 299.00,
-      stock: 45,
-      dateAdded: 'Dec 01, 2023',
-      status: 'Draft',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDHJDf2SQptWcEqlBPcNqmNSZKxjcJXlmL8IY-knLKgwfZUt5PatSmAWaa501_9G6rKYgroJQDTma2o6nnXxwQOw_blJr-ZCXMn_WKC0GnzJ-_4e-tqJlfIkVJrytLEvLtaixoJF2Z2bYccBbYt7gzhnGE5yo2zLvmOQtw9-SbztJcmTKqW51Bo7fKj6031LVFhvTkdvN7V7f_s-vNusfiN0hpdoEXowUFzDsbuLZEKxi3cC_UznjGTQLP0AAwGI0ZtXMJU5FQ-npI',
-    },
-  ];
+  searchTerm = signal('');
+  showPending = signal(false);
+  activeFilter = signal('All');
+  isFilterDropdownOpen = signal(false);
+  isCreatingProduct = signal(false);
+  isCreateModalOpen = signal(false);
+  activeDropdownId = signal<string | null>(null);
 
   ngOnInit(): void {
-    const orgId = this.orgCtx.getActiveOrgId();
-    if (!orgId) {
-      console.error('No active organization found');
-      this.productsList = this.fallbackProducts;
-      this.cdr.detectChanges();
-      return;
-    }
+    this.loadProducts();
+  }
 
-    this.http.get<any>(`https://root2route.runasp.net/api/v1/product/Organization/${orgId}`).subscribe({
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.activeDropdownId.set(null);
+    this.isFilterDropdownOpen.set(false);
+  }
+
+  loadProducts(): void {
+    const orgId = this.orgCtx.getActiveOrgId();
+    if (!orgId) return;
+
+    const request$ = this.showPending() 
+      ? this.productService.getPendingProductsByOrg(orgId)
+      : this.productService.getProductsByOrg(orgId);
+
+    request$.subscribe({
       next: (response: any) => {
         const data = response?.data || response || {};
-
-        let products: Product[] = [];
+        let products: any[] = [];
+        
         if (Array.isArray(data)) {
           products = data;
         } else if (data.products && Array.isArray(data.products)) {
           products = data.products;
+        } else if (data.items && Array.isArray(data.items)) {
+          products = data.items;
         }
 
-        if (products.length > 0) {
-          this.productsList = products.map((p: any): Product => ({
-            id:        p.id        || crypto.randomUUID(),
-            name:      p.name      || 'Unnamed Product',
-            sku:       p.sku       || 'N/A',
-            category:  p.category  || 'Uncategorized',
-            price:     p.price     ?? 0,
-            stock:     p.stock     ?? 0,
-            dateAdded: p.dateAdded || 'Unknown Date',
-            status:    p.status    || 'Draft',
-            imageUrl:  p.imageUrl  || '',
-          }));
-        } else {
-          this.productsList = this.fallbackProducts;
-        }
-
-        const totalItems     = data.totalItems     ?? this.productsList.length;
-        const activeListings = data.activeListings  ?? this.productsList.filter(p => p.status === 'Active').length;
-        const lowStock       = data.lowStockAlerts  ?? this.productsList.filter(p => p.status === 'Low Stock').length;
-        const inventoryValue = data.inventoryValue  ?? this.productsList.reduce((s, p) => s + p.price * p.stock, 0);
-
-        this.kpis.set([
-          { label: 'Total Items',      value: totalItems.toLocaleString(),         trend: data.totalItemsTrend     || '+0%',          isUp: true,  icon: 'inventory_2', accentClass: 'text-primary'   },
-          { label: 'Active Listings',  value: activeListings.toLocaleString(),     trend: data.activeListingsTrend || 'Stable',       isUp: true,  icon: 'store',       accentClass: 'text-secondary' },
-          { label: 'Low Stock Alerts', value: lowStock.toLocaleString(),           trend: 'Action Req.',                              isUp: false, icon: 'warning',     accentClass: 'text-tertiary'  },
-          { label: 'Inventory Value',  value: '$' + inventoryValue.toLocaleString(), trend: data.inventoryTrend   || '↑ 0%',          isUp: true,  icon: 'payments',    accentClass: 'text-primary'   },
-        ]);
-
-        this.cdr.detectChanges();
+        this.allProducts = products.map((p: any): Product => ({
+          id:        p.id,
+          name:      p.name      || 'Unnamed Product',
+          sku:       p.sku || p.barcode || 'N/A',
+          category:  this.mapProductType(p.productType),
+          price:     p.directSalePrice ?? p.price ?? 0,
+          stock:     p.stockQuantity ?? p.stock ?? 0,
+          dateAdded: p.dateAdded || p.createdOn || new Date().toLocaleDateString(),
+          status:    this.mapStatus(p.status),
+          imageUrl:  p.imageUrl  || (p.images && p.images.length > 0 ? p.images[0] : ''),
+        }));
+        
+        this.filterProducts();
       },
-      error: () => {
-        this.productsList = this.fallbackProducts;
-        const fallbackValue = this.fallbackProducts.reduce((s, p) => s + p.price * p.stock, 0);
-        this.kpis.set([
-          { label: 'Total Items',      value: this.fallbackProducts.length.toString(), trend: '+0%',       isUp: true,  icon: 'inventory_2', accentClass: 'text-primary'   },
-          { label: 'Active Listings',  value: '1',                                    trend: 'Stable',    isUp: true,  icon: 'store',       accentClass: 'text-secondary' },
-          { label: 'Low Stock Alerts', value: '1',                                    trend: 'Action Req.', isUp: false, icon: 'warning',    accentClass: 'text-tertiary'  },
-          { label: 'Inventory Value',  value: '$' + fallbackValue.toLocaleString(),   trend: '↑ 0%',      isUp: true,  icon: 'payments',    accentClass: 'text-primary'   },
-        ]);
-        this.cdr.detectChanges();
-      },
+      error: (err) => {
+        console.error('Error loading products', err);
+        this.allProducts = [];
+        this.filterProducts();
+      }
     });
   }
 
-  // ── Status badge helpers ────────────────────────────────────────────────────
+  mapProductType(type: any): string {
+    if (type === 0 || type === 'RawCrop') return 'Raw Crop';
+    if (type === 1 || type === 'Processed') return 'Processed';
+    if (type === 2 || type === 'Tool') return 'Tool';
+    if (type === 3 || type === 'Chemical') return 'Chemical';
+    return 'Uncategorized';
+  }
+
+  mapStatus(status: any): string {
+    if (status === 1 || status === 'Active') return 'Active';
+    if (status === 0 || status === 'Draft') return 'Draft';
+    if (status === 2 || status === 'OutOfStock') return 'Out of Stock';
+    return 'Active';
+  }
+
+  filterProducts(): void {
+    const term = this.searchTerm().toLowerCase();
+    const filter = this.activeFilter();
+
+    let filtered = [...this.allProducts];
+
+    // Text search
+    if (term) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(term) || 
+        p.sku.toLowerCase().includes(term) ||
+        p.category.toLowerCase().includes(term)
+      );
+    }
+
+    // Category / Status Filter
+    if (filter !== 'All') {
+      filtered = filtered.filter(p => p.status === filter || p.category === filter);
+    }
+
+    this.productsList = filtered;
+    this.updateKpis();
+    this.cdr.detectChanges();
+  }
+
+  toggleFilterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isFilterDropdownOpen.set(!this.isFilterDropdownOpen());
+  }
+
+  setFilter(filter: string): void {
+    this.activeFilter.set(filter);
+    this.isFilterDropdownOpen.set(false);
+    this.filterProducts();
+  }
+
+  onSearchChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm.set(input.value);
+    this.filterProducts();
+  }
+
+  togglePending(): void {
+    this.showPending.set(!this.showPending());
+    this.loadProducts();
+  }
+
+  updateKpis(): void {
+    const totalItems = this.productsList.length;
+    const activeListings = this.productsList.filter(p => p.status === 'Active').length;
+    const lowStock = this.productsList.filter(p => p.stock > 0 && p.stock <= 10).length;
+    const inventoryValue = this.productsList.reduce((sum, p) => sum + (p.price * p.stock), 0);
+
+    this.kpis.set([
+      { label: 'Total Items',      value: totalItems.toLocaleString(),         trend: '+0%',          isUp: true,  icon: 'inventory_2', accentClass: 'text-primary'   },
+      { label: 'Active Listings',  value: activeListings.toLocaleString(),     trend: 'Stable',       isUp: true,  icon: 'store',       accentClass: 'text-secondary' },
+      { label: 'Low Stock Alerts', value: lowStock.toLocaleString(),           trend: lowStock > 0 ? 'Action Req.' : 'Good', isUp: lowStock === 0, icon: 'warning',     accentClass: 'text-tertiary'  },
+      { label: 'Inventory Value',  value: '$' + inventoryValue.toLocaleString(undefined, {minimumFractionDigits: 2}), trend: '↑ 0%',          isUp: true,  icon: 'payments',    accentClass: 'text-primary'   },
+    ]);
+  }
+
+  // ── Modal Logic ──
+  openCreateModal(): void {
+    this.isCreateModalOpen.set(true);
+  }
+
+  closeCreateModal(): void {
+    this.isCreateModalOpen.set(false);
+  }
+
+  submitProduct(event: Event): void {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const orgId = this.orgCtx.getActiveOrgId();
+    if (!orgId) return;
+
+    const formData = new FormData();
+    formData.append('OrganizationId', orgId);
+    formData.append('Name', (form.elements.namedItem('prodName') as HTMLInputElement).value);
+    formData.append('Description', (form.elements.namedItem('prodDesc') as HTMLInputElement).value);
+    formData.append('ProductType', (form.elements.namedItem('prodType') as HTMLSelectElement).value);
+    formData.append('StockQuantity', (form.elements.namedItem('prodStock') as HTMLInputElement).value);
+    
+    const isDirect = (form.elements.namedItem('isDirect') as HTMLInputElement).checked;
+    const isAuction = (form.elements.namedItem('isAuction') as HTMLInputElement).checked;
+    
+    formData.append('IsAvailableForDirectSale', String(isDirect));
+    formData.append('IsAvailableForAuction', String(isAuction));
+    
+    if (isDirect) {
+      formData.append('DirectSalePrice', (form.elements.namedItem('directPrice') as HTMLInputElement).value || '0');
+    }
+    if (isAuction) {
+      formData.append('StartBiddingPrice', (form.elements.namedItem('auctionPrice') as HTMLInputElement).value || '0');
+    }
+
+    const fileInput = form.elements.namedItem('prodImage') as HTMLInputElement;
+    if (fileInput.files && fileInput.files.length > 0) {
+      formData.append('Images', fileInput.files[0]);
+    }
+
+    this.isCreatingProduct.set(true);
+    this.productService.createProduct(formData).subscribe({
+      next: () => {
+        this.isCreatingProduct.set(false);
+        this.closeCreateModal();
+        this.loadProducts();
+      },
+      error: (err) => {
+        this.isCreatingProduct.set(false);
+        console.error(err);
+        alert('Error creating product. Check console.');
+      }
+    });
+  }
+
+  // ── Row Actions ──
+  toggleDropdown(id: string, event: Event): void {
+    event.stopPropagation();
+    if (this.activeDropdownId() === id) {
+      this.activeDropdownId.set(null);
+    } else {
+      this.activeDropdownId.set(id);
+    }
+  }
+
+  deleteProduct(id: string): void {
+    if(confirm('Are you sure you want to delete this product?')) {
+      this.productService.deleteProduct(id).subscribe({
+        next: () => {
+          this.loadProducts();
+        },
+        error: (err) => { console.error(err); alert('Error deleting product'); }
+      });
+    }
+  }
+
+  changeStatus(id: string, newStatus: number): void {
+    this.productService.changeStatus(id, newStatus).subscribe({
+      next: () => this.loadProducts(),
+      error: (err) => { console.error(err); alert('Error changing status'); }
+    });
+  }
+
   getStatusClasses(status: string): string {
     const map: Record<string, string> = {
-      'Active':       'bg-emerald-50 text-emerald-700',
-      'Low Stock':    'bg-amber-50 text-amber-700',
-      'Out of Stock': 'bg-rose-50 text-rose-700',
-      'Draft':        'bg-surface-container-low text-on-surface-variant',
+      'Active':       'm3-status-active',
+      'Low Stock':    'm3-status-warning',
+      'Out of Stock': 'm3-status-error',
+      'Draft':        'm3-status-draft',
     };
-    return map[status] ?? 'bg-surface-container-low text-on-surface-variant';
+    return map[status] ?? 'm3-status-draft';
   }
 
   getDotClasses(status: string): string {
     const map: Record<string, string> = {
-      'Active':       'bg-emerald-600',
-      'Low Stock':    'bg-amber-600',
-      'Out of Stock': 'bg-rose-600',
-      'Draft':        'bg-outline',
+      'Active':       'm3-dot-active',
+      'Low Stock':    'm3-dot-warning',
+      'Out of Stock': 'm3-dot-error',
+      'Draft':        'm3-dot-draft',
     };
-    return map[status] ?? 'bg-outline';
+    return map[status] ?? 'm3-dot-draft';
   }
 }

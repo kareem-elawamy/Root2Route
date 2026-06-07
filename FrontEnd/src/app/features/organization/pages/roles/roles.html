@@ -1,0 +1,164 @@
+<div class="m3-dashboard-container">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────── -->
+  <header class="m3-dashboard-header">
+    <div class="m3-header-text">
+      <h1 class="m3-display-small">Roles & Permissions</h1>
+      <p class="m3-body-large">
+        Create custom roles and manage access levels for your organization.
+      </p>
+    </div>
+    <div class="m3-header-actions">
+      @if (authService.hasPermission('Permissions.Roles.Create')) {
+        <button (click)="openCreateModal()" class="m3-filled-button m3-fab">
+          <span class="material-symbols-outlined m3-icon">add</span>
+          Create New Role
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- ── Roles List ────────────────────────────────────────────────────── -->
+  <div class="m3-card m3-table-card mt-8">
+    <div class="m3-table-toolbar">
+      <h2 class="m3-title-large">Organization Roles</h2>
+    </div>
+
+    <div class="m3-table-container">
+      <table class="m3-data-table">
+        <thead>
+          <tr>
+            <th>Role Name</th>
+            <th>Description</th>
+            <th>Assigned Permissions</th>
+            <th class="m3-table-actions-header"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (role of roles; track role.id) {
+          <tr>
+            <td>
+              <div class="m3-product-info">
+                <p class="m3-product-name">{{ role.name }}</p>
+                @if (role.isSystemDefault) {
+                  <span class="m3-status-chip m3-status-active" style="display: inline-flex; margin-top: 0.25rem;">
+                    System Default
+                  </span>
+                }
+              </div>
+            </td>
+            <td>
+              <p class="m3-product-sku">{{ role.description || 'No description provided' }}</p>
+            </td>
+            <td>
+              <div class="m3-role-permissions-list">
+                @for (perm of role.permissions; track perm) {
+                  <span class="m3-status-chip bg-slate-100 text-slate-700 text-[10px]">
+                    {{ perm.name || perm.permissionName || perm }}
+                  </span>
+                }
+                @if (!role.permissions?.length) {
+                  <span class="text-slate-400 text-xs italic">No permissions assigned</span>
+                }
+              </div>
+            </td>
+            <td class="m3-table-actions">
+              <button class="m3-icon-button m3-row-action" title="Edit Role">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+            </td>
+          </tr>
+          }
+
+          @if (roles.length === 0) {
+          <tr>
+            <td colspan="4">
+              <div class="m3-empty-state">
+                <span class="material-symbols-outlined m3-empty-icon" style="font-variation-settings:'FILL' 0">admin_panel_settings</span>
+                <p class="m3-empty-title">No roles found</p>
+                <p class="m3-empty-desc">Create your first custom role to get started.</p>
+                @if (authService.hasPermission('Permissions.Roles.Create')) {
+                  <button (click)="openCreateModal()" class="m3-outlined-button mt-4">
+                    <span class="material-symbols-outlined m3-icon">add</span>
+                    Create Role
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Create Role Modal ──────────────────────────────────────────────── -->
+@if (isCreateModalOpen) {
+<div class="m3-modal-backdrop">
+  <div class="m3-modal-surface" style="max-width: 800px; width: 90vw;">
+    
+    <div class="m3-modal-header" style="align-items: flex-start;">
+      <div>
+        <h2 class="m3-modal-title">Create Custom Role</h2>
+        <p class="m3-body-medium" style="color: var(--color-outline); margin-top: 0.25rem;">Define a new role and select its permissions.</p>
+      </div>
+      <button class="m3-icon-button" (click)="closeCreateModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="m3-modal-body" style="overflow-y: auto; max-height: 60vh; padding: 1.5rem;">
+      
+      <!-- Role Details -->
+      <div class="m3-form-row">
+        <div class="m3-form-group flex-1">
+          <label class="m3-form-label">Role Name *</label>
+          <input type="text" [(ngModel)]="newRole.name" placeholder="e.g. Sales Manager" class="m3-form-input">
+        </div>
+        <div class="m3-form-group flex-1">
+          <label class="m3-form-label">Description</label>
+          <input type="text" [(ngModel)]="newRole.description" placeholder="Brief description" class="m3-form-input">
+        </div>
+      </div>
+
+      <div class="m3-divider" style="margin: 1.5rem 0;"></div>
+
+      <!-- Permissions Selection -->
+      <h3 class="m3-title-medium mb-4" style="font-weight: bold; color: var(--color-on-surface);">Select Permissions</h3>
+      
+      @if (systemPermissions.length === 0) {
+        <div class="p-4 rounded-xl text-center" style="background: var(--color-surface-container-high);">
+          <p class="text-sm" style="color: var(--color-outline);">Loading permissions...</p>
+        </div>
+      } @else {
+        <div class="m3-permissions-grid">
+          @for (perm of systemPermissions; track perm) {
+            <label class="m3-permission-item" [class.selected]="hasPermission(perm)">
+              <input type="checkbox" class="m3-permission-checkbox"
+                [checked]="hasPermission(perm)"
+                (change)="togglePermission(perm)">
+              <span class="m3-permission-text">{{ perm }}</span>
+            </label>
+          }
+        </div>
+      }
+
+    </div>
+
+    <div class="m3-modal-footer">
+      <button class="m3-text-button" (click)="closeCreateModal()">Cancel</button>
+      <button class="m3-filled-button" (click)="createRole()" [disabled]="!newRole.name || isCreating">
+        @if (isCreating) {
+          <span class="material-symbols-outlined animate-spin m3-icon">progress_activity</span>
+          Saving...
+        } @else {
+          Save Role
+        }
+      </button>
+    </div>
+
+  </div>
+</div>
+}

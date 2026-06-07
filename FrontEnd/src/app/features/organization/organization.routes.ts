@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { OverviewComponent } from './pages/overview-component/overview-component';
 import { ProductsComponent } from './pages/products-component/products-component';
+import { permissionGuard } from '../../core/guards/permission.guard';
 
 export const organizationRoutes: Routes = [
   {
@@ -30,8 +31,15 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'members',
+    canActivate: [permissionGuard('Permissions.Members.View')],
     loadComponent: () =>
       import('./pages/members/members').then((m) => m.MembersComponent),
+  },
+  {
+    path: 'roles',
+    canActivate: [permissionGuard('Permissions.Roles.View')],
+    loadComponent: () =>
+      import('./pages/roles/roles').then((m) => m.RolesComponent),
   },
   {
     path: 'chat',

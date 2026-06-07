@@ -3,4 +3,5 @@ export interface AuthUser {
   email: string;
   name: string;
   permissions: string[];
+  roles?: string[];
 }

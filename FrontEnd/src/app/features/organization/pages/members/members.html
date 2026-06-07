@@ -1,169 +1,182 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="m3-dashboard-container">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
-    <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Team & Roles</h2>
-      <p class="text-sm text-slate-500">Manage your organization's members and invitations.</p>
+  <!-- ── Page Header ──────────────────────────────────────────────────── -->
+  <header class="m3-dashboard-header">
+    <div class="m3-header-text">
+      <h1 class="m3-display-small">Team & Roles</h1>
+      <p class="m3-body-large">
+        Manage your organization's members, roles, and pending invitations.
+      </p>
     </div>
-    <div class="flex gap-3">
-      <!-- Tab Switcher -->
-      <div class="inline-flex rounded-xl border border-slate-200 p-1 bg-white">
-        <button (click)="setTab('members')"
-          [class.bg-slate-900]="activeTab() === 'members'"
-          [class.text-white]="activeTab() === 'members'"
-          [class.bg-white]="activeTab() !== 'members'"
-          [class.text-slate-600]="activeTab() !== 'members'"
-          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
+    <div class="m3-header-actions">
+      <!-- M3 Segmented Button -->
+      <div class="m3-segmented-button">
+        <button class="m3-segment" [class.active]="activeTab() === 'members'" (click)="setTab('members')">
           Members
         </button>
-        <button (click)="setTab('invitations')"
-          [class.bg-slate-900]="activeTab() === 'invitations'"
-          [class.text-white]="activeTab() === 'invitations'"
-          [class.bg-white]="activeTab() !== 'invitations'"
-          [class.text-slate-600]="activeTab() !== 'invitations'"
-          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
-          Invitations
-        </button>
+        @if (authService.hasPermission('Permissions.Members.Invite')) {
+          <button class="m3-segment" [class.active]="activeTab() === 'invitations'" (click)="setTab('invitations')">
+            Invitations
+          </button>
+        }
       </div>
     </div>
-  </div>
+  </header>
 
   @if (activeTab() === 'members') {
-    <!-- Members Tab -->
-    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+    <!-- ── Members Table ─────────────────────────────────────────────────── -->
+    <div class="m3-card m3-table-card">
+      <div class="m3-table-toolbar">
+        <h2 class="m3-title-large">Active Members</h2>
+      </div>
+
+      <div class="m3-table-container">
+        <table class="m3-data-table">
+          <thead>
             <tr>
-              <th class="px-8 py-5">User</th>
-              <th class="px-8 py-5">Role</th>
-              <th class="px-8 py-5">Joined At</th>
-              <th class="px-8 py-5 text-right">Actions</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Joined At</th>
+              <th class="m3-table-actions-header"></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody>
             @for (member of members; track member.id) {
-            <tr class="hover:bg-slate-50 transition-colors group">
-              <td class="px-8 py-5">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+            <tr>
+              <td>
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background: var(--color-primary);">
                     {{ member.userName?.charAt(0) || 'U' }}
                   </div>
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-slate-700">{{ member.userName || 'Unknown' }}</span>
-                    <span class="text-[11px] text-slate-500">{{ member.userEmail || 'N/A' }}</span>
+                  <div class="m3-product-info">
+                    <p class="m3-product-name">{{ member.userName || 'Unknown' }}</p>
+                    <p class="m3-product-sku">{{ member.userEmail || 'N/A' }}</p>
                   </div>
                 </div>
               </td>
-              <td class="px-8 py-5">
-                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-700">
+              <td>
+                <div class="m3-status-chip bg-slate-100 text-slate-700">
                   {{ member.roleName || 'Member' }}
-                </span>
+                </div>
               </td>
-              <td class="px-8 py-5">
-                <span class="text-sm text-slate-600">{{ member.joinedAt | date:'mediumDate' }}</span>
-              </td>
-              <td class="px-8 py-5 text-right">
-                <button (click)="removeMember(member.id)"
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
-                  <span class="material-symbols-outlined text-[18px]">person_remove</span>
-                </button>
+              <td class="m3-date-cell">{{ member.joinedAt | date:'mediumDate' }}</td>
+              <td class="m3-table-actions">
+                @if (authService.hasPermission('Permissions.Members.Remove')) {
+                  <button class="m3-icon-button m3-text-error m3-row-action" title="Remove Member" (click)="removeMember(member.id)">
+                    <span class="material-symbols-outlined">person_remove</span>
+                  </button>
+                }
               </td>
             </tr>
             }
+
             @if (members.length === 0) {
-              <tr>
-                <td colspan="4" class="py-16 text-center">
-                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">group</span>
-                  <p class="text-slate-500 font-medium">No members found.</p>
-                </td>
-              </tr>
+            <tr>
+              <td colspan="4">
+                <div class="m3-empty-state">
+                  <span class="material-symbols-outlined m3-empty-icon" style="font-variation-settings:'FILL' 0">group</span>
+                  <p class="m3-empty-title">No members found</p>
+                  <p class="m3-empty-desc">Your organization has no active members yet.</p>
+                </div>
+              </td>
+            </tr>
             }
           </tbody>
         </table>
       </div>
     </div>
   } @else {
-    <!-- Invitations Tab -->
+    <!-- ── Invitations Tab ───────────────────────────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
       <!-- Invite Form -->
-      <div class="lg:col-span-1 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 h-fit">
-        <h3 class="text-xl font-bold text-slate-800 mb-4">Invite Member</h3>
-        <div class="space-y-4">
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Email Address</label>
-            <input type="email" [(ngModel)]="newInvite.email" placeholder="user@example.com"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
+      <div class="lg:col-span-1 m3-card" style="height: fit-content; padding: 2rem;">
+        <h3 class="m3-title-large mb-6">Invite Member</h3>
+        <div class="m3-invite-form">
+          <div class="m3-form-group">
+            <label class="m3-form-label">Email Address *</label>
+            <input type="email" [(ngModel)]="newInvite.email" placeholder="user@example.com" class="m3-form-input">
           </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Role (Optional)</label>
-            <input type="text" [(ngModel)]="newInvite.roleId" placeholder="Role ID"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
+          <div class="m3-form-group">
+            <label class="m3-form-label">Role *</label>
+            <select [(ngModel)]="newInvite.roleId" required class="m3-form-input">
+              <option value="">Select a role...</option>
+              @for (role of roles; track role.id) {
+                <option [value]="role.id">{{ role.name }}</option>
+              }
+            </select>
           </div>
-          <button (click)="sendInvite()"
-            [disabled]="!newInvite.email"
-            class="w-full py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all disabled:bg-slate-300 disabled:shadow-none">
+          <div class="m3-form-group">
+            <label class="m3-form-label">Expiry Date *</label>
+            <input type="date" [(ngModel)]="newInvite.expiryDate" required class="m3-form-input">
+          </div>
+          <button (click)="sendInvite()" [disabled]="!newInvite.email || !newInvite.roleId" class="m3-filled-button" style="width: 100%; justify-content: center; margin-top: 1rem;">
             Send Invitation
           </button>
         </div>
       </div>
 
       <!-- Invitations List -->
-      <div class="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+      <div class="lg:col-span-2 m3-card m3-table-card">
+        <div class="m3-table-toolbar">
+          <h2 class="m3-title-large">Pending & Sent Invitations</h2>
+        </div>
+
+        <div class="m3-table-container">
+          <table class="m3-data-table">
+            <thead>
               <tr>
-                <th class="px-8 py-5">Invitee</th>
-                <th class="px-8 py-5">Status</th>
-                <th class="px-8 py-5">Date</th>
-                <th class="px-8 py-5 text-right">Actions</th>
+                <th>Invitee</th>
+                <th>Status</th>
+                <th>Sent Date</th>
+                <th class="m3-table-actions-header"></th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody>
               @for (invite of invitations; track invite.id) {
-              <tr class="hover:bg-slate-50 transition-colors group">
-                <td class="px-8 py-5">
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-slate-700">{{ invite.inviteeEmail }}</span>
+              <tr>
+                <td>
+                  <p class="m3-product-name">{{ invite.inviteeEmail }}</p>
+                </td>
+                <td>
+                  <div class="m3-status-chip"
+                    [class.m3-status-warning]="invite.status === 'Pending'"
+                    [class.m3-status-active]="invite.status === 'Accepted'"
+                    [class.m3-status-error]="invite.status === 'Expired' || invite.status === 'Revoked'">
+                    <span class="m3-status-dot"
+                      [class.m3-dot-warning]="invite.status === 'Pending'"
+                      [class.m3-dot-active]="invite.status === 'Accepted'"
+                      [class.m3-dot-error]="invite.status === 'Expired' || invite.status === 'Revoked'"></span>
+                    {{ invite.status }}
                   </div>
                 </td>
-                <td class="px-8 py-5">
-                  <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
-                    [class.bg-amber-100]="invite.status === 'Pending'"
-                    [class.text-amber-700]="invite.status === 'Pending'"
-                    [class.bg-emerald-100]="invite.status === 'Accepted'"
-                    [class.text-emerald-700]="invite.status === 'Accepted'"
-                    [class.bg-rose-100]="invite.status === 'Expired' || invite.status === 'Revoked'"
-                    [class.text-rose-700]="invite.status === 'Expired' || invite.status === 'Revoked'">
-                    {{ invite.status }}
-                  </span>
-                </td>
-                <td class="px-8 py-5">
-                  <span class="text-sm text-slate-600">{{ invite.createdAt | date:'mediumDate' }}</span>
-                </td>
-                <td class="px-8 py-5 text-right">
+                <td class="m3-date-cell">{{ invite.createdAt | date:'mediumDate' }}</td>
+                <td class="m3-table-actions">
                   @if (invite.status === 'Pending') {
-                    <button (click)="revokeInvitation(invite.id)"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
-                      <span class="material-symbols-outlined text-[18px]">cancel</span>
+                    <button class="m3-icon-button m3-text-error m3-row-action" title="Revoke Invite" (click)="revokeInvitation(invite.id)">
+                      <span class="material-symbols-outlined">cancel</span>
                     </button>
                   }
                 </td>
               </tr>
               }
+
               @if (invitations.length === 0) {
-                <tr>
-                  <td colspan="4" class="py-16 text-center">
-                    <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">mail</span>
-                    <p class="text-slate-500 font-medium">No invitations found.</p>
-                  </td>
-                </tr>
+              <tr>
+                <td colspan="4">
+                  <div class="m3-empty-state" style="padding: 3rem 1rem;">
+                    <span class="material-symbols-outlined m3-empty-icon" style="font-variation-settings:'FILL' 0">mail</span>
+                    <p class="m3-empty-title">No invitations found</p>
+                    <p class="m3-empty-desc">You haven't sent out any invitations yet.</p>
+                  </div>
+                </td>
+              </tr>
               }
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
   }
 

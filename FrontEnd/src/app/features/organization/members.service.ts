@@ -10,6 +10,19 @@ export class MembersService {
   
   private membersUrl = 'https://root2route.runasp.net/api/v1/organization-members';
   private invitationsUrl = 'https://root2route.runasp.net/api/v1/organization-invitations';
+  private rolesUrl = 'https://root2route.runasp.net/api/v1/organization-roles';
+
+  getOrganizationRoles(organizationId: string): Observable<any> {
+    return this.http.get(`${this.rolesUrl}/by-organization/${organizationId}`);
+  }
+
+  getSystemPermissions(): Observable<any> {
+    return this.http.get(`${this.rolesUrl}/system-permissions`);
+  }
+
+  createOrganizationRole(command: any): Observable<any> {
+    return this.http.post(`${this.rolesUrl}/create`, command);
+  }
 
   getMembers(organizationId: string): Observable<any> {
     return this.http.get(`${this.membersUrl}/by-organization/${organizationId}`);
@@ -30,5 +43,14 @@ export class MembersService {
 
   revokeInvitation(invitationId: string): Observable<any> {
     return this.http.post(`${this.invitationsUrl}/revoke`, { InvitationId: invitationId });
+  }
+
+  getMyInvitations(): Observable<any> {
+    return this.http.get(`${this.invitationsUrl}/my`);
+  }
+
+  acceptInvitation(invitationId: string, token: string): Observable<any> {
+    const body = { invitationId };
+    return this.http.post(`${this.invitationsUrl}/accept?token=${encodeURIComponent(token)}`, body);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, effect, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../order.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
@@ -16,6 +16,10 @@ export class OrdersComponent implements OnInit {
 
   readonly activeOrg = this.orgCtx.activeOrg;
   orders: any[] = [];
+  allOrders: any[] = [];
+  
+  activeFilter = signal('All');
+  isFilterDropdownOpen = signal(false);
   
   stats = {
     total: 0,
@@ -38,25 +42,32 @@ export class OrdersComponent implements OnInit {
     // effect will handle the loading
   }
 
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.isFilterDropdownOpen.set(false);
+  }
+
   loadOrders(orgId: string) {
     this.orderService.getReceivedOrders(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response.items || response || [];
         const items = Array.isArray(data) ? data : [];
 
-        this.orders = items.map((order: any) => {
+        const mappedItems = items.map((order: any) => {
           return {
             ...order,
             statusClass: this.getStatusClass(order.status)
           };
         });
 
+        this.allOrders = mappedItems;
+
         this.stats.total = items.length;
         this.stats.pending = items.filter((o: any) => o.status === 'Pending' || o.status === 'Processing').length;
         this.stats.completed = items.filter((o: any) => o.status === 'Completed' || o.status === 'Shipped').length;
         this.stats.cancelled = items.filter((o: any) => o.status === 'Cancelled').length;
 
-        this.cdr.detectChanges();
+        this.filterOrders();
       },
       error: (error: any) => {
         console.error('Error fetching orders', error);
@@ -73,5 +84,56 @@ export class OrdersComponent implements OnInit {
       'Cancelled': 'bg-rose-100 text-rose-700'
     };
     return map[status] ?? 'bg-slate-100 text-slate-700';
+  }
+
+  toggleFilterDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isFilterDropdownOpen.set(!this.isFilterDropdownOpen());
+  }
+
+  setFilter(filter: string): void {
+    this.activeFilter.set(filter);
+    this.isFilterDropdownOpen.set(false);
+    this.filterOrders();
+  }
+
+  filterOrders(): void {
+    const filter = this.activeFilter();
+    if (filter === 'All') {
+      this.orders = [...this.allOrders];
+    } else {
+      this.orders = this.allOrders.filter(o => o.status === filter);
+    }
+    this.cdr.detectChanges();
+  }
+
+  exportOrders(): void {
+    if (this.orders.length === 0) {
+      alert("No orders to export.");
+      return;
+    }
+
+    const headers = ['Order ID', 'Date', 'Receiver', 'Total', 'Status'];
+    const rows = this.orders.map(order => [
+      order.id,
+      order.orderDate,
+      order.receiverName || 'N/A',
+      order.finalTotal || order.totalAmount,
+      order.status
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'orders_export.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

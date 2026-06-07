@@ -2,29 +2,40 @@ import { Component, OnInit, inject, ChangeDetectorRef, effect, signal } from '@a
 import { CommonModule } from '@angular/common';
 import { MembersService } from '../../members.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-members',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './members.html'
+  templateUrl: './members.html',
+  styleUrl: './members.css'
 })
 export class MembersComponent implements OnInit {
   private membersService = inject(MembersService);
   private orgCtx = inject(OrgContextService);
   private cdr = inject(ChangeDetectorRef);
+  public authService = inject(AuthService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
   members: any[] = [];
   invitations: any[] = [];
+  roles: any[] = [];
   
   activeTab = signal<'members' | 'invitations'>('members');
   
   newInvite = {
     email: '',
-    roleId: ''
+    roleId: '',
+    expiryDate: this.getDefaultExpiryDate()
   };
+
+  getDefaultExpiryDate(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  }
 
   constructor() {
     effect(() => {
@@ -41,6 +52,20 @@ export class MembersComponent implements OnInit {
   loadData(orgId: string) {
     this.loadMembers(orgId);
     this.loadInvitations(orgId);
+    this.loadRoles(orgId);
+  }
+
+  loadRoles(orgId: string) {
+    this.membersService.getOrganizationRoles(orgId).subscribe({
+      next: (response: any) => {
+        const data = response.data || response || [];
+        this.roles = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
+      error: (error: any) => {
+        console.error('Error fetching roles', error);
+      }
+    });
   }
 
   loadMembers(orgId: string) {
@@ -72,11 +97,16 @@ export class MembersComponent implements OnInit {
   sendInvite() {
     const org = this.activeOrg();
     if (!org || !org.id) return;
+    if (!this.newInvite.roleId) {
+      alert('Please select a role.');
+      return;
+    }
 
     const command = {
       email: this.newInvite.email,
       organizationId: org.id,
-      roleId: this.newInvite.roleId || undefined
+      roleId: this.newInvite.roleId,
+      expiryDate: new Date(this.newInvite.expiryDate).toISOString()
     };
 
     this.membersService.sendInvitation(command).subscribe({
@@ -84,6 +114,7 @@ export class MembersComponent implements OnInit {
         alert('Invitation sent successfully!');
         this.newInvite.email = '';
         this.newInvite.roleId = '';
+        this.newInvite.expiryDate = this.getDefaultExpiryDate();
         this.loadInvitations(org.id);
       },
       error: (error: any) => {

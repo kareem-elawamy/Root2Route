@@ -34,6 +34,8 @@ export class OverviewComponent implements OnInit {
 
   recentOrders = signal<any[]>([]);
   liveBids = signal<any[]>([]);
+  showChartOptions = signal(false);
+  activeTimeframe = signal(6); // default to 6 months
 
   constructor() {
     effect(() => {
@@ -92,6 +94,21 @@ export class OverviewComponent implements OnInit {
         console.error('Error fetching live bids', err);
       }
     });
+
+    this.loadChartData(orgId, this.activeTimeframe());
+  }
+
+  loadChartData(orgId: string, months: number) {
+    this.dashboardService.getActivityChart(orgId, months).subscribe({
+      next: (response: any) => {
+        const data = response?.data || response || [];
+        if (Array.isArray(data) && data.length > 0) {
+           this.chartData.set(data);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error fetching chart', err)
+    });
   }
 
   getStatusLabel(status: number): string {
@@ -108,5 +125,51 @@ export class OverviewComponent implements OnInit {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  actionPlaceholder(actionName: string): void {
+    alert(`Feature '${actionName}' is coming soon!`);
+  }
+
+  toggleChartOptions(): void {
+    this.showChartOptions.update(v => !v);
+  }
+
+  setFilter(days: number): void {
+    const org = this.activeOrg();
+    if (org?.id) {
+      this.activeTimeframe.set(days === 30 ? 1 : 6);
+      this.loadChartData(org.id, this.activeTimeframe());
+    }
+    this.actionPlaceholder(`Filter set to last ${days} days`);
+  }
+
+  exportReport(): void {
+    const orders = this.recentOrders();
+    if (!orders || orders.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+    
+    // Create CSV content
+    const headers = ["Order ID", "Product", "Amount", "Status"];
+    const rows = orders.map(o => [
+      o.orderId,
+      `"${o.buyerName}"`,
+      o.totalAmount,
+      this.getStatusLabel(o.status)
+    ]);
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      
+    // Download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `organization_report_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

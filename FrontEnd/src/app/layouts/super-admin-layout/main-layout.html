@@ -1,79 +1,65 @@
-<div class="text-on-background flex bg-surface min-h-screen">
-
-  <aside class="fixed left-0 top-0 h-full flex flex-col p-6 z-40 w-72 border-r-0 bg-emerald-50/50 backdrop-blur-xl">
-    <div class="mb-10">
-      <span class="text-2xl font-bold text-emerald-800 tracking-tighter">Root2Route</span>
-      <p class="text-xs font-manrope font-semibold tracking-tight uppercase text-emerald-700/50 mt-1">Super Admin</p>
+<div class="app-layout">
+  <aside class="app-sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-title">Root2Route</span>
+      <p class="brand-subtitle">Super Admin</p>
     </div>
 
-    <nav class="flex flex-col gap-2 flex-grow">
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/dashboard" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/super-admin/dashboard" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-        <span class="text-sm font-medium">Dashboard</span>
+        <span class="nav-label">Dashboard</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/organizations" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/organizations" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
-        <span class="text-sm font-medium">Organizations</span>
+        <span class="nav-label">Organizations</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/auctions" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/auctions" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="gavel">gavel</span>
-        <span class="text-sm font-medium">Auctions</span>
+        <span class="nav-label">Auctions</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/products" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/products" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-        <span class="text-sm font-medium">Products</span>
+        <span class="nav-label">Products</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/ai-lab" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/ai-lab" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="science">science</span>
-        <span class="text-sm font-medium">AI Models</span>
+        <span class="nav-label">AI Models</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/reports" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/reports" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="description">description</span>
-        <span class="text-sm font-medium">Reports</span>
+        <span class="nav-label">Reports</span>
       </a>
-
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:text-emerald-600 hover:bg-slate-200/50"
-        routerLink="/super-admin/settings" routerLinkActive="!bg-white !text-emerald-700 shadow-sm font-bold">
+      <a class="nav-item" routerLink="/super-admin/settings" routerLinkActive="active">
         <span class="material-symbols-outlined" data-icon="settings">settings</span>
-        <span class="text-sm font-medium">Settings</span>
+        <span class="nav-label">Settings</span>
       </a>
-
     </nav>
 
-    <div class="mt-auto pt-6 border-t border-emerald-100/30 flex items-center gap-3">
-      <img alt="User" class="w-10 h-10 rounded-full bg-emerald-100"
-        src="https://ui-avatars.com/api/?name=Admin&background=10b981&color=fff" />
-      <div>
-        <p class="text-sm font-bold text-on-surface">Admin User</p>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <img alt="User" src="https://ui-avatars.com/api/?name=Admin&background=006c49&color=fff" />
+        <span class="user-name">Admin User</span>
       </div>
-      <button (click)="logout()" class="ml-auto text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all"
-        title="Logout">
+      <button (click)="logout()" class="logout-btn" title="Logout">
         <span class="material-symbols-outlined" data-icon="logout">logout</span>
       </button>
     </div>
   </aside>
 
-  <main class="ml-72 flex-grow min-h-screen relative">
-    <header class="sticky top-0 right-0 flex items-center justify-between px-10 py-4 z-30 bg-white/80 backdrop-blur-md">
-      <div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-full w-96">
-        <span class="material-symbols-outlined text-slate-400">search</span>
-        <input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-slate-400"
-          placeholder="Search..." type="text" />
+  <main class="app-main">
+    <header class="app-header">
+      <div class="search-bar">
+        <span class="material-symbols-outlined">search</span>
+        <input placeholder="Search global registry..." type="text" />
+      </div>
+      <div class="header-actions">
+        <!-- Optional icons like notifications can go here -->
       </div>
     </header>
 
-    <router-outlet></router-outlet>
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </div>
