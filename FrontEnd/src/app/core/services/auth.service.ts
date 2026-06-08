@@ -76,9 +76,11 @@ export class AuthService {
 
     const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
     const identityRoles = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
-    
-    // If user is Owner, they might need all permissions or we can add a bypass later
-    // but at least let's capture permissions correctly
+
+    if (claims.organizationRole) {
+      identityRoles.push(claims.organizationRole);
+    }
+
     const user: AuthUser = {
       id: claims.sub ?? '',
       email: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? '',
@@ -96,6 +98,35 @@ export class AuthService {
     this._token.set(data.accessToken);
     this._refreshToken.set(data.refreshToken);
     this._currentUser.set(user);
+  }
+
+  refreshToken(orgId?: string): Observable<ResponseData<LoginResponse>> {
+    return new Observable((observer) => {
+      fetch(this._url + 'refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: this._token(),
+          refreshToken: this._refreshToken(),
+          organizationId: orgId
+        }),
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Refresh token failed');
+          }
+          return body as ResponseData<LoginResponse>;
+        })
+        .then((response) => {
+          this.setSession(response.data);
+          observer.next(response);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
   }
 
   clearSession(): void {
@@ -120,34 +151,44 @@ export class AuthService {
   private navigateAfterLogin(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
 
-    // بنجيب الرول سواء مبعوث صريح أو بالاسم الطويل بتاع .NET
     const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
     const identityRoles = Array.isArray(rawRole)
       ? rawRole
       : rawRole
-      ? [rawRole]
-      : [];
+        ? [rawRole]
+        : [];
 
-    // 1. SuperAdmin role → go to admin-dashboard
     if (identityRoles.includes('SuperAdmin')) {
       this.router.navigate(['/admin-dashboard']);
       return;
     }
 
-    // 2. Check via API if user owns any organization → go to company-dashboard
     this.orgContext.myOrganization().subscribe({
       next: (response: any) => {
-        // بنقرأ الـ data من الـ Result Wrapper
         const orgs = response?.data || response;
         if (orgs && orgs.length > 0) {
-          this.router.navigate(['/company-dashboard']);
+          const firstOrgId = orgs[0].id;
+          // Refresh token so the new token gets 'organizationRole' and 'permissions'
+          this.refreshToken(firstOrgId).subscribe({
+            next: () => {
+              // After successful refresh, roles will be updated. Now we can navigate safely.
+              this.router.navigate(['/company-dashboard/overview']);
+            },
+            error: (err) => {
+              console.error('Failed to refresh token for org:', err);
+              alert('Refresh Token Failed: ' + err.message);
+              this.router.navigate(['/unauthorized']);
+            }
+          });
         } else {
-          // 3. No org → go to user dashboard (invitations)
-          this.router.navigate(['/user/invitations']);
+          // If the user has no organizations, they can't access company-dashboard
+          this.router.navigate(['/company-dashboard/overview']);
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to load orgs during login:', err);
+        alert('Load Orgs Failed: ' + err.message);
         this.router.navigate(['/unauthorized']);
       },
     });
@@ -176,12 +217,12 @@ export class AuthService {
 
     const claims = this.decodeToken(token);
     const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-    
+
     const identityRoles = Array.isArray(rawRole)
       ? rawRole
       : rawRole
-      ? [rawRole]
-      : [];
+        ? [rawRole]
+        : [];
     return identityRoles.includes('SuperAdmin');
   }
 

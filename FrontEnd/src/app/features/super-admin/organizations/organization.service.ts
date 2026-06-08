@@ -26,4 +26,9 @@ export class OrganizationService {
   createOrganization(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}`, data);
   }
+
+  // Update an existing organization
+  updateOrganization(data: FormData): Observable<any> {
+    return this.http.put(`${this.baseUrl}`, data);
+  }
 }

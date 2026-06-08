@@ -34,6 +34,11 @@ export class ProductService {
     return this.http.post(`${this.baseUrl}/Add`, formData);
   }
 
+  updateProduct(command: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.baseUrl}/Update`, command, { headers });
+  }
+
   changeStatus(productId: string, newStatus: number): Observable<any> {
     const body = {
       productId: productId,

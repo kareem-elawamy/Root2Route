@@ -85,8 +85,19 @@ export class OrgLayoutComponent implements OnInit {
   }
 
   switchOrg(orgId: string): void {
-    this.orgCtx.switchOrganization(orgId);
-    this.dropdownOpen.set(false);
+    this.auth.refreshToken(orgId).subscribe({
+      next: () => {
+        this.orgCtx.switchOrganization(orgId);
+        this.dropdownOpen.set(false);
+        this.router.navigate(['/company-dashboard/overview']);
+      },
+      error: (err) => {
+        console.error('Failed to switch organization context', err);
+        this.orgCtx.switchOrganization(orgId);
+        this.dropdownOpen.set(false);
+        this.router.navigate(['/company-dashboard/overview']);
+      }
+    });
   }
 
   /** First letter of org name for avatar fallback */

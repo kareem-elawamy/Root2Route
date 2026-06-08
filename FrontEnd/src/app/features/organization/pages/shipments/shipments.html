@@ -1,76 +1,165 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="apple-dashboard">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
-    <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Shipping Addresses</h2>
-      <p class="text-sm text-slate-500">Manage your saved shipping addresses.</p>
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Shipments</h1>
+        <button class="icon-btn help-btn" (click)="toggleShipmentsHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeShipmentsHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Shipments Guide</h4>
+            <button class="icon-btn" (click)="closeShipmentsHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Tracking:</strong> Monitor your organization's physical product deliveries.</p>
+            <p style="margin-top: 8px;"><strong>Dispatch:</strong> Assign tracking numbers and carriers to Pending orders to transition them to In Transit.</p>
+            <p style="margin-top: 8px;"><strong>Status:</strong> Mark shipments as Delivered once confirmed by the customer.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">Manage and track your organization's shipments.</p>
     </div>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Add Address Form -->
-    <div class="lg:col-span-1 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 h-fit">
-      <h3 class="text-xl font-bold text-slate-800 mb-4">Add New Address</h3>
-      <div class="space-y-4">
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Street</label>
-          <input type="text" [(ngModel)]="newAddress.street" placeholder="123 Main St"
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">City</label>
-          <input type="text" [(ngModel)]="newAddress.city" placeholder="City"
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">State</label>
-          <input type="text" [(ngModel)]="newAddress.state" placeholder="State"
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Country</label>
-          <input type="text" [(ngModel)]="newAddress.country" placeholder="Country"
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Zip Code</label>
-          <input type="text" [(ngModel)]="newAddress.zipCode" placeholder="Zip Code"
-            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-        </div>
-        <button (click)="addAddress()"
-          [disabled]="!newAddress.street || !newAddress.city || !newAddress.country"
-          class="w-full py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all disabled:bg-slate-300 disabled:shadow-none">
-          Save Address
+    
+    <div class="header-actions">
+      <!-- Tabs for Filtering -->
+      <div class="apple-card" style="padding: 4px; display: flex; align-items: center; gap: 4px; background: #f1f5f9; border-radius: 12px; margin: 0;">
+        <button [class.active]="activeTab() === 'Pending'" (click)="setTab('Pending')"
+          style="padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;"
+          [style.background]="activeTab() === 'Pending' ? '#ffffff' : 'transparent'"
+          [style.boxShadow]="activeTab() === 'Pending' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+          [style.color]="activeTab() === 'Pending' ? '#1d1d1f' : '#64748b'">
+          Pending ({{ stats.pending }})
+        </button>
+        <button [class.active]="activeTab() === 'In Transit'" (click)="setTab('In Transit')"
+          style="padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;"
+          [style.background]="activeTab() === 'In Transit' ? '#ffffff' : 'transparent'"
+          [style.boxShadow]="activeTab() === 'In Transit' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+          [style.color]="activeTab() === 'In Transit' ? '#1d1d1f' : '#64748b'">
+          In Transit ({{ stats.inTransit }})
+        </button>
+        <button [class.active]="activeTab() === 'Delivered'" (click)="setTab('Delivered')"
+          style="padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;"
+          [style.background]="activeTab() === 'Delivered' ? '#ffffff' : 'transparent'"
+          [style.boxShadow]="activeTab() === 'Delivered' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+          [style.color]="activeTab() === 'Delivered' ? '#1d1d1f' : '#64748b'">
+          Delivered ({{ stats.delivered }})
         </button>
       </div>
     </div>
+  </header>
 
-    <!-- Addresses List -->
-    <div class="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-      <div class="p-6 border-b border-slate-100">
-        <h3 class="text-lg font-bold text-slate-800">Saved Addresses</h3>
+  <!-- ── Shipments List ── -->
+  <div class="apple-card table-card mt-4">
+    <div class="table-toolbar">
+      <h2 class="table-title">{{ activeTab() }} Shipments</h2>
+    </div>
+
+    @if (filteredShipments.length > 0) {
+      <div class="table-container">
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Customer Info</th>
+              <th>Shipping Details</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (shipment of filteredShipments; track shipment.id) {
+              <tr>
+                <td class="font-medium text-slate-900" style="font-family: monospace;">#{{ shipment.id.substring(0, 8) }}</td>
+                <td>{{ shipment.orderDate | date:'mediumDate' }}</td>
+                <td>
+                  <p style="margin: 0; font-weight: 600;">{{ shipment.receiverName || 'N/A' }}</p>
+                  <p style="margin: 0; font-size: 12px; color: #64748b;">{{ shipment.receiverPhone || 'No phone' }}</p>
+                  <p style="margin: 0; font-size: 12px; color: #64748b;">{{ shipment.shippingCity }}, {{ shipment.shippingStreet }}</p>
+                </td>
+                <td>
+                  @if (shipment.status === 'Processing') {
+                    <span style="display: inline-block; padding: 4px 10px; background: #fffbeb; color: #d97706; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                      Awaiting Dispatch
+                    </span>
+                  } @else {
+                    <p style="margin: 0; font-weight: 600;">Carrier: {{ shipment.carrierName || 'Unknown' }}</p>
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">Track: {{ shipment.trackingNumber || 'N/A' }}</p>
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">Driver: {{ shipment.driverPhone || 'N/A' }}</p>
+                  }
+                </td>
+                <td style="text-align: right;">
+                  @if (shipment.status === 'Processing') {
+                    <button class="apple-btn-filled" (click)="openDispatchModal(shipment.id)">Dispatch Order</button>
+                  }
+                  @if (shipment.status === 'Shipped') {
+                    <button class="apple-btn-outline" (click)="markAsDelivered(shipment.shipmentId)">Mark Delivered</button>
+                  }
+                  @if (shipment.status === 'Completed') {
+                    <span style="color: #059669; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span> Delivered
+                    </span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
-      
-      <div class="divide-y divide-slate-100">
-        @for (addr of addresses; track addr.id) {
-          <div class="p-6 hover:bg-slate-50 transition-colors flex justify-between items-center">
-            <div>
-              <p class="text-sm font-bold text-slate-800">{{ addr.street }}</p>
-              <p class="text-xs text-slate-500">{{ addr.city }}, {{ addr.state }} {{ addr.zipCode }}</p>
-              <p class="text-xs text-slate-500">{{ addr.country }}</p>
-            </div>
-            <span class="material-symbols-outlined text-slate-400">location_on</span>
-          </div>
-        }
+    } @else {
+      <div class="empty-state">
+        <div class="empty-icon-wrapper" style="background: rgba(59, 130, 246, 0.1);">
+          <span class="material-symbols-outlined empty-icon" style="color: #3b82f6;">local_shipping</span>
+        </div>
+        <p class="empty-title">No {{ activeTab().toLowerCase() }} shipments found.</p>
+        <p class="empty-desc">Check back later or change the filter tab.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Dispatch Modal Overlay -->
+  @if (isDispatchModalOpen) {
+    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; display: flex; justify-content: center; align-items: center;"
+         (click)="closeDispatchModal()">
+      <div class="apple-card" style="width: 100%; max-width: 480px; padding: 32px; position: relative;" (click)="$event.stopPropagation()">
         
-        @if (addresses.length === 0) {
-          <div class="py-16 text-center text-slate-500">
-            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">location_off</span>
-            <p class="font-medium">No saved addresses found.</p>
+        <button class="icon-btn" (click)="closeDispatchModal()" style="position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+        </button>
+
+        <h2 style="margin: 0 0 24px; font-size: 24px; font-weight: 800; color: #1d1d1f;">Dispatch Order</h2>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Carrier Name</label>
+            <input type="text" [(ngModel)]="dispatchForm.carrierName" class="apple-input" placeholder="e.g. FedEx, Aramex">
           </div>
-        }
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Tracking Number</label>
+            <input type="text" [(ngModel)]="dispatchForm.trackingNumber" class="apple-input" placeholder="Enter tracking code">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Driver Phone (Optional)</label>
+            <input type="text" [(ngModel)]="dispatchForm.driverPhone" class="apple-input" placeholder="Driver contact number">
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; display: flex; gap: 12px;">
+          <button class="apple-btn-outline" style="flex: 1;" (click)="closeDispatchModal()">Cancel</button>
+          <button class="apple-btn-filled" style="flex: 1;" 
+                  [disabled]="!dispatchForm.carrierName || !dispatchForm.trackingNumber"
+                  (click)="dispatchOrder()">Confirm Dispatch</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
 </div>

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class MembersService {
   private http = inject(HttpClient);
-  
+
   private membersUrl = 'https://root2route.runasp.net/api/v1/organization-members';
   private invitationsUrl = 'https://root2route.runasp.net/api/v1/organization-invitations';
   private rolesUrl = 'https://root2route.runasp.net/api/v1/organization-roles';

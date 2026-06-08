@@ -36,6 +36,9 @@ export class OverviewComponent implements OnInit {
   liveBids = signal<any[]>([]);
   showChartOptions = signal(false);
   activeTimeframe = signal(6); // default to 6 months
+  selectedDateRange = signal('Last 30 Days');
+  isDateDropdownOpen = signal(false);
+  isHelpOpen = signal(false);
 
   constructor() {
     effect(() => {
@@ -54,22 +57,7 @@ export class OverviewComponent implements OnInit {
   }
 
   loadDashboardData(orgId: string) {
-    // Load Overview Stats
-    this.dashboardService.getOverview(orgId).subscribe({
-      next: (response: any) => {
-        const data = response?.data || response || {};
-        this.metrics.set([
-          { title: 'Total Revenue', value: '$' + (data.totalRevenue || 0), trend: data.revenueTrend || '+0%', isUp: true, icon: 'payments' },
-          { title: 'Active Auctions', value: data.activeAuctions || 0, trend: data.auctionsTrend || '+0%', isUp: true, icon: 'gavel' },
-          { title: 'Pending Orders', value: data.pendingOrders || 0, trend: data.ordersTrend || '-0%', isUp: false, icon: 'local_shipping' },
-          { title: 'Unread Messages', value: data.unreadMessages || 0, trend: 'New', isUp: true, icon: 'forum' },
-        ]);
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error fetching overview stats', err);
-      }
-    });
+    this.loadOverviewStats(orgId);
 
     // Load Latest Orders
     this.dashboardService.getLatestOrders(orgId).subscribe({
@@ -96,6 +84,24 @@ export class OverviewComponent implements OnInit {
     });
 
     this.loadChartData(orgId, this.activeTimeframe());
+  }
+
+  loadOverviewStats(orgId: string, days?: number) {
+    this.dashboardService.getOverview(orgId, days).subscribe({
+      next: (response: any) => {
+        const data = response?.data || response || {};
+        this.metrics.set([
+          { title: 'Total Revenue', value: '$' + (data.totalRevenue || 0), trend: data.revenueTrend || '+0%', isUp: true, icon: 'payments' },
+          { title: 'Active Auctions', value: data.activeAuctions || 0, trend: data.auctionsTrend || '+0%', isUp: true, icon: 'gavel' },
+          { title: 'Pending Orders', value: data.pendingOrders || 0, trend: data.ordersTrend || '-0%', isUp: false, icon: 'local_shipping' },
+          { title: 'Unread Messages', value: data.unreadMessages || 0, trend: 'New', isUp: true, icon: 'forum' },
+        ]);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching overview stats', err);
+      }
+    });
   }
 
   loadChartData(orgId: string, months: number) {
@@ -135,13 +141,39 @@ export class OverviewComponent implements OnInit {
     this.showChartOptions.update(v => !v);
   }
 
+  toggleDateDropdown(): void {
+    this.isDateDropdownOpen.update(v => !v);
+  }
+
+  onDateRangeChange(range: string): void {
+    this.selectedDateRange.set(range);
+    this.isDateDropdownOpen.set(false);
+    console.log(`[Data Fetch] Updating KPI cards based on range: ${range}`);
+    
+    // Simulate updating chart/metrics data timeframe
+    let days = 30;
+    if (range === 'Today') days = 1;
+    else if (range === 'Last 7 Days') days = 7;
+    else if (range === 'This Year') days = 365;
+    
+    this.setFilter(days);
+  }
+
   setFilter(days: number): void {
     const org = this.activeOrg();
     if (org?.id) {
-      this.activeTimeframe.set(days === 30 ? 1 : 6);
+      this.loadOverviewStats(org.id, days);
+      this.activeTimeframe.set(days === 30 ? 1 : 6); // Just keeping the existing simulation logic
       this.loadChartData(org.id, this.activeTimeframe());
     }
-    this.actionPlaceholder(`Filter set to last ${days} days`);
+  }
+
+  toggleHelpPopover(): void {
+    this.isHelpOpen.update(v => !v);
+  }
+
+  closeHelpPopover(): void {
+    this.isHelpOpen.set(false);
   }
 
   exportReport(): void {

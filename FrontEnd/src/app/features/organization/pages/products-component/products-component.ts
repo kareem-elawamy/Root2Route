@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { ProductService } from '../../../super-admin/products/product.service';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 
 export interface Product {
   id: string;
@@ -14,6 +16,7 @@ export interface Product {
   dateAdded: string;
   status: string;
   imageUrl: string;
+  originalData?: any;
 }
 
 export interface ProductKpi {
@@ -28,7 +31,7 @@ export interface ProductKpi {
 @Component({
   selector: 'app-products-component',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BaseChartDirective],
   templateUrl: './products-component.html',
   styleUrl: './products-component.css',
 })
@@ -37,10 +40,14 @@ export class ProductsComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly orgCtx = inject(OrgContextService);
 
+  constructor() {
+    Chart.register(...registerables);
+  }
+
   readonly kpis = signal<ProductKpi[]>([
     { label: 'Total Items',      value: '0',   trend: '+0%',       isUp: true,  icon: 'inventory_2',    accentClass: 'text-primary' },
-    { label: 'Active Listings',  value: '0',   trend: 'Stable',    isUp: true,  icon: 'store',          accentClass: 'text-secondary' },
-    { label: 'Low Stock Alerts', value: '0',   trend: 'Action Req.', isUp: false, icon: 'warning',      accentClass: 'text-tertiary' },
+    { label: 'Approved Products',  value: '0',   trend: 'Stable',    isUp: true,  icon: 'check_circle',   accentClass: 'text-secondary' },
+    { label: 'Pending Approval', value: '0',   trend: 'Action Req.', isUp: false, icon: 'pending',        accentClass: 'text-tertiary' },
     { label: 'Inventory Value',  value: '$0',  trend: '↑ 0%',      isUp: true,  icon: 'payments',       accentClass: 'text-primary' },
   ]);
 
@@ -53,7 +60,39 @@ export class ProductsComponent implements OnInit {
   isFilterDropdownOpen = signal(false);
   isCreatingProduct = signal(false);
   isCreateModalOpen = signal(false);
+  editingProduct = signal<Product | null>(null);
   activeDropdownId = signal<string | null>(null);
+  isHelpOpen = signal(false);
+
+  // Chart properties
+  public categoryChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right' }
+    }
+  };
+  public categoryChartType: ChartType = 'doughnut';
+  public categoryChartData: ChartData<'doughnut', number[], string | string[]> = {
+    labels: [],
+    datasets: [ { data: [] } ]
+  };
+
+  public inventoryChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: { beginAtZero: true }
+    }
+  };
+  public inventoryChartType: ChartType = 'bar';
+  public inventoryChartData: ChartData<'bar', number[], string | string[]> = {
+    labels: [],
+    datasets: [ { data: [], backgroundColor: '#1d1d1f', borderRadius: 6 } ]
+  };
 
   ngOnInit(): void {
     this.loadProducts();
@@ -63,6 +102,14 @@ export class ProductsComponent implements OnInit {
   onDocumentClick() {
     this.activeDropdownId.set(null);
     this.isFilterDropdownOpen.set(false);
+  }
+
+  toggleProductsHelp(): void {
+    this.isHelpOpen.update(v => !v);
+  }
+
+  closeProductsHelp(): void {
+    this.isHelpOpen.set(false);
   }
 
   loadProducts(): void {
@@ -96,6 +143,7 @@ export class ProductsComponent implements OnInit {
           dateAdded: p.dateAdded || p.createdOn || new Date().toLocaleDateString(),
           status:    this.mapStatus(p.status),
           imageUrl:  p.imageUrl  || (p.images && p.images.length > 0 ? p.images[0] : ''),
+          originalData: p
         }));
         
         this.filterProducts();
@@ -117,10 +165,10 @@ export class ProductsComponent implements OnInit {
   }
 
   mapStatus(status: any): string {
-    if (status === 1 || status === 'Active') return 'Active';
-    if (status === 0 || status === 'Draft') return 'Draft';
-    if (status === 2 || status === 'OutOfStock') return 'Out of Stock';
-    return 'Active';
+    if (status === 1 || status === 'Approved') return 'Approved';
+    if (status === 0 || status === 'Pending') return 'Pending';
+    if (status === 2 || status === 'Rejected') return 'Rejected';
+    return 'Pending';
   }
 
   filterProducts(): void {
@@ -145,6 +193,7 @@ export class ProductsComponent implements OnInit {
 
     this.productsList = filtered;
     this.updateKpis();
+    this.updateCharts();
     this.cdr.detectChanges();
   }
 
@@ -172,25 +221,68 @@ export class ProductsComponent implements OnInit {
 
   updateKpis(): void {
     const totalItems = this.productsList.length;
-    const activeListings = this.productsList.filter(p => p.status === 'Active').length;
-    const lowStock = this.productsList.filter(p => p.stock > 0 && p.stock <= 10).length;
+    const approvedListings = this.productsList.filter(p => p.status === 'Approved').length;
+    const pendingListings = this.productsList.filter(p => p.status === 'Pending').length;
     const inventoryValue = this.productsList.reduce((sum, p) => sum + (p.price * p.stock), 0);
 
     this.kpis.set([
       { label: 'Total Items',      value: totalItems.toLocaleString(),         trend: '+0%',          isUp: true,  icon: 'inventory_2', accentClass: 'text-primary'   },
-      { label: 'Active Listings',  value: activeListings.toLocaleString(),     trend: 'Stable',       isUp: true,  icon: 'store',       accentClass: 'text-secondary' },
-      { label: 'Low Stock Alerts', value: lowStock.toLocaleString(),           trend: lowStock > 0 ? 'Action Req.' : 'Good', isUp: lowStock === 0, icon: 'warning',     accentClass: 'text-tertiary'  },
+      { label: 'Approved Products',value: approvedListings.toLocaleString(),   trend: 'Stable',       isUp: true,  icon: 'check_circle',accentClass: 'text-secondary' },
+      { label: 'Pending Approval', value: pendingListings.toLocaleString(),    trend: pendingListings > 0 ? 'Wait' : 'Clear', isUp: pendingListings === 0, icon: 'pending', accentClass: 'text-tertiary'  },
       { label: 'Inventory Value',  value: '$' + inventoryValue.toLocaleString(undefined, {minimumFractionDigits: 2}), trend: '↑ 0%',          isUp: true,  icon: 'payments',    accentClass: 'text-primary'   },
     ]);
   }
 
+  updateCharts(): void {
+    const categoryCounts: Record<string, number> = {};
+    const categoryValues: Record<string, number> = {};
+
+    this.productsList.forEach(p => {
+      categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+      const val = p.price * p.stock;
+      categoryValues[p.category] = (categoryValues[p.category] || 0) + val;
+    });
+
+    const labels = Object.keys(categoryCounts);
+    
+    this.categoryChartData = {
+      labels: labels,
+      datasets: [
+        {
+          data: labels.map(l => categoryCounts[l]),
+          backgroundColor: ['#006B3D', '#34c759', '#ffcc00', '#ff3b30', '#007aff'],
+          borderWidth: 0
+        }
+      ]
+    };
+
+    this.inventoryChartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Inventory Value ($)',
+          data: labels.map(l => categoryValues[l]),
+          backgroundColor: '#1d1d1f',
+          borderRadius: 6
+        }
+      ]
+    };
+  }
+
   // ── Modal Logic ──
   openCreateModal(): void {
+    this.editingProduct.set(null);
+    this.isCreateModalOpen.set(true);
+  }
+
+  openEditModal(product: Product): void {
+    this.editingProduct.set(product);
     this.isCreateModalOpen.set(true);
   }
 
   closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
+    this.editingProduct.set(null);
   }
 
   submitProduct(event: Event): void {
@@ -208,35 +300,78 @@ export class ProductsComponent implements OnInit {
     
     const isDirect = (form.elements.namedItem('isDirect') as HTMLInputElement).checked;
     const isAuction = (form.elements.namedItem('isAuction') as HTMLInputElement).checked;
-    
-    formData.append('IsAvailableForDirectSale', String(isDirect));
-    formData.append('IsAvailableForAuction', String(isAuction));
-    
-    if (isDirect) {
-      formData.append('DirectSalePrice', (form.elements.namedItem('directPrice') as HTMLInputElement).value || '0');
-    }
-    if (isAuction) {
-      formData.append('StartBiddingPrice', (form.elements.namedItem('auctionPrice') as HTMLInputElement).value || '0');
-    }
+    const directPrice = (form.elements.namedItem('directPrice') as HTMLInputElement).value || '0';
+    const auctionPrice = (form.elements.namedItem('auctionPrice') as HTMLInputElement).value || '0';
+    const prodName = (form.elements.namedItem('prodName') as HTMLInputElement).value;
+    const prodDesc = (form.elements.namedItem('prodDesc') as HTMLInputElement).value;
+    const prodType = (form.elements.namedItem('prodType') as HTMLSelectElement).value;
+    const prodStock = (form.elements.namedItem('prodStock') as HTMLInputElement).value;
 
-    const fileInput = form.elements.namedItem('prodImage') as HTMLInputElement;
-    if (fileInput.files && fileInput.files.length > 0) {
-      formData.append('Images', fileInput.files[0]);
-    }
+    const currentEdit = this.editingProduct();
 
-    this.isCreatingProduct.set(true);
-    this.productService.createProduct(formData).subscribe({
-      next: () => {
-        this.isCreatingProduct.set(false);
-        this.closeCreateModal();
-        this.loadProducts();
-      },
-      error: (err) => {
-        this.isCreatingProduct.set(false);
-        console.error(err);
-        alert('Error creating product. Check console.');
+    if (currentEdit) {
+      // Edit flow (JSON)
+      const updateCmd = {
+        id: currentEdit.id,
+        name: prodName,
+        description: prodDesc,
+        productType: parseInt(prodType),
+        stockQuantity: parseInt(prodStock),
+        isAvailableForDirectSale: isDirect,
+        directSalePrice: isDirect ? parseFloat(directPrice) : 0,
+        isAvailableForAuction: isAuction,
+        startBiddingPrice: isAuction ? parseFloat(auctionPrice) : 0,
+        barcode: currentEdit.originalData?.barcode || null,
+        weightUnit: currentEdit.originalData?.weightUnit || 0
+      };
+
+      this.isCreatingProduct.set(true);
+      this.productService.updateProduct(updateCmd).subscribe({
+        next: () => {
+          this.isCreatingProduct.set(false);
+          this.closeCreateModal();
+          this.loadProducts();
+        },
+        error: (err) => {
+          this.isCreatingProduct.set(false);
+          console.error(err);
+          alert('Error updating product. Check console.');
+        }
+      });
+    } else {
+      // Create flow (FormData)
+      const formData = new FormData();
+      formData.append('OrganizationId', orgId);
+      formData.append('Name', prodName);
+      formData.append('Description', prodDesc);
+      formData.append('ProductType', prodType);
+      formData.append('StockQuantity', prodStock);
+      
+      formData.append('IsAvailableForDirectSale', String(isDirect));
+      formData.append('IsAvailableForAuction', String(isAuction));
+      
+      if (isDirect) formData.append('DirectSalePrice', directPrice);
+      if (isAuction) formData.append('StartBiddingPrice', auctionPrice);
+
+      const fileInput = form.elements.namedItem('prodImage') as HTMLInputElement;
+      if (fileInput.files && fileInput.files.length > 0) {
+        formData.append('Images', fileInput.files[0]);
       }
-    });
+
+      this.isCreatingProduct.set(true);
+      this.productService.createProduct(formData).subscribe({
+        next: () => {
+          this.isCreatingProduct.set(false);
+          this.closeCreateModal();
+          this.loadProducts();
+        },
+        error: (err) => {
+          this.isCreatingProduct.set(false);
+          console.error(err);
+          alert('Error creating product. Check console.');
+        }
+      });
+    }
   }
 
   // ── Row Actions ──
@@ -260,30 +395,28 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  changeStatus(id: string, newStatus: number): void {
-    this.productService.changeStatus(id, newStatus).subscribe({
-      next: () => this.loadProducts(),
-      error: (err) => { console.error(err); alert('Error changing status'); }
-    });
-  }
+
 
   getStatusClasses(status: string): string {
     const map: Record<string, string> = {
-      'Active':       'm3-status-active',
-      'Low Stock':    'm3-status-warning',
-      'Out of Stock': 'm3-status-error',
-      'Draft':        'm3-status-draft',
+      'Approved':       'm3-status-active',
+      'Pending':        'm3-status-warning',
+      'Rejected':       'm3-status-error',
     };
     return map[status] ?? 'm3-status-draft';
   }
 
   getDotClasses(status: string): string {
     const map: Record<string, string> = {
-      'Active':       'm3-dot-active',
-      'Low Stock':    'm3-dot-warning',
-      'Out of Stock': 'm3-dot-error',
-      'Draft':        'm3-dot-draft',
+      'Approved':       'm3-dot-active',
+      'Pending':        'm3-dot-warning',
+      'Rejected':       'm3-dot-error',
     };
     return map[status] ?? 'm3-dot-draft';
+  }
+
+  onImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = 'assets/images/placeholder.png';
   }
 }

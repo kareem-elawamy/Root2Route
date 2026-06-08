@@ -1,9 +1,12 @@
 import { Component, OnInit, inject, ChangeDetectorRef, signal, HostListener } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuctionService } from '../../../super-admin/auctions/auction.service';
 import { ProductService } from '../../../super-admin/products/product.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 
 export interface AuctionKpi {
   label: string;
@@ -17,7 +20,7 @@ export interface AuctionKpi {
 @Component({
   selector: 'app-auctions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BaseChartDirective],
   templateUrl: './auctions.html',
   styleUrl: './auctions.css'
 })
@@ -26,6 +29,8 @@ export class AuctionsComponent implements OnInit {
   private productService = inject(ProductService);
   private orgCtx = inject(OrgContextService);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   readonly kpis = signal<AuctionKpi[]>([
     { label: 'Total Auctions', value: '0', trend: '+0%', isUp: true, icon: 'gavel', accentClass: 'text-primary' },
@@ -44,15 +49,55 @@ export class AuctionsComponent implements OnInit {
   isCreateModalOpen = signal(false);
   isCreatingAuction = signal(false);
   activeDropdownId = signal<string | null>(null);
+  isHelpOpen = signal(false);
+
+  // Chart properties
+  public statusChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right' }
+    }
+  };
+  public statusChartType: ChartType = 'doughnut';
+  public statusChartData: ChartData<'doughnut', number[], string | string[]> = {
+    labels: [],
+    datasets: [{ data: [] }]
+  };
+
+  constructor() {
+    Chart.register(...registerables);
+  }
 
   ngOnInit() {
     this.loadAuctions();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['create'] === 'true') {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { create: null },
+          queryParamsHandling: 'merge'
+        });
+        
+        // Wait briefly for UI to initialize
+        setTimeout(() => this.openCreateModal(), 100);
+      }
+    });
   }
 
   @HostListener('document:click')
   onDocumentClick() {
     this.activeDropdownId.set(null);
     this.isFilterDropdownOpen.set(false);
+  }
+
+  toggleAuctionsHelp(): void {
+    this.isHelpOpen.update(v => !v);
+  }
+
+  closeAuctionsHelp(): void {
+    this.isHelpOpen.set(false);
   }
 
   loadAuctions() {
@@ -99,6 +144,7 @@ export class AuctionsComponent implements OnInit {
 
     this.auctionsList = filtered;
     this.updateKpis();
+    this.updateCharts();
     this.cdr.detectChanges();
   }
 
@@ -131,6 +177,37 @@ export class AuctionsComponent implements OnInit {
       { label: 'Completed', value: completed.toLocaleString(), trend: completed > 0 ? 'Great' : '—', isUp: true, icon: 'check_circle', accentClass: 'text-tertiary' },
       { label: 'Cancelled', value: cancelled.toLocaleString(), trend: cancelled > 0 ? 'Action Req.' : 'Good', isUp: cancelled === 0, icon: 'cancel', accentClass: 'text-error' },
     ]);
+  }
+
+  updateCharts(): void {
+    const statusCounts: Record<string, number> = {};
+
+    this.auctionsList.forEach(a => {
+      const status = a.status || 'Pending';
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+
+    const statusLabels = Object.keys(statusCounts);
+    const statusColors = statusLabels.map(status => {
+      switch (status) {
+        case 'Active': return '#34c759';
+        case 'Completed': return '#007aff';
+        case 'Pending': return '#ffcc00';
+        case 'Cancelled': return '#ff3b30';
+        default: return '#8e8e93';
+      }
+    });
+
+    this.statusChartData = {
+      labels: statusLabels,
+      datasets: [
+        {
+          data: statusLabels.map(l => statusCounts[l]),
+          backgroundColor: statusColors,
+          borderWidth: 0
+        }
+      ]
+    };
   }
 
   // ── Actions ──
@@ -210,25 +287,6 @@ export class AuctionsComponent implements OnInit {
   }
 
   // ── Helpers ──
-  getStatusClasses(status: string): string {
-    const map: Record<string, string> = {
-      'Active':       'm3-status-active',
-      'Pending':      'm3-status-warning',
-      'Cancelled':    'm3-status-error',
-      'Completed':    'bg-blue-100 text-blue-800',
-    };
-    return map[status] ?? 'm3-status-draft';
-  }
-
-  getDotClasses(status: string): string {
-    const map: Record<string, string> = {
-      'Active':       'm3-dot-active',
-      'Pending':      'm3-dot-warning',
-      'Cancelled':    'm3-dot-error',
-      'Completed':    'bg-blue-600',
-    };
-    return map[status] ?? 'm3-dot-draft';
-  }
 
   calculateTimeLeft(endDateStr: string): string {
     if (!endDateStr) return 'N/A';

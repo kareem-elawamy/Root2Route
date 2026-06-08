@@ -1,225 +1,261 @@
-<div class="m3-dashboard-container">
+<div class="apple-dashboard">
 
-  <!-- ── Page Header ──────────────────────────────────────────────────── -->
-  <header class="m3-dashboard-header">
-    <div class="m3-header-text">
-      <h1 class="m3-display-small">Auctions Management</h1>
-      <p class="m3-body-large">
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Auctions Management</h1>
+        <button class="icon-btn help-btn" (click)="toggleAuctionsHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeAuctionsHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Auctions Guide</h4>
+            <button class="icon-btn" (click)="closeAuctionsHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Auctions Inventory:</strong> Monitor your live bids, scheduled events, and finalized auctions.</p>
+            <p style="margin-top: 8px;"><strong>Actionable KPIs:</strong> Monitor active bidding wars and incoming revenue.</p>
+            <p style="margin-top: 8px;"><strong>Management:</strong> Use the filters to drill down into specific statuses or create new events.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
         Monitor your live bids, scheduled events, and finalized auctions.
       </p>
     </div>
-    <div class="m3-header-actions" style="position: relative;">
-      <button class="m3-outlined-button" (click)="toggleFilterDropdown($event)">
-        <span class="material-symbols-outlined m3-button-icon">filter_list</span>
-        {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
-      </button>
+    
+    <div class="header-actions">
+      <div class="dropdown-wrapper">
+        <button class="apple-btn-outline" (click)="toggleFilterDropdown($event)">
+          <span class="material-symbols-outlined icon">filter_list</span>
+          {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
+        </button>
 
-      @if (isFilterDropdownOpen()) {
-        <div class="m3-dropdown-menu" style="top: 3rem; right: 10rem;">
-          <button class="m3-dropdown-item" (click)="setFilter('All')">All Auctions</button>
-          <div class="m3-dropdown-divider"></div>
-          <button class="m3-dropdown-item" (click)="setFilter('Active')">Active</button>
-          <button class="m3-dropdown-item" (click)="setFilter('Pending')">Pending</button>
-          <button class="m3-dropdown-item" (click)="setFilter('Completed')">Completed</button>
-          <button class="m3-dropdown-item" (click)="setFilter('Cancelled')">Cancelled</button>
-        </div>
-      }
-
-      <button class="m3-filled-button" (click)="openCreateModal()">
-        <span class="material-symbols-outlined m3-button-icon">add_circle</span>
+        @if (isFilterDropdownOpen()) {
+          <div class="apple-dropdown">
+            <button class="dropdown-item" (click)="setFilter('All')">All Auctions</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" (click)="setFilter('Active')">Active</button>
+            <button class="dropdown-item" (click)="setFilter('Pending')">Pending</button>
+            <button class="dropdown-item" (click)="setFilter('Completed')">Completed</button>
+            <button class="dropdown-item text-error" (click)="setFilter('Cancelled')">Cancelled</button>
+          </div>
+        }
+      </div>
+      
+      <button class="apple-btn-filled" (click)="openCreateModal()">
+        <span class="material-symbols-outlined icon">add_circle</span>
         Create Auction
       </button>
     </div>
   </header>
 
-  <!-- ── KPI Cards ────────────────────────────────────────────────────── -->
-  <div class="m3-kpi-grid">
+  <!-- ── KPI Cards ── -->
+  <div class="kpi-grid">
     @for (kpi of kpis(); track kpi.label) {
-    <div class="m3-card m3-kpi-card group">
-      <div class="m3-kpi-card-header">
-        <div class="m3-kpi-icon-wrapper group-hover-scale">
-          <span class="material-symbols-outlined">{{ kpi.icon || 'info' }}</span>
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">{{ kpi.icon || 'info' }}</span>
         </div>
-        <span class="m3-trend-chip" [class.m3-trend-up]="kpi.isUp" [class.m3-trend-down]="!kpi.isUp">
-          {{ kpi.trend || '—' }}
-        </span>
-      </div>
-      <div class="m3-kpi-card-body">
-        <p class="m3-kpi-label">{{ kpi.label || 'Metric' }}</p>
-        <p class="m3-kpi-value">{{ kpi.value || '0' }}</p>
-      </div>
-      <div class="m3-kpi-ghost-icon">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">
-          {{ kpi.icon || 'info' }}
-        </span>
+        <div class="kpi-data">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <p class="kpi-label">{{ kpi.label || 'Metric' }}</p>
+            <span class="kpi-trend-badge" [class.positive]="kpi.isUp" [class.negative]="!kpi.isUp">{{ kpi.trend }}</span>
+          </div>
+          <h3 class="kpi-value">{{ kpi.value || '0' }}</h3>
+        </div>
       </div>
     </div>
     }
   </div>
 
-  <!-- ── Data Table ─────────────────────────────────────────────────── -->
-  <div class="m3-card m3-table-card">
-    <div class="m3-table-toolbar">
-      <h2 class="m3-title-large">All Auctions</h2>
-      <div class="m3-search-bar">
-        <span class="material-symbols-outlined m3-search-icon">search</span>
-        <input type="text" class="m3-search-input" placeholder="Search title or product…" 
-               [value]="searchTerm()" (input)="onSearchChange($event)" />
+  <!-- ── Charts ── -->
+  <div class="charts-grid" style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Auctions by Status</h3>
+      <div style="height: 250px; display: flex; justify-content: center;">
+        <div style="width: 100%; max-width: 500px;">
+          <canvas baseChart
+            [data]="statusChartData"
+            [options]="statusChartOptions"
+            [type]="statusChartType">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Auctions Grid View ── -->
+  <div class="auction-dashboard-section">
+    <div class="table-toolbar" style="background: transparent; border: none; padding: 0 0 24px 0;">
+      <h2 class="table-title">Live & Upcoming Auctions</h2>
+      <div class="toolbar-actions">
+        <div class="apple-search-bar">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" class="apple-search-input" placeholder="Search title or product…" 
+                 [value]="searchTerm()" (input)="onSearchChange($event)" />
+        </div>
       </div>
     </div>
 
-    <div class="m3-table-container">
-      <table class="m3-data-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Product</th>
-            <th>Start Price</th>
-            <th>End Date</th>
-            <th>Time Left</th>
-            <th>Status</th>
-            <th class="m3-table-actions-header"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (auction of auctionsList; track auction.id) {
-          <tr>
-            <td>
-              <div class="m3-product-cell">
-                <div class="m3-product-info">
-                  <p class="m3-product-name">{{ auction.title }}</p>
-                  <p class="m3-product-sku">ID: {{ auction.id.split('-')[0] }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="m3-category-cell">{{ auction.productName || 'N/A' }}</td>
-            <td class="m3-price-cell">${{ auction.startPrice | number:'1.2-2' }}</td>
-            <td class="m3-date-cell">{{ auction.endDate | date:'medium' }}</td>
-            <td class="m3-stock-cell" style="font-weight: 700;">{{ auction.timeLeft }}</td>
-            <td>
-              <div class="m3-status-chip {{ getStatusClasses(auction.status) }}">
-                <span class="m3-status-dot {{ getDotClasses(auction.status) }}"></span>
-                {{ auction.status }}
-              </div>
-            </td>
-            <td class="m3-table-actions" style="position: relative;">
-              <button class="m3-icon-button m3-row-action" (click)="toggleDropdown(auction.id, $event)">
-                <span class="material-symbols-outlined">more_vert</span>
+    <div class="auction-grid">
+      @for (auction of auctionsList; track auction.id) {
+      <div class="auction-card">
+        <!-- Header: Status and Dropdown -->
+        <div class="auction-card-header">
+          <span class="status-badge-premium"
+                [class.live]="auction.status === 'Active'"
+                [class.pending]="auction.status === 'Pending'"
+                [class.ended]="auction.status === 'Completed' || auction.status === 'Cancelled'">
+            @if (auction.status === 'Active') {
+              <span class="pulse-indicator"></span> LIVE
+            } @else {
+              {{ auction.status | uppercase }}
+            }
+          </span>
+          
+          <div class="card-actions-wrapper">
+            <button class="action-btn hover-green" (click)="toggleDropdown(auction.id, $event)">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+            @if (activeDropdownId() === auction.id) {
+            <div class="apple-dropdown">
+              @if (auction.status === 'Active' || auction.status === 'Pending') {
+              <button class="dropdown-item text-error" (click)="cancelAuction(auction.id)">
+                <span class="material-symbols-outlined icon">cancel</span> Cancel
               </button>
-              
-              <!-- Dropdown Menu -->
-              @if (activeDropdownId() === auction.id) {
-              <div class="m3-dropdown-menu">
-                @if (auction.status === 'Active' || auction.status === 'Pending') {
-                <button class="m3-dropdown-item m3-text-error" (click)="cancelAuction(auction.id)">
-                  <span class="material-symbols-outlined">cancel</span> Cancel Auction
-                </button>
-                } @else {
-                  <button class="m3-dropdown-item" disabled style="color: #94a3b8;">
-                    <span class="material-symbols-outlined">info</span> No Actions
-                  </button>
-                }
-              </div>
+              } @else {
+              <button class="dropdown-item" disabled style="color: #94a3b8;">
+                <span class="material-symbols-outlined icon">info</span> No Actions
+              </button>
               }
-            </td>
-          </tr>
-          }
+            </div>
+            }
+          </div>
+        </div>
 
-          @empty {
-          <tr>
-            <td colspan="7">
-              <div class="m3-empty-state">
-                <span class="material-symbols-outlined m3-empty-icon" style="font-variation-settings:'FILL' 0">gavel</span>
-                <p class="m3-empty-title">No auctions found</p>
-                <p class="m3-empty-desc">You haven't scheduled any auctions yet.</p>
-                <button class="m3-filled-button m3-mt-4" (click)="openCreateModal()">
-                  <span class="material-symbols-outlined m3-button-icon">add_circle</span>
-                  Create Auction
-                </button>
-              </div>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+        <!-- Body: Title, Product, Price -->
+        <div class="auction-card-body">
+          <h3 class="product-title">{{ auction.productName || auction.title }}</h3>
+          <p class="auction-id">ID: {{ auction.id.split('-')[0] }}</p>
+          
+          <div class="price-section">
+            <span class="price-label">Start Price</span>
+            <span class="price-value">${{ auction.startPrice | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Footer: Timer -->
+        <div class="auction-card-footer">
+          <div class="timer-badge" [class.urgent]="auction.status === 'Active'">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ auction.timeLeft }}
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (auctionsList.length === 0) {
+      <div class="empty-state-grid">
+        <div class="empty-icon-wrapper">
+          <span class="material-symbols-outlined empty-icon">gavel</span>
+        </div>
+        <p class="empty-title">No auctions found</p>
+        <p class="empty-desc">You haven't scheduled any auctions yet.</p>
+        <button class="apple-btn-filled mt-4" (click)="openCreateModal()">
+          <span class="material-symbols-outlined icon">add_circle</span>
+          Create Auction
+        </button>
+      </div>
+      }
     </div>
 
-    <div class="m3-table-footer">
-      <p class="m3-pagination-text">
+    @if (auctionsList.length > 0) {
+    <div class="table-footer" style="background: transparent; border: none;">
+      <p class="pagination-text">
         Showing {{ auctionsList.length }} auctions
       </p>
     </div>
+    }
   </div>
 </div>
 
 <!-- ── Create Auction Modal ── -->
 @if (isCreateModalOpen()) {
-<div class="m3-modal-backdrop">
-  <div class="m3-modal-surface">
-    <div class="m3-modal-header">
-      <h2 class="m3-modal-title">Create New Auction</h2>
-      <button class="m3-icon-button" (click)="closeCreateModal()">
+<div class="apple-modal-overlay">
+  <div class="apple-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Create New Auction</h2>
+      <button class="icon-btn" (click)="closeCreateModal()">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
-    <form (submit)="submitAuction($event)" class="m3-modal-body">
+    <form id="create-auction-form" (submit)="submitAuction($event)" class="modal-body custom-scrollbar-y" style="max-height: 60vh;">
       
-      <div class="m3-form-group">
-        <label class="m3-form-label">Auction Title *</label>
-        <input type="text" name="aucTitle" required class="m3-form-input" placeholder="e.g., Spring Wheat Surplus" />
+      <div class="input-group">
+        <label>Auction Title *</label>
+        <input type="text" name="aucTitle" required class="apple-input" placeholder="e.g., Spring Wheat Surplus" />
       </div>
 
-      <div class="m3-form-group">
-        <label class="m3-form-label">Select Product *</label>
-        <select name="aucProduct" required class="m3-form-input">
+      <div class="input-group">
+        <label>Select Product *</label>
+        <select name="aucProduct" required class="apple-input">
           @for (prod of orgProducts; track prod.id) {
             <option [value]="prod.id">{{ prod.name }} (Stock: {{ prod.stockQuantity ?? prod.stock }})</option>
           }
         </select>
       </div>
 
-      <div class="m3-form-row">
-        <div class="m3-form-group flex-1">
-          <label class="m3-form-label">Start Date & Time *</label>
-          <input type="datetime-local" name="aucStartDate" required class="m3-form-input" />
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Start Date & Time *</label>
+          <input type="datetime-local" name="aucStartDate" required class="apple-input" />
         </div>
-        <div class="m3-form-group flex-1">
-          <label class="m3-form-label">End Date & Time *</label>
-          <input type="datetime-local" name="aucEndDate" required class="m3-form-input" />
+        <div class="input-group flex-1">
+          <label>End Date & Time *</label>
+          <input type="datetime-local" name="aucEndDate" required class="apple-input" />
         </div>
       </div>
 
-      <div class="m3-divider"></div>
+      <div class="divider"></div>
       
-      <div class="m3-form-row">
-        <div class="m3-form-group flex-1">
-          <label class="m3-form-label">Starting Price ($) *</label>
-          <input type="number" step="0.01" name="aucStartPrice" required class="m3-form-input" placeholder="0.00" min="0" />
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Starting Price ($) *</label>
+          <input type="number" step="0.01" name="aucStartPrice" required class="apple-input" placeholder="0.00" min="0" />
         </div>
-        <div class="m3-form-group flex-1">
-          <label class="m3-form-label">Min Bid Increment ($) *</label>
-          <input type="number" step="0.01" name="aucMinBid" required class="m3-form-input" placeholder="0.00" min="0" />
+        <div class="input-group flex-1">
+          <label>Min Bid Increment ($) *</label>
+          <input type="number" step="0.01" name="aucMinBid" required class="apple-input" placeholder="0.00" min="0" />
         </div>
       </div>
 
-      <div class="m3-form-group">
-        <label class="m3-form-label">Reserve Price ($) (Optional)</label>
-        <input type="number" step="0.01" name="aucReserve" class="m3-form-input" placeholder="0.00" min="0" />
-      </div>
-
-      <div class="m3-modal-footer">
-        <button type="button" class="m3-text-button" (click)="closeCreateModal()">Cancel</button>
-        <button type="submit" class="m3-filled-button" [disabled]="isCreatingAuction()">
-          @if (isCreatingAuction()) {
-            Scheduling...
-          } @else {
-            Schedule Auction
-          }
-        </button>
+      <div class="input-group">
+        <label>Reserve Price ($) (Optional)</label>
+        <input type="number" step="0.01" name="aucReserve" class="apple-input" placeholder="0.00" min="0" />
       </div>
 
     </form>
+    
+    <div class="modal-footer">
+      <button type="button" class="apple-btn-outline" (click)="closeCreateModal()">Cancel</button>
+      <button type="submit" form="create-auction-form" class="apple-btn-filled" [disabled]="isCreatingAuction()">
+        @if (isCreatingAuction()) {
+          Scheduling...
+        } @else {
+          Schedule Auction
+        }
+      </button>
+    </div>
   </div>
 </div>
 }

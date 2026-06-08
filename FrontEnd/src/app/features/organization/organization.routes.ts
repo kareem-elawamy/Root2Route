@@ -56,11 +56,11 @@ export const organizationRoutes: Routes = [
     loadComponent: () =>
       import('./pages/shipments/shipments').then((m) => m.ShipmentsComponent),
   },
-  // {
-  //   path: 'settings',
-  //   loadComponent: () =>
-  //     import('./pages/settings/settings.component').then(
-  //       (m) => m.SettingsComponent
-  //     ),
-  //  },
+  {
+    path: 'settings',
+    loadComponent: () =>
+      import('./pages/settings/settings').then(
+        (m) => m.SettingsComponent
+      ),
+   },
 ];

@@ -25,6 +25,7 @@ export class RolesComponent implements OnInit {
   
   isCreateModalOpen = false;
   isCreating = false;
+  isHelpOpen = false;
   
   newRole = {
     name: '',
@@ -76,9 +77,17 @@ export class RolesComponent implements OnInit {
     this.isCreateModalOpen = false;
   }
 
+  toggleRolesHelp() {
+    this.isHelpOpen = !this.isHelpOpen;
+  }
+
+  closeRolesHelp() {
+    this.isHelpOpen = false;
+  }
+
   togglePermission(permission: any) {
     // some APIs return permission objects, some return strings
-    const permKey = permission.name || permission;
+    const permKey = permission?.permissionsClaim || permission?.name || permission;
     if (this.newRole.permissions.has(permKey)) {
       this.newRole.permissions.delete(permKey);
     } else {
@@ -87,7 +96,7 @@ export class RolesComponent implements OnInit {
   }
 
   hasPermission(permission: any): boolean {
-    const permKey = permission.name || permission;
+    const permKey = permission?.permissionsClaim || permission?.name || permission;
     return this.newRole.permissions.has(permKey);
   }
 

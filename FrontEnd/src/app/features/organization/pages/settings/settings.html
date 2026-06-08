@@ -1,0 +1,104 @@
+<div class="p-6 md:p-8 max-w-4xl mx-auto animation-fade-in text-gray-800">
+  <!-- Header Section -->
+  <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Organization Settings</h1>
+      <p class="text-gray-500 mt-1">Manage your organization's profile, contact info, and branding.</p>
+    </div>
+  </div>
+
+  <div class="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+    <div class="p-8">
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-8">
+        
+        <!-- Logo Upload Section -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-8 border-b border-gray-100">
+          <div class="relative group cursor-pointer" (click)="fileInput.click()">
+            <div class="w-24 h-24 rounded-2xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center transition-all group-hover:border-green-500 group-hover:bg-green-50/50">
+              <img *ngIf="logoPreview()" [src]="logoPreview()" alt="Logo Preview" class="w-full h-full object-cover">
+              <div *ngIf="!logoPreview()" class="text-gray-400 flex flex-col items-center">
+                <i class="fa-solid fa-camera text-2xl mb-1"></i>
+              </div>
+            </div>
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+              <span class="text-white text-xs font-medium">Change</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Organization Logo</h3>
+            <p class="text-sm text-gray-500 mb-3">Upload a square image (PNG, JPG) up to 2MB.</p>
+            <button type="button" (click)="fileInput.click()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors">
+              Choose File
+            </button>
+            <input #fileInput type="file" accept="image/*" class="hidden" (change)="onLogoSelected($event)">
+          </div>
+        </div>
+
+        <!-- Form Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Name -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Organization Name</label>
+            <input type="text" formControlName="name" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all outline-none" placeholder="e.g. GreenTech Logistics">
+            <div *ngIf="settingsForm.get('name')?.invalid && settingsForm.get('name')?.touched" class="text-red-500 text-xs mt-1">
+              Organization name is required.
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Email</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fa-regular fa-envelope text-gray-400"></i>
+              </div>
+              <input type="email" formControlName="contactEmail" class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all outline-none" placeholder="hello@company.com">
+            </div>
+            <div *ngIf="settingsForm.get('contactEmail')?.invalid && settingsForm.get('contactEmail')?.touched" class="text-red-500 text-xs mt-1">
+              Valid email is required.
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Phone</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fa-solid fa-phone text-gray-400"></i>
+              </div>
+              <input type="text" formControlName="contactPhone" class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all outline-none" placeholder="+1 (555) 000-0000">
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+            <input type="text" formControlName="address" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all outline-none" placeholder="123 Business Rd, City, Country">
+          </div>
+
+          <!-- Description -->
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Description / Bio</label>
+            <textarea formControlName="description" rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all outline-none resize-none" placeholder="Tell us a little bit about your organization..."></textarea>
+          </div>
+
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
+          <button type="button" class="px-6 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="isSaving()" class="relative px-8 py-2.5 rounded-xl font-medium text-white bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden">
+            <span [class.opacity-0]="isSaving()">Save Changes</span>
+            <div *ngIf="isSaving()" class="absolute inset-0 flex items-center justify-center">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+            </div>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

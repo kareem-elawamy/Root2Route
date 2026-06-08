@@ -2,19 +2,50 @@
   <!-- Header Section -->
   <header class="apple-header">
     <div class="header-text">
-      <h1 class="header-title">Overview</h1>
-      <p class="header-subtitle">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Overview</h1>
+        <button class="icon-btn" (click)="toggleHelpPopover()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeHelpPopover()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Dashboard Overview Guide</h4>
+            <button class="icon-btn" (click)="closeHelpPopover()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p>Welcome to your control center. Here you can track your total revenue, monitor active auctions in real-time through the Live Feed, and manage your recent orders. Use the 'Last 30 Days' filter to adjust the data.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
         Welcome back, <span class="text-primary">{{ currentUser()?.name || 'Partner' }}</span>. Here's what's happening at <strong>{{ activeOrg()?.name || 'your organization' }}</strong>.
       </p>
     </div>
     <div class="header-actions">
-      <button class="apple-btn-outline" (click)="setFilter(30)">
-        <span class="material-symbols-outlined icon">calendar_today</span>
-        Last 30 Days
-      </button>
+      <div style="position: relative;">
+        <button class="apple-btn-outline" (click)="toggleDateDropdown()">
+          <span class="material-symbols-outlined icon">calendar_today</span>
+          {{ selectedDateRange() }}
+          <span class="material-symbols-outlined icon" style="font-size: 16px;">expand_more</span>
+        </button>
+        @if (isDateDropdownOpen()) {
+        <div class="apple-dropdown" style="top: 48px; right: 0;">
+          <button class="dropdown-item" (click)="onDateRangeChange('Today')">Today</button>
+          <button class="dropdown-item" (click)="onDateRangeChange('Last 7 Days')">Last 7 Days</button>
+          <button class="dropdown-item" (click)="onDateRangeChange('Last 30 Days')">Last 30 Days</button>
+          <button class="dropdown-item" (click)="onDateRangeChange('This Year')">This Year</button>
+        </div>
+        }
+      </div>
       <button class="apple-btn-filled" (click)="exportReport()">
         <span class="material-symbols-outlined icon">download</span>
-        Export Report
+        Export
       </button>
     </div>
   </header>
@@ -78,7 +109,7 @@
       <div class="apple-card table-card">
         <div class="card-header">
           <h3 class="card-title">Recent Orders</h3>
-          <a routerLink="/org/orders" class="apple-link">View All</a>
+          <a routerLink="/company-dashboard/orders" class="apple-link">View All</a>
         </div>
         <div class="table-responsive">
           <table class="apple-table">
@@ -146,9 +177,10 @@
         </div>
 
         <div class="feed-footer">
-          <a routerLink="/org/auctions" class="apple-btn-tonal full-width">View All Activity</a>
+          <a routerLink="/company-dashboard/auctions" class="apple-btn-tonal full-width">View All Activity</a>
         </div>
       </div>
     </div>
   </div>
+
 </div>

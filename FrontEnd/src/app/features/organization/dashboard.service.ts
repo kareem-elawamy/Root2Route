@@ -10,8 +10,12 @@ export class DashboardService {
   
   private baseUrl = 'https://root2route.runasp.net/api/v1/dashboard/org';
 
-  getOverview(orgId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/${orgId}/overview`);
+  getOverview(orgId: string, days?: number): Observable<any> {
+    let params = new HttpParams();
+    if (days) {
+      params = params.set('days', days.toString());
+    }
+    return this.http.get(`${this.baseUrl}/${orgId}/overview`, { params });
   }
 
   getActivityChart(orgId: string, months: number = 6): Observable<any> {
