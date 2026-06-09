@@ -5,7 +5,7 @@ namespace Domain.Models
     public class Auction : BaseEntity
     {
         [Required, MaxLength(150)]
-        public string Title { get; set; } = string.Empty;
+        public string Titlez { get; set; } = string.Empty;
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

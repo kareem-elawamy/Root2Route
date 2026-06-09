@@ -88,6 +88,13 @@ namespace Infrastructure.Data
                 .HasForeignKey(pi => pi.ProductId)
                 .OnDelete(DeleteBehavior.Cascade); // لو المنتج اتمسح، صوره تتمسح معاه
 
+            // OrderItem -> Order
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // OrderItem -> Product (تم تعديله من MarketItem)
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Product)
@@ -196,8 +203,8 @@ namespace Infrastructure.Data
             // Shipment -> Order
             modelBuilder.Entity<Shipment>()
                 .HasOne(s => s.Order)
-                .WithMany()
-                .HasForeignKey(s => s.OrderId)
+                .WithOne(o => o.Shipment)
+                .HasForeignKey<Shipment>(s => s.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Notification -> User

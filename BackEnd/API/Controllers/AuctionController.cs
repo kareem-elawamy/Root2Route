@@ -39,6 +39,14 @@ namespace API.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet(Router.Auction.GetAll)]
+        public async Task<IActionResult> GetAllAuctions([FromQuery] GetAllAuctionsQuery query)
+        {
+            var response = await Mediator.Send(query);
+            return NewResult(response);
+        }
+
+        [AllowAnonymous]
         [HttpGet(Router.Auction.GetActive)]
         public async Task<IActionResult> GetActiveAuctions([FromQuery] GetActiveAuctionsQuery query)
         {

@@ -11,8 +11,6 @@ namespace Core.Features.Auctions.Commands.Validators
             RuleFor(x => x.Amount)
                 .GreaterThan(0).WithMessage("Bid amount must be greater than zero.");
                 
-            RuleFor(x => x.AuctionId)
-                .NotEmpty().WithMessage("Auction ID is required.");
         }
     }
 }

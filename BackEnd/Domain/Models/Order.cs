@@ -29,5 +29,6 @@ namespace Domain.Models
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
         public ICollection<OrderItem>? OrderItems { get; set; }
+        public Shipment? Shipment { get; set; }
     }
 }

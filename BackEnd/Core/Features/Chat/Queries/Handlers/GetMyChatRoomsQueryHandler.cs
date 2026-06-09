@@ -25,6 +25,7 @@ namespace Core.Features.Chat.Queries.Handlers
 
             var rooms = await _chatRoomRepository.GetTableNoTracking()
                 .Include(r => r.Organization)
+                .Include(r => r.Buyer)
                 .Include(r => r.Product)
                 .Include(r => r.Messages)
                 .Where(r => r.BuyerId == request.CurrentUserId || 
@@ -38,6 +39,9 @@ namespace Core.Features.Chat.Queries.Handlers
                     BuyerId = r.BuyerId,
                     OrganizationId = r.OrganizationId,
                     OrganizationName = r.Organization != null ? r.Organization.Name : "Unknown Organization",
+                    ChatTitle = r.BuyerId == request.CurrentUserId
+                        ? (r.Organization != null ? r.Organization.Name : "Unknown Organization")
+                        : (r.Buyer != null ? r.Buyer.FullName ?? r.Buyer.UserName ?? "Unknown Buyer" : "Unknown Buyer"),
                     ProductName = r.Product != null ? r.Product.Name : null,
                     LastMessageAt = r.LastMessageAt,
                     LastMessageSnippet = r.Messages.OrderByDescending(m => m.SentAt).Select(m => m.Content).FirstOrDefault() ?? "",

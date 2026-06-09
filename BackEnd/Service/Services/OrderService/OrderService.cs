@@ -93,7 +93,7 @@ namespace Service.Services.OrderService
                 if (rowsAffected == 0)
                     return (
                         null,
-                        $"الكمية المطلوبة من '{product.Name}' تتجاوز المخزون المتاح أو نفدت للتو"
+                        "Insufficient Stock"
                     );
 
                 var itemPrice = product.DirectSalePrice;
@@ -123,6 +123,12 @@ namespace Service.Services.OrderService
                 ShippingStreet = orderDto.ShippingStreet,
                 BuildingNumber = orderDto.BuildingNumber,
             };
+
+            // Explicitly set the FK on each child so EF never misses the relationship
+            foreach (var item in orderItems)
+            {
+                item.OrderId = newOrder.Id;
+            }
 
             await _orderRepository.AddAsync(newOrder);
 
@@ -187,6 +193,7 @@ namespace Service.Services.OrderService
                 .GetTableNoTracking()
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
+                .Include(o => o.Shipment)
                 .Where(o => o.OrganizationId == organizationId)
                 .AsQueryable();
 

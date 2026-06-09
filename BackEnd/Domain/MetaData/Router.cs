@@ -110,6 +110,7 @@ namespace Domain.MetaData
             public const string UpdateAuction = Prefix + "/{auctionId}/update";
             public const string CancelAuction = Prefix + "/{auctionId}/cancel";
             public const string GetById = Prefix + "/{id}";
+            public const string GetAll = Prefix + "/GetAll";
             public const string GetActive = Prefix + "/GetActive";
             public const string GetCompleted = Prefix + "/GetCompleted";
             public const string Checkout = Prefix + "/{id}/checkout";

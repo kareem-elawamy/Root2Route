@@ -27,16 +27,19 @@ namespace Core.Base
             Data = data;
             Message = message;
             Succeeded = succeeded;
+            StatusCode = succeeded ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
         }
         public Response(string message)
         {
             Succeeded = false;
             Message = message;
+            StatusCode = HttpStatusCode.BadRequest;
         }
         public Response(string message, bool succeeded)
         {
             Succeeded = succeeded;
             Message = message;
+            StatusCode = succeeded ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
         }
 
 

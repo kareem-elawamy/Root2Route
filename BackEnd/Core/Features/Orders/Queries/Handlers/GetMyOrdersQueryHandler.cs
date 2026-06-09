@@ -35,6 +35,7 @@ namespace Core.Features.Orders.Queries.Handlers
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Organization)
+                .Include(o => o.Shipment)
                 .Where(o => o.BuyerId == request.CurrentUserId || userOrgIds.Contains(o.OrganizationId))
                 .OrderByDescending(o => o.OrderDate)
                 .Skip((request.PageNumber - 1) * request.PageSize)
@@ -58,6 +59,9 @@ namespace Core.Features.Orders.Queries.Handlers
                 BuildingNumber = o.BuildingNumber,
                 PaymentMethod = o.PaymentMethod.ToString(),
                 PaymentStatus = o.PaymentStatus.ToString(),
+                CarrierName = o.Shipment?.CarrierName,
+                TrackingNumber = o.Shipment?.TrackingNumber,
+                DriverPhone = o.Shipment?.DriverPhone,
                 Items = o.OrderItems!.Select(i => new OrderItemResponse
                 {
                     ProductId = i.ProductId,

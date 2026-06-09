@@ -72,7 +72,7 @@ namespace Service.Services.ReviewService
             };
 
             await _reviewRepository.AddAsync(review);
-            await _reviewRepository.SaveChangesAsync();
+            // Note: AddAsync already calls SaveChangesAsync internally in GenericRepositoryAsync.
 
             return review;
         }

@@ -107,7 +107,7 @@ export class ProductsComponent implements OnInit {
     this.http.get<any>(`https://root2route.runasp.net/api/v1/product/Organization/${orgId}`).subscribe({
       next: (response: any) => {
         const data = response?.data || response || {};
-        
+
         let products: Product[] = [];
         if (Array.isArray(data)) {
           products = data;

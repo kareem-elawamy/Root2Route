@@ -38,6 +38,7 @@ namespace Core.Features.Orders.Queries.Handlers
                 .Include(o => o.OrderItems!)
                     .ThenInclude(oi => oi.Product)
                 .Include(o => o.Organization)
+                .Include(o => o.Shipment)
                 .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
             if (order == null)
@@ -93,6 +94,9 @@ namespace Core.Features.Orders.Queries.Handlers
                 BuildingNumber = order.BuildingNumber,
                 PaymentMethod = order.PaymentMethod.ToString(),
                 PaymentStatus = order.PaymentStatus.ToString(),
+                CarrierName = order.Shipment?.CarrierName,
+                TrackingNumber = order.Shipment?.TrackingNumber,
+                DriverPhone = order.Shipment?.DriverPhone,
                 Items = order.OrderItems!.Select(i => new OrderItemResponse
                 {
                     ProductId = i.ProductId,

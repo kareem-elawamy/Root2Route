@@ -131,6 +131,21 @@ builder
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
         };
+
+        // SignalR sends JWT via query string on WebSocket connections
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 var app = builder.Build();
@@ -166,6 +181,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<AuctionHub>("/hubs/auction").RequireCors("SignalRPolicy");
+app.MapHub<ChatHub>("/hubs/chat").RequireCors("SignalRPolicy");
 
 app.MapControllers();
 app.MapGet("/", () => "Welcome to Root2Route API - System is Running Successfully! ");
