@@ -7,7 +7,8 @@ import { OrgContextService } from '../../../../core/services/org-context.service
   selector: 'app-reviews',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './reviews.html'
+  templateUrl: './reviews.html',
+  // styleUrl: './reviews.css'
 })
 export class ReviewsComponent implements OnInit {
   private reviewsService = inject(ReviewsService);
@@ -21,6 +22,16 @@ export class ReviewsComponent implements OnInit {
     total: 0,
     average: 0
   };
+  
+  isHelpOpen = false;
+
+  toggleReviewsHelp() {
+    this.isHelpOpen = !this.isHelpOpen;
+  }
+
+  closeReviewsHelp() {
+    this.isHelpOpen = false;
+  }
 
   constructor() {
     effect(() => {
@@ -38,7 +49,10 @@ export class ReviewsComponent implements OnInit {
     this.reviewsService.getOrganizationReviews(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        const items = Array.isArray(data) ? data : [];
+        const items = Array.isArray(data) ? data.map(r => ({
+          ...r,
+          userName: r.reviewerName
+        })) : [];
 
         this.reviews = items;
         this.stats.total = items.length;

@@ -1,0 +1,207 @@
+/* main-layout.css */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+/* Sidebar */
+.app-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 108, 73, 0.1);
+  padding: 1.5rem;
+  z-index: 40;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-brand {
+  margin-bottom: 2.5rem;
+  padding-left: 0.5rem;
+}
+
+.brand-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.04em;
+}
+
+.brand-subtitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary-fixed-dim);
+  margin-top: 0.25rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  color: var(--color-on-surface-variant);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item:hover {
+  background-color: rgba(0, 108, 73, 0.05);
+  color: var(--color-primary);
+}
+
+.nav-item.active {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 108, 73, 0.2);
+}
+
+.nav-item .material-symbols-outlined {
+  font-size: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.nav-item:hover .material-symbols-outlined {
+  transform: scale(1.1);
+}
+
+.nav-label {
+  font-size: 0.875rem;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 108, 73, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-profile img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary-container);
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-error);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-btn:hover {
+  background-color: rgba(186, 26, 26, 0.1);
+  transform: translateX(2px);
+}
+
+/* Main Content Area */
+.app-main {
+  margin-left: 280px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2.5rem;
+  background: rgba(247, 249, 251, 0.85); /* var(--color-surface) with opacity */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 30;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--color-surface-container-low);
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  width: 400px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.search-bar:focus-within {
+  background-color: var(--color-surface-container-lowest);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.1);
+}
+
+.search-bar .material-symbols-outlined {
+  color: var(--color-outline);
+  font-size: 1.25rem;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+}
+
+.search-bar input::placeholder {
+  color: var(--color-outline-variant);
+}
+
+.content-wrapper {
+  padding: 2.5rem;
+  flex-grow: 1;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

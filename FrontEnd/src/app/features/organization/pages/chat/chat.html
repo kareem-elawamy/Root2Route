@@ -1,135 +1,172 @@
-<div class="flex h-[calc(100vh-64px)] bg-surface">
+<div class="apple-dashboard" style="height: calc(100vh - 64px); padding: 24px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;">
 
-  <!-- Sidebar: Chat Rooms -->
-  <div class="w-80 border-r border-slate-200 flex flex-col bg-white">
-    <div class="p-6 border-b border-slate-100">
-      <h2 class="text-2xl font-extrabold tracking-tight text-on-surface font-headline mb-1">Messages</h2>
-      <p class="text-xs text-slate-500 font-medium">Chat &amp; Offers</p>
-    </div>
-    
-    <div class="flex-1 overflow-y-auto">
-      @for (room of rooms; track room.id) {
-        <button (click)="selectRoom(room)"
-          [class.bg-slate-50]="activeRoom()?.id === room.id"
-          class="w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors border-b border-slate-100 text-left">
-          <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
-            {{ room.otherParticipantName?.charAt(0) || 'C' }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-slate-800 truncate">{{ room.otherParticipantName || 'Chat Room' }}</p>
-            <p class="text-xs text-slate-500 truncate">{{ room.lastMessage || 'No messages yet' }}</p>
-          </div>
-          @if (room.unreadCount > 0) {
-            <span class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">
-              {{ room.unreadCount }}
-            </span>
-          }
+  <!-- ── Page Header ── -->
+  <header class="apple-header" style="flex-shrink: 0; margin-bottom: 24px;">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Messages & Offers</h1>
+        <button class="icon-btn help-btn" (click)="toggleChatHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
         </button>
-      }
-      @if (rooms.length === 0) {
-        <div class="p-6 text-center text-slate-500">
-          <span class="material-symbols-outlined text-3xl text-slate-300 mb-2">forum</span>
-          <p class="text-sm">No active chats.</p>
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- Main Area: Active Chat -->
-  <div class="flex-1 flex flex-col bg-slate-50">
-    @if (activeRoom()) {
-      <!-- Chat Header -->
-      <div class="p-4 bg-white border-b border-slate-200 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
-            {{ activeRoom()?.otherParticipantName?.charAt(0) || 'C' }}
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeChatHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Chat Guide</h4>
+            <button class="icon-btn" (click)="closeChatHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
           </div>
-          <div>
-            <p class="text-sm font-bold text-slate-800">{{ activeRoom()?.otherParticipantName }}</p>
-            <p class="text-xs text-emerald-600 font-medium">Active</p>
+          <div class="help-popover-body">
+            <p><strong>Chat Rooms:</strong> Communicate directly with buyers and sellers.</p>
+            <p style="margin-top: 8px;"><strong>Offers:</strong> You can receive and respond to special pricing offers directly within the chat.</p>
+            <p style="margin-top: 8px;"><strong>Status:</strong> Offers can be Accepted or Rejected securely.</p>
           </div>
         </div>
-        <button class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">
-          <span class="material-symbols-outlined">more_vert</span>
-        </button>
+        }
       </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
+        Communicate with other users and manage incoming offers.
+      </p>
+    </div>
+  </header>
 
-      <!-- Messages Area -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-4">
-        @for (msg of messages; track msg.id) {
-          <div [class.justify-end]="msg.isMine" class="flex items-end gap-2">
-            @if (!msg.isMine) {
-              <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-[10px] font-bold">
-                {{ msg.senderName?.charAt(0) || 'O' }}
-              </div>
-            }
-            <div [class.bg-slate-900]="msg.isMine"
-                 [class.text-white]="msg.isMine"
-                 [class.bg-white]="!msg.isMine"
-                 [class.text-slate-800]="!msg.isMine"
-                 [class.border]="!msg.isMine"
-                 [class.border-slate-200]="!msg.isMine"
-                 class="max-w-[70%] p-3 rounded-2xl shadow-sm text-sm">
-              <p>{{ msg.content }}</p>
-              
-              <!-- Offer Card -->
-              @if (msg.hasOffer) {
-                <div class="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800">
-                  <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Special Offer</p>
-                  <p class="text-lg font-black text-emerald-700">${{ msg.offerAmount }}</p>
-                  <p class="text-xs text-slate-600 mt-1">{{ msg.offerDetails }}</p>
-                  
-                  @if (!msg.isMine && msg.offerStatus === 'Pending') {
-                    <div class="flex gap-2 mt-3">
-                      <button (click)="acceptOffer(msg.offerId)"
-                        class="flex-1 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition-colors">
-                        Accept
-                      </button>
-                      <button (click)="rejectOffer(msg.offerId)"
-                        class="flex-1 py-1.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-lg hover:bg-slate-50 transition-colors">
-                        Reject
-                      </button>
-                    </div>
-                  } @else {
-                    <div class="mt-2 text-xs font-bold uppercase tracking-widest text-center"
-                         [class.text-emerald-600]="msg.offerStatus === 'Accepted'"
-                         [class.text-rose-600]="msg.offerStatus === 'Rejected'">
-                      Offer {{ msg.offerStatus }}
-                    </div>
-                  }
-                </div>
-              }
-              
-              <p [class.text-slate-300]="msg.isMine" [class.text-slate-400]="!msg.isMine" class="text-[10px] mt-1 text-right">
-                {{ msg.createdAt | date:'shortTime' }}
-              </p>
+  <!-- ── Main Chat Interface ── -->
+  <div class="apple-card" style="flex: 1; display: flex; overflow: hidden; margin: 0; padding: 0;">
+    
+    <!-- Sidebar: Chat Rooms -->
+    <div style="width: 320px; border-right: 1px solid #ebebf0; display: flex; flex-direction: column; background: #fafafc;">
+      <div style="padding: 20px; border-bottom: 1px solid #ebebf0;">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #1d1d1f;">Active Chats</h2>
+      </div>
+      
+      <div style="flex: 1; overflow-y: auto;" class="custom-scrollbar-y">
+        @for (room of rooms; track room.id) {
+          <button (click)="selectRoom(room)"
+            style="width: 100%; padding: 16px 20px; display: flex; align-items: center; gap: 12px; border: none; border-bottom: 1px solid #ebebf0; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s;"
+            [style.background]="activeRoom()?.id === room.id ? '#ffffff' : 'transparent'"
+            [style.boxShadow]="activeRoom()?.id === room.id ? '-4px 0 0 var(--color-primary) inset' : 'none'"
+            onmouseover="this.style.background='#ffffff'"
+            onmouseout="this.style.background=this.getAttribute('data-active') === 'true' ? '#ffffff' : 'transparent'"
+            [attr.data-active]="activeRoom()?.id === room.id">
+            
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #64748b; font-size: 16px;">
+              {{ room.otherParticipantName?.charAt(0) || 'C' }}
             </div>
+            
+            <div style="flex: 1; min-width: 0;">
+              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d1d1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ room.otherParticipantName || 'Chat Room' }}</p>
+              <p style="margin: 4px 0 0; font-size: 13px; color: #86868b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ room.lastMessage || 'No messages yet' }}</p>
+            </div>
+            
+            @if (room.unreadCount > 0) {
+              <span style="width: 22px; height: 22px; border-radius: 50%; background: var(--color-primary); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
+                {{ room.unreadCount }}
+              </span>
+            }
+          </button>
+        }
+        @if (rooms.length === 0) {
+          <div style="padding: 40px 20px; text-align: center; color: #86868b;">
+            <span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px; opacity: 0.5;">forum</span>
+            <p style="margin: 0; font-size: 14px;">No active chats.</p>
           </div>
         }
       </div>
+    </div>
 
-      <!-- Input Area -->
-      <div class="p-4 bg-white border-t border-slate-200">
-        <div class="flex items-center gap-3">
-          <button class="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">
-            <span class="material-symbols-outlined">attach_file</span>
-          </button>
+    <!-- Main Area: Active Chat -->
+    <div style="flex: 1; display: flex; flex-direction: column; background: #ffffff;">
+      @if (activeRoom()) {
+        <!-- Chat Header -->
+        <div style="padding: 16px 24px; border-bottom: 1px solid #ebebf0; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #64748b; font-size: 15px;">
+              {{ activeRoom()?.otherParticipantName?.charAt(0) || 'C' }}
+            </div>
+            <div>
+              <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1d1d1f;">{{ activeRoom()?.otherParticipantName }}</p>
+              <p style="margin: 2px 0 0; font-size: 12px; font-weight: 500; color: #006B3D;">Active Now</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Messages Area -->
+        <div style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px;" class="custom-scrollbar-y">
+          @for (msg of messages; track msg.id) {
+            <div style="display: flex; gap: 12px; align-items: flex-end;" [style.flexDirection]="msg.isMine ? 'row-reverse' : 'row'">
+              
+              @if (!msg.isMine) {
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #64748b; font-size: 11px;">
+                  {{ msg.senderName?.charAt(0) || 'O' }}
+                </div>
+              }
+
+              <div style="max-width: 65%; padding: 14px 18px; border-radius: 20px; font-size: 14px; line-height: 1.5;"
+                   [style.background]="msg.isMine ? '#1d1d1f' : '#f5f5f7'"
+                   [style.color]="msg.isMine ? '#ffffff' : '#1d1d1f'"
+                   [style.borderBottomRightRadius]="msg.isMine ? '4px' : '20px'"
+                   [style.borderBottomLeftRadius]="!msg.isMine ? '4px' : '20px'">
+                
+                <p style="margin: 0;">{{ msg.content }}</p>
+                
+                <!-- Offer Card -->
+                @if (msg.hasOffer) {
+                  <div style="margin-top: 12px; padding: 16px; background: rgba(255,255,255,0.9); border-radius: 12px; color: #1d1d1f;">
+                    <p style="margin: 0 0 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #86868b;">Special Offer</p>
+                    <p style="margin: 0; font-size: 24px; font-weight: 800; color: #006B3D;">${{ msg.offerAmount }}</p>
+                    <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">{{ msg.offerDetails }}</p>
+                    
+                    @if (!msg.isMine && msg.offerStatus === 'Pending') {
+                      <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button (click)="acceptOffer(msg.offerId)" class="apple-btn-filled" style="flex: 1; height: 32px; font-size: 12px; padding: 0;">
+                          Accept
+                        </button>
+                        <button (click)="rejectOffer(msg.offerId)" class="apple-btn-outline" style="flex: 1; height: 32px; font-size: 12px; padding: 0;">
+                          Reject
+                        </button>
+                      </div>
+                    } @else {
+                      <div style="margin-top: 12px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;"
+                           [style.color]="msg.offerStatus === 'Accepted' ? '#006B3D' : (msg.offerStatus === 'Rejected' ? '#ff3b30' : '#86868b')">
+                        Offer {{ msg.offerStatus }}
+                      </div>
+                    }
+                  </div>
+                }
+                
+                <p style="margin: 6px 0 0; font-size: 10px; text-align: right;"
+                   [style.color]="msg.isMine ? 'rgba(255,255,255,0.6)' : '#86868b'">
+                  {{ msg.createdAt | date:'shortTime' }}
+                </p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Input Area -->
+        <div style="padding: 16px 24px; border-top: 1px solid #ebebf0; background: #ffffff; display: flex; align-items: center; gap: 12px;">
           <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..."
-            (keyup.enter)="sendMessage()"
-            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-          <button (click)="sendMessage()"
-            [disabled]="!newMessage.trim()"
-            class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 transition-colors disabled:bg-slate-300">
-            <span class="material-symbols-outlined">send</span>
+                 (keyup.enter)="sendMessage()"
+                 class="apple-input" style="flex: 1; background: #f5f5f7; border-color: transparent;">
+                 
+          <button (click)="sendMessage()" [disabled]="!newMessage.trim()"
+                  style="width: 44px; height: 44px; border-radius: 50%; background: #1d1d1f; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;"
+                  onmouseover="if(!this.disabled) this.style.background='#333'"
+                  onmouseout="if(!this.disabled) this.style.background='#1d1d1f'"
+                  [style.opacity]="!newMessage.trim() ? '0.5' : '1'">
+            <span class="material-symbols-outlined" style="font-size: 20px;">send</span>
           </button>
         </div>
-      </div>
-    @} @else {
-      <div class="flex-1 flex flex-col items-center justify-center text-slate-500">
-        <span class="material-symbols-outlined text-5xl text-slate-300 mb-2">chat</span>
-        <p class="font-medium">Select a chat to start messaging</p>
-      </div>
-    }
-  </div>
+      } @else {
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #86868b; text-align: center;">
+          <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.3; margin-bottom: 16px;">forum</span>
+          <p style="margin: 0; font-size: 16px; font-weight: 500;">Select a chat to start messaging</p>
+        </div>
+      }
+    </div>
 
+  </div>
 </div>

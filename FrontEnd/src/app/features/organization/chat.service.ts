@@ -29,11 +29,11 @@ export class ChatService {
   }
 
   acceptOffer(command: { offerId: string; currentUserId?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/accept-offer`, command);
+    return this.http.post(`${this.baseUrl}/accept-offer`, { offerMessageId: command.offerId });
   }
 
   rejectOffer(command: { offerId: string; currentUserId?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/reject-offer`, command);
+    return this.http.post(`${this.baseUrl}/reject-offer`, { offerMessageId: command.offerId });
   }
 
   markAsRead(roomId: string): Observable<any> {

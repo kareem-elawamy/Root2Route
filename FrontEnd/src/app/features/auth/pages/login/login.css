@@ -1,0 +1,333 @@
+/* Apple-inspired Login Styles */
+
+.m3-login-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  /* Soft background to make the glassmorphism card pop */
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  padding: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: #1d1d1f;
+}
+
+/* Glassmorphism Card */
+.m3-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.m3-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.m3-logo-container {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background-color: rgba(0, 108, 73, 0.1);
+  color: #006C49; /* Primary Branding Dark Green */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  box-shadow: inset 0 0 0 1px rgba(0, 108, 73, 0.1);
+}
+
+.m3-logo-icon {
+  font-size: 32px;
+}
+
+.m3-headline {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #1d1d1f;
+  margin: 0 0 0.5rem 0;
+}
+
+.m3-subtitle {
+  font-size: 0.95rem;
+  color: #86868b;
+  margin: 0;
+}
+
+/* Error Banner */
+.m3-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: rgba(255, 59, 48, 0.05);
+  color: #d92015;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 59, 48, 0.15);
+}
+
+/* Form */
+.m3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Clean Form Inputs */
+.m3-text-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+}
+
+.m3-input {
+  width: 100%;
+  height: 52px;
+  padding: 1rem 1rem 0;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  color: #1d1d1f;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.m3-input-with-icon {
+  padding-right: 48px;
+}
+
+.m3-input:focus {
+  border-color: #006C49;
+  box-shadow: 0 0 0 4px rgba(0, 108, 73, 0.15);
+  background: #fff;
+}
+
+/* Custom Floating Label */
+.m3-label {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  color: #86868b;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  display: block;
+}
+
+.m3-input:focus ~ .m3-label,
+.m3-input:not(:placeholder-shown) ~ .m3-label {
+  transform: translateY(-8px) scale(0.75);
+  transform-origin: left top;
+  color: #86868b;
+  font-weight: 500;
+}
+
+.m3-input:focus ~ .m3-label {
+  color: #006C49;
+}
+
+/* Remove old Material borders */
+.m3-fieldset, .m3-legend { 
+  display: none; 
+}
+
+/* Error State */
+.m3-text-field.error .m3-input {
+  border-color: #ff3b30;
+  background: #fff0f0;
+}
+.m3-text-field.error .m3-input:focus {
+  box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.15);
+}
+.m3-text-field.error .m3-label {
+  color: #ff3b30;
+}
+
+.m3-supporting-text {
+  position: absolute;
+  top: 56px;
+  font-size: 0.8rem;
+  color: #86868b;
+  padding-left: 4px;
+  margin-top: 4px;
+}
+.m3-supporting-text.error {
+  color: #ff3b30;
+}
+
+/* Icon Button */
+.m3-icon-button {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #86868b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.m3-icon-button:hover {
+  color: #1d1d1f;
+}
+
+/* Form Actions */
+.m3-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+/* Apple-style Checkbox */
+.m3-checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.m3-checkbox-wrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+}
+
+.m3-checkbox-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.m3-checkbox-background {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid #c6c6c8;
+  border-radius: 5px;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m3-checkbox-input:checked + .m3-checkbox-background {
+  background-color: #006C49;
+  border-color: #006C49;
+}
+
+.m3-checkbox-checkmark {
+  width: 12px;
+  height: 12px;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 0.2s ease;
+}
+
+.m3-checkbox-input:checked + .m3-checkbox-background .m3-checkbox-checkmark {
+  stroke-dashoffset: 0;
+}
+
+.m3-checkbox-label {
+  font-size: 0.9rem;
+  color: #1d1d1f;
+  font-weight: 400;
+}
+
+/* Text Button */
+.m3-text-button {
+  color: #006C49;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.m3-text-button:hover {
+  opacity: 0.7;
+}
+
+/* Filled Button */
+.m3-filled-button {
+  position: relative;
+  height: 48px;
+  border-radius: 14px;
+  background-color: #006C49;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 108, 73, 0.2);
+}
+
+.m3-filled-button:hover {
+  background-color: #005c3d;
+  box-shadow: 0 6px 16px rgba(0, 108, 73, 0.25);
+  transform: translateY(-1px);
+}
+
+.m3-filled-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 108, 73, 0.2);
+}
+
+.m3-filled-button:disabled {
+  background-color: #e5e5ea;
+  color: #8e8e93;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.m3-spinner {
+  animation: spin 1s linear infinite;
+  font-size: 1.25rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Hide M3 ripple element */
+.m3-state-layer { 
+  display: none; 
+}

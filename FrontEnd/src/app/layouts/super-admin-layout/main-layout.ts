@@ -5,7 +5,8 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/rou
   selector: 'app-super-admin-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './main-layout.html' // 🟢 السطر ده اللي هيجيب السايد بار بتاعك
+  templateUrl: './main-layout.html', // 🟢 السطر ده اللي هيجيب السايد بار بتاعك
+  styleUrl: './main-layout.css'
 })
 export class SuperAdminLayoutComponent {
   private router = inject(Router);

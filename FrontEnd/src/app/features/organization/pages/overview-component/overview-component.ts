@@ -22,9 +22,23 @@ export class OverviewComponent implements OnInit {
   readonly activeOrg = this.orgCtx.activeOrg;
   readonly currentUser = this.auth.currentUser;
   metrics = signal<any[]>([]);
+  chartData = signal<any[]>([
+    { month: 'Jan', netRevenue: 12000 },
+    { month: 'Feb', netRevenue: 15000 },
+    { month: 'Mar', netRevenue: 18000 },
+    { month: 'Apr', netRevenue: 14000 },
+    { month: 'May', netRevenue: 22000 },
+    { month: 'Jun', netRevenue: 26000 },
+    { month: 'Jul', netRevenue: 30000 }
+  ]);
 
-  recentOrders: any[] = [];
-  liveBids: any[] = [];
+  recentOrders = signal<any[]>([]);
+  liveBids = signal<any[]>([]);
+  showChartOptions = signal(false);
+  activeTimeframe = signal(6); // default to 6 months
+  selectedDateRange = signal('Last 30 Days');
+  isDateDropdownOpen = signal(false);
+  isHelpOpen = signal(false);
 
   constructor() {
     effect(() => {
@@ -43,8 +57,37 @@ export class OverviewComponent implements OnInit {
   }
 
   loadDashboardData(orgId: string) {
-    // Load Overview Stats
-    this.dashboardService.getOverview(orgId).subscribe({
+    this.loadOverviewStats(orgId);
+
+    // Load Latest Orders
+    this.dashboardService.getLatestOrders(orgId).subscribe({
+      next: (response: any) => {
+        const data = response?.data || response || [];
+        this.recentOrders.set(Array.isArray(data) ? data : []);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching latest orders', err);
+      }
+    });
+
+    // Load Live Bids
+    this.dashboardService.getLiveBids(orgId).subscribe({
+      next: (response: any) => {
+        const data = response?.data || response || [];
+        this.liveBids.set(Array.isArray(data) ? data : []);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching live bids', err);
+      }
+    });
+
+    this.loadChartData(orgId, this.activeTimeframe());
+  }
+
+  loadOverviewStats(orgId: string, days?: number) {
+    this.dashboardService.getOverview(orgId, days).subscribe({
       next: (response: any) => {
         const data = response?.data || response || {};
         this.metrics.set([
@@ -59,29 +102,106 @@ export class OverviewComponent implements OnInit {
         console.error('Error fetching overview stats', err);
       }
     });
+  }
 
-    // Load Latest Orders
-    this.dashboardService.getLatestOrders(orgId).subscribe({
+  loadChartData(orgId: string, months: number) {
+    this.dashboardService.getActivityChart(orgId, months).subscribe({
       next: (response: any) => {
         const data = response?.data || response || [];
-        this.recentOrders = Array.isArray(data) ? data : [];
+        if (Array.isArray(data) && data.length > 0) {
+           this.chartData.set(data);
+        }
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error fetching latest orders', err);
-      }
+      error: (err) => console.error('Error fetching chart', err)
     });
+  }
 
-    // Load Live Bids
-    this.dashboardService.getLiveBids(orgId).subscribe({
-      next: (response: any) => {
-        const data = response?.data || response || [];
-        this.liveBids = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error fetching live bids', err);
-      }
-    });
+  getStatusLabel(status: number): string {
+    switch (status) {
+      case 1: return 'Pending';
+      case 2: return 'Processing';
+      case 3: return 'Completed';
+      case 4: return 'Cancelled';
+      default: return 'Unknown';
+    }
+  }
+
+  formatTime(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  actionPlaceholder(actionName: string): void {
+    alert(`Feature '${actionName}' is coming soon!`);
+  }
+
+  toggleChartOptions(): void {
+    this.showChartOptions.update(v => !v);
+  }
+
+  toggleDateDropdown(): void {
+    this.isDateDropdownOpen.update(v => !v);
+  }
+
+  onDateRangeChange(range: string): void {
+    this.selectedDateRange.set(range);
+    this.isDateDropdownOpen.set(false);
+    console.log(`[Data Fetch] Updating KPI cards based on range: ${range}`);
+    
+    // Simulate updating chart/metrics data timeframe
+    let days = 30;
+    if (range === 'Today') days = 1;
+    else if (range === 'Last 7 Days') days = 7;
+    else if (range === 'This Year') days = 365;
+    
+    this.setFilter(days);
+  }
+
+  setFilter(days: number): void {
+    const org = this.activeOrg();
+    if (org?.id) {
+      this.loadOverviewStats(org.id, days);
+      this.activeTimeframe.set(days === 30 ? 1 : 6); // Just keeping the existing simulation logic
+      this.loadChartData(org.id, this.activeTimeframe());
+    }
+  }
+
+  toggleHelpPopover(): void {
+    this.isHelpOpen.update(v => !v);
+  }
+
+  closeHelpPopover(): void {
+    this.isHelpOpen.set(false);
+  }
+
+  exportReport(): void {
+    const orders = this.recentOrders();
+    if (!orders || orders.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+    
+    // Create CSV content
+    const headers = ["Order ID", "Product", "Amount", "Status"];
+    const rows = orders.map(o => [
+      o.orderId,
+      `"${o.buyerName}"`,
+      o.totalAmount,
+      this.getStatusLabel(o.status)
+    ]);
+    
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      
+    // Download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `organization_report_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

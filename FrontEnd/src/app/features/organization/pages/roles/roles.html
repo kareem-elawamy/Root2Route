@@ -1,0 +1,185 @@
+<div class="apple-dashboard">
+
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Roles & Permissions</h1>
+        <button class="icon-btn help-btn" (click)="toggleRolesHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeRolesHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Roles Guide</h4>
+            <button class="icon-btn" (click)="closeRolesHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Custom Roles:</strong> Define specific access levels tailored to your organization's needs.</p>
+            <p style="margin-top: 8px;"><strong>System Defaults:</strong> Default roles like 'Owner' or 'Admin' cannot be modified.</p>
+            <p style="margin-top: 8px;"><strong>Permissions:</strong> Granular control over what users can view, create, edit, or delete.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
+        Create custom roles and manage access levels for your organization.
+      </p>
+    </div>
+    <div class="header-actions">
+      @if (authService.hasPermission('Permissions.Roles.Create')) {
+        <button (click)="openCreateModal()" class="apple-btn-filled">
+          <span class="material-symbols-outlined icon">add</span>
+          Create New Role
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- ── Roles List ── -->
+  <div class="apple-card table-card mt-8">
+    <div class="table-toolbar">
+      <h2 class="table-title">Organization Roles</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="apple-table">
+        <thead>
+          <tr>
+            <th>Role Name</th>
+            <th>Description</th>
+            <th>Assigned Permissions</th>
+            <th class="table-actions-header"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (role of roles; track role.id) {
+          <tr>
+            <td>
+              <div class="product-info">
+                <span class="product-name">{{ role.name }}</span>
+                @if (role.isSystemDefault) {
+                  <span class="status-badge approved" style="display: inline-flex; margin-top: 0.25rem;">
+                    System Default
+                  </span>
+                }
+              </div>
+            </td>
+            <td>
+              <span class="product-sku">{{ role.description || 'No description provided' }}</span>
+            </td>
+            <td>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                @for (perm of role.permissions; track perm) {
+                  <span class="status-badge" style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; font-size: 10px;">
+                    {{ perm.permissionsClaim || perm.name || perm.permissionName || perm }}
+                  </span>
+                }
+                @if (!role.permissions?.length) {
+                  <span class="text-slate-400 text-xs italic">No permissions assigned</span>
+                }
+              </div>
+            </td>
+            <td class="table-actions">
+              <button class="icon-btn row-action-btn" title="Edit Role">
+                <span class="material-symbols-outlined icon">edit</span>
+              </button>
+            </td>
+          </tr>
+          }
+
+          @if (roles.length === 0) {
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <span class="material-symbols-outlined empty-icon">admin_panel_settings</span>
+                <p class="empty-title">No roles found</p>
+                <p class="empty-desc">Create your first custom role to get started.</p>
+                @if (authService.hasPermission('Permissions.Roles.Create')) {
+                  <button (click)="openCreateModal()" class="apple-btn-outline mt-4">
+                    <span class="material-symbols-outlined icon">add</span>
+                    Create Role
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Create Role Modal ── -->
+@if (isCreateModalOpen) {
+<div class="apple-modal-overlay">
+  <div class="apple-modal" style="max-width: 800px; width: 90vw;">
+    
+    <div class="modal-header" style="align-items: flex-start;">
+      <div>
+        <h2 class="modal-title">Create Custom Role</h2>
+        <p class="header-subtitle" style="margin-top: 0.25rem; font-size: 14px;">Define a new role and select its permissions.</p>
+      </div>
+      <button class="icon-btn" (click)="closeCreateModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body custom-scrollbar-y" style="max-height: 60vh;">
+      
+      <!-- Role Details -->
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Role Name *</label>
+          <input type="text" [(ngModel)]="newRole.name" placeholder="e.g. Sales Manager" class="apple-input">
+        </div>
+        <div class="input-group flex-1">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="newRole.description" placeholder="Brief description" class="apple-input">
+        </div>
+      </div>
+
+      <div class="divider" style="margin: 24px 0;"></div>
+
+      <!-- Permissions Selection -->
+      <h3 class="table-title mb-4">Select Permissions</h3>
+      
+      @if (systemPermissions.length === 0) {
+        <div class="p-4 rounded-xl text-center" style="background: var(--color-surface-container-high);">
+          <p class="text-sm" style="color: var(--color-outline);">Loading permissions...</p>
+        </div>
+      } @else {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px;">
+          @for (perm of systemPermissions; track perm) {
+            <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; border: 1px solid #e5e5ea; cursor: pointer; background: #fff;" [style.border-color]="hasPermission(perm) ? 'var(--color-primary)' : '#e5e5ea'" [style.background]="hasPermission(perm) ? 'rgba(0, 122, 255, 0.05)' : '#fff'">
+              <input type="checkbox" style="width: 16px; height: 16px; accent-color: var(--color-primary);"
+                [checked]="hasPermission(perm)"
+                (change)="togglePermission(perm)">
+              <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">{{ perm }}</span>
+            </label>
+          }
+        </div>
+      }
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="apple-btn-outline" (click)="closeCreateModal()">Cancel</button>
+      <button class="apple-btn-filled" (click)="createRole()" [disabled]="!newRole.name || isCreating">
+        @if (isCreating) {
+          Saving...
+        } @else {
+          Save Role
+        }
+      </button>
+    </div>
+
+  </div>
+</div>
+}

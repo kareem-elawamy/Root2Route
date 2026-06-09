@@ -10,5 +10,8 @@ export const noAuthGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/super-admin']);
+  if (auth.isSuperAdmin()) {
+    return router.createUrlTree(['/admin-dashboard']);
+  }
+  return router.createUrlTree(['/company-dashboard']);
 };

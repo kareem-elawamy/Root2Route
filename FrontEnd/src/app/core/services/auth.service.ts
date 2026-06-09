@@ -18,7 +18,8 @@ interface JwtClaims {
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
   organizationId?: string;
   organizationRole?: string;
-  permission?: string[];
+  permission?: string | string[];
+  Permission?: string | string[];
   role?: string | string[];
   Role?: string | string[]; // <--- السطر ده اللي هيحل الإيرور
   'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string | string[];
@@ -70,11 +71,22 @@ export class AuthService {
 
   setSession(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
+    const rawPerm = claims.permission || claims['Permission'] || [];
+    const perms = Array.isArray(rawPerm) ? rawPerm : [rawPerm];
+
+    const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    const identityRoles = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
+
+    if (claims.organizationRole) {
+      identityRoles.push(claims.organizationRole);
+    }
+
     const user: AuthUser = {
       id: claims.sub ?? '',
       email: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? '',
       name: data.fullName ?? '',
-      permissions: Array.isArray(claims.permission) ? claims.permission : [],
+      permissions: perms,
+      roles: identityRoles
     };
 
     // Persist tokens & user
@@ -88,6 +100,35 @@ export class AuthService {
     this._currentUser.set(user);
   }
 
+  refreshToken(orgId?: string): Observable<ResponseData<LoginResponse>> {
+    return new Observable((observer) => {
+      fetch(this._url + 'refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: this._token(),
+          refreshToken: this._refreshToken(),
+          organizationId: orgId
+        }),
+      })
+        .then(async (res) => {
+          const body = await res.json();
+          if (!res.ok) {
+            throw new Error(body?.message || 'Refresh token failed');
+          }
+          return body as ResponseData<LoginResponse>;
+        })
+        .then((response) => {
+          this.setSession(response.data);
+          observer.next(response);
+          observer.complete();
+        })
+        .catch((err: Error) => {
+          observer.error(err);
+        });
+    });
+  }
+
   clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
@@ -99,6 +140,10 @@ export class AuthService {
   }
 
   hasPermission(permission: string): boolean {
+    const roles = this._currentUser()?.roles ?? [];
+    if (roles.includes('Owner') || roles.includes('OrganizationOwner') || roles.includes('SuperAdmin') || roles.includes('Admin')) {
+      return true;
+    }
     return this.permissions().includes(permission);
   }
 
@@ -106,34 +151,44 @@ export class AuthService {
   private navigateAfterLogin(data: LoginResponse): void {
     const claims = this.decodeToken(data.accessToken);
 
-    // بنجيب الرول سواء مبعوث صريح أو بالاسم الطويل بتاع .NET
     const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
     const identityRoles = Array.isArray(rawRole)
       ? rawRole
       : rawRole
-      ? [rawRole]
-      : [];
+        ? [rawRole]
+        : [];
 
-    // 1. SuperAdmin role → go to super-admin dashboard
     if (identityRoles.includes('SuperAdmin')) {
-      this.router.navigate(['/super-admin/dashboard']);
+      this.router.navigate(['/admin-dashboard']);
       return;
     }
 
-    // 2. Check via API if user owns any organization → go to /org
     this.orgContext.myOrganization().subscribe({
       next: (response: any) => {
-        // بنقرأ الـ data من الـ Result Wrapper
         const orgs = response?.data || response;
         if (orgs && orgs.length > 0) {
-          this.router.navigate(['/org']);
+          const firstOrgId = orgs[0].id;
+          // Refresh token so the new token gets 'organizationRole' and 'permissions'
+          this.refreshToken(firstOrgId).subscribe({
+            next: () => {
+              // After successful refresh, roles will be updated. Now we can navigate safely.
+              this.router.navigate(['/company-dashboard/overview']);
+            },
+            error: (err) => {
+              console.error('Failed to refresh token for org:', err);
+              alert('Refresh Token Failed: ' + err.message);
+              this.router.navigate(['/unauthorized']);
+            }
+          });
         } else {
-          // 3. No org → unauthorized
-          this.router.navigate(['/unauthorized']);
+          // If the user has no organizations, they can't access company-dashboard
+          this.router.navigate(['/company-dashboard/overview']);
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to load orgs during login:', err);
+        alert('Load Orgs Failed: ' + err.message);
         this.router.navigate(['/unauthorized']);
       },
     });
@@ -162,12 +217,12 @@ export class AuthService {
 
     const claims = this.decodeToken(token);
     const rawRole = claims['role'] || claims['Role'] || claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-    
+
     const identityRoles = Array.isArray(rawRole)
       ? rawRole
       : rawRole
-      ? [rawRole]
-      : [];
+        ? [rawRole]
+        : [];
     return identityRoles.includes('SuperAdmin');
   }
 

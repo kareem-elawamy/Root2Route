@@ -1,167 +1,82 @@
-<main class="flex-grow flex flex-col md:flex-row min-h-screen overflow-hidden">
-  <!-- Left Side: Visual Anchor -->
-  <section class="hidden md:flex relative w-1/2 overflow-hidden bg-primary-container">
-    <div class="absolute inset-0 z-0">
-      <img alt="Artistic growth concept" class="w-full h-full object-cover"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRj522YlHoJdn_5VkBIFCwHqTGMwoSX2NlNKjo7Y5MBMdYThdhjEXYDhCVaUtHSApFMUNvOZ7EHp0PELGIAjyERL-N487q4SD20u4QWFM14pPP9bY8AVghMmKKSANR_rlMwjydG6jN45g6BSsgPeGxd2B24jut-Setz4ADud8zKpy3U9SaIidHpkOoHZKi2RRUzxqSSfKkTdAgjxFJS_vGKk0SIPhFkV6IP8HAIrtBHYkT1q7K_mhahwS1pDAVDtdzGXFsAVkQFxo" />
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/60 to-on-primary-fixed-variant/80 mix-blend-multiply">
+<main class="m3-login-layout">
+  <!-- Material Elevated Card -->
+  <section class="m3-card">
+    <div class="m3-card-header">
+      <div class="m3-logo-container">
+        <span class="material-symbols-outlined m3-logo-icon">eco</span>
       </div>
+      <h1 class="m3-headline">Welcome Back</h1>
+      <p class="m3-body-medium m3-subtitle">Sign in to the Root2Route agrarian exchange.</p>
     </div>
-    <div class="relative z-10 flex flex-col justify-end p-16 w-full h-full">
-      <div class="max-w-md">
-        <span
-          class="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-on-primary-container text-xs font-semibold tracking-widest uppercase">
-          The Digital Agrarian
-        </span>
-        <h1 class="text-5xl font-extrabold text-on-primary-container tracking-tight leading-tight mb-6">
-          Connecting the roots of production to the routes of commerce.
-        </h1>
-        <div class="h-1 w-12 bg-primary-fixed"></div>
-      </div>
+
+    @if (errorMessage()) {
+    <div class="m3-error-banner">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ errorMessage() }}</span>
     </div>
-  </section>
+    }
 
-  <!-- Right Side: Content Canvas -->
-  <section class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-24 bg-surface">
-    <div class="w-full max-w-[440px]">
-      <!-- Logo & Header -->
-      <header class="mb-12">
-        <div class="flex items-center gap-2 mb-8">
-          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <img src="./favicon.ico" alt="Root2Route logo" class="w-6 h-6" />
-          </div>
-          <span class="text-2xl font-extrabold text-primary tracking-tight">Root2Route</span>
-        </div>
-        <h2 class="text-3xl font-bold text-on-surface tracking-tight mb-2">Welcome Back</h2>
-        <p class="text-on-surface-variant leading-relaxed">
-          Enter your credentials to access the agrarian exchange.
-        </p>
-      </header>
-
-      <!-- Error Alert -->
-      @if (errorMessage()) {
-      <div
-        class="flex items-center gap-2 px-4 py-3 mb-6 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        {{ errorMessage() }}
+    <form class="m3-form" [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+      
+      <!-- Email Field (Outlined) -->
+      <div class="m3-text-field" [class.error]="isFieldInvalid('userName')">
+        <input type="email" class="m3-input" formControlName="userName" id="email" placeholder=" " autocomplete="email">
+        <label class="m3-label" for="email">Email Address</label>
+        <fieldset class="m3-fieldset" aria-hidden="true">
+          <legend class="m3-legend"><span>Email Address</span></legend>
+        </fieldset>
+        @if (isFieldInvalid('userName')) {
+        <div class="m3-supporting-text error">Please enter a valid email address.</div>
+        }
       </div>
-      }
 
-      <!-- Login Form -->
-      <form class="space-y-6" [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
-        <!-- Email -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-outline mb-2 ml-1" for="login-email">
-            Email Address
-          </label>
-          <input id="login-email" type="email" formControlName="userName" placeholder="name@company.com"
-            autocomplete="email" class="w-full h-14 px-5 rounded-xl border bg-surface-container-high transition-all text-on-surface placeholder:text-outline-variant
-                   focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest"
-            [class.border-red-500]="isFieldInvalid('userName')"
-            [class.border-transparent]="!isFieldInvalid('userName')" />
-          @if (isFieldInvalid('userName')) {
-          <p class="mt-1 text-xs text-red-400 ml-1">Please enter a valid email address.</p>
-          }
-        </div>
-
-        <!-- Password -->
-        <div>
-          <div class="flex justify-between items-center mb-2 ml-1">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-outline" for="login-password">
-              Password
-            </label>
-            <a class="text-xs font-semibold text-primary hover:underline transition-colors" href="#">Forgot
-              Password?</a>
-          </div>
-          <div class="relative">
-            <input id="login-password" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
-              placeholder="••••••••" autocomplete="current-password" class="w-full h-14 px-5 pr-12 rounded-xl border bg-surface-container-high transition-all text-on-surface placeholder:text-outline-variant
-                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest"
-              [class.border-red-500]="isFieldInvalid('password')"
-              [class.border-transparent]="!isFieldInvalid('password')" />
-            <!-- Toggle visibility -->
-            <button type="button"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
-              (click)="showPassword.set(!showPassword())"
-              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
-              @if (showPassword()) {
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                <line x1="1" y1="1" x2="23" y2="23" />
-              </svg>
-              } @else {
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              }
-            </button>
-          </div>
-          @if (isFieldInvalid('password')) {
-          <p class="mt-1 text-xs text-red-400 ml-1">Password must be at least 6 characters.</p>
-          }
-        </div>
-
-        <!-- Remember Me -->
-        <div class="flex items-center gap-3 py-1">
-          <input id="login-remember" type="checkbox" formControlName="isRememberMe" class="w-4 h-4 rounded border-outline-variant bg-surface-container-high text-primary
-                   focus:ring-primary focus:ring-offset-0 cursor-pointer" />
-          <label class="text-sm text-on-surface-variant cursor-pointer select-none" for="login-remember">
-            Remember this device
-          </label>
-        </div>
-
-        <!-- Submit -->
-        <button id="login-submit" type="submit" [disabled]="isLoading()"
-          class="w-full h-14 rounded-xl bg-primary text-on-primary font-semibold text-base flex items-center justify-center gap-2
-                 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
-          @if (isLoading()) {
-          <svg class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-          </svg>
-          Signing In...
-          } @else {
-          Sign In
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-          }
+      <!-- Password Field (Outlined) -->
+      <div class="m3-text-field" [class.error]="isFieldInvalid('password')">
+        <input [type]="showPassword() ? 'text' : 'password'" class="m3-input m3-input-with-icon" formControlName="password" id="password" placeholder=" " autocomplete="current-password">
+        <label class="m3-label" for="password">Password</label>
+        <fieldset class="m3-fieldset" aria-hidden="true">
+          <legend class="m3-legend"><span>Password</span></legend>
+        </fieldset>
+        
+        <button type="button" class="m3-icon-button m3-trailing-icon" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+          <span class="material-symbols-outlined">
+            {{ showPassword() ? 'visibility_off' : 'visibility' }}
+          </span>
         </button>
-      </form>
 
+        @if (isFieldInvalid('password')) {
+        <div class="m3-supporting-text error">Password must be at least 6 characters.</div>
+        }
+      </div>
 
+      <div class="m3-form-actions">
+        <!-- Remember Me Checkbox (M3) -->
+        <label class="m3-checkbox-container">
+          <div class="m3-checkbox-wrapper">
+            <input type="checkbox" class="m3-checkbox-input" formControlName="isRememberMe" id="remember">
+            <div class="m3-checkbox-background">
+              <svg class="m3-checkbox-checkmark" viewBox="0 0 24 24">
+                <path fill="none" stroke="white" stroke-width="3" d="M1.73,12.91 8.1,19.28 22.79,4.59"></path>
+              </svg>
+            </div>
+          </div>
+          <span class="m3-checkbox-label">Remember me</span>
+        </label>
 
+        <a href="#" class="m3-text-button">Forgot password?</a>
+      </div>
 
+      <!-- Submit Button (Filled) -->
+      <button type="submit" class="m3-filled-button" [disabled]="isLoading()">
+        <div class="m3-state-layer"></div>
+        @if (isLoading()) {
+          <span class="material-symbols-outlined m3-spinner">progress_activity</span>
+          <span>Signing in...</span>
+        } @else {
+          <span>Sign In</span>
+        }
+      </button>
 
-      <!-- Footer Link -->
-      <p class="mt-12 text-center text-sm text-on-surface-variant">
-        Have an invite from the mobile app?
-        <a class="text-primary font-semibold hover:underline ml-1" routerLink="/auth/magic-link">Use Magic Link</a>
-      </p>
-    </div>
+    </form>
   </section>
 </main>
-
-<!-- Footer -->
-<footer
-  class="w-full flex flex-col md:flex-row justify-between px-8 py-6 items-center bg-surface-container-low text-on-surface-variant border-t border-outline-variant/10">
-  <div class="flex items-center gap-4 mb-3 md:mb-0">
-    <span class="text-xs font-bold text-primary tracking-tighter uppercase">Root2Route</span>
-    <span class="text-[10px] uppercase tracking-wider text-outline">© 2024 Root2Route. The Digital Agrarian.</span>
-  </div>
-  <nav class="flex gap-8">
-    <a class="text-[10px] uppercase tracking-wider font-semibold hover:text-primary transition-colors" href="#">Privacy
-      Policy</a>
-    <a class="text-[10px] uppercase tracking-wider font-semibold hover:text-primary transition-colors" href="#">Terms of
-      Service</a>
-    <a class="text-[10px] uppercase tracking-wider font-semibold hover:text-primary transition-colors" href="#">Help
-      Center</a>
-  </nav>
-</footer>

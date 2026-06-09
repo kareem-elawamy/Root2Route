@@ -1,123 +1,182 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="apple-dashboard">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
-    <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Orders Management</h2>
-      <div class="flex items-center gap-3">
-        <span
-          class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
-          {{ stats.total }} Total Orders
-        </span>
-        <span class="text-sm text-slate-500">Received by your organization</span>
+  <div class="apple-header">
+    <div class="header-text">
+      <div class="title-wrapper">
+        <h2 class="header-title">Orders Management</h2>
+        <button class="icon-btn help-btn" (click)="toggleHelp()">
+          <span class="material-symbols-outlined">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <div class="popover-backdrop" (click)="closeHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Orders Guide</h4>
+            <button class="icon-btn" (click)="closeHelp()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Total Orders:</strong> All orders received by your organization.</p>
+            <p><strong>Pending:</strong> Orders waiting for your approval or processing.</p>
+            <p><strong>Completed:</strong> Successfully delivered and closed orders.</p>
+            <p><strong>Cancelled:</strong> Orders that were aborted.</p>
+            <p><strong>Export:</strong> Download your current filtered view as a CSV file.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <div class="header-subtitle-wrapper">
+        <span class="badge-total">{{ stats.total }} Total Orders</span>
+        <span class="header-subtitle">Received by your organization</span>
       </div>
     </div>
-    <div class="flex gap-3">
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
-        <span class="material-symbols-outlined text-lg">filter_list</span>
-        Filters
-      </button>
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all">
-        <span class="material-symbols-outlined text-lg">download</span>
+    
+    <div class="header-actions">
+      <div class="dropdown-wrapper">
+        <button class="apple-btn-outline" (click)="toggleFilterDropdown($event)">
+          <span class="material-symbols-outlined icon">filter_list</span>
+          {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
+        </button>
+
+        @if (isFilterDropdownOpen()) {
+          <div class="apple-dropdown">
+            <button class="dropdown-item" (click)="setFilter('All')">All Orders</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" (click)="setFilter('Pending')">Pending</button>
+            <button class="dropdown-item" (click)="setFilter('Processing')">Processing</button>
+            <button class="dropdown-item" (click)="setFilter('Shipped')">Shipped</button>
+            <button class="dropdown-item" (click)="setFilter('Completed')">Completed</button>
+            <button class="dropdown-item text-error" (click)="setFilter('Cancelled')">Cancelled</button>
+          </div>
+        }
+      </div>
+      
+      <button class="apple-btn-export" (click)="exportOrders()">
+        <span class="material-symbols-outlined icon">download</span>
         Export Orders
       </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-slate-600">shopping_cart</span>
+  <div class="kpi-grid">
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">shopping_cart</span>
         </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Orders</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.total }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-amber-600">pending</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Pending</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.pending }}</h3>
+        <div class="kpi-data">
+          <p class="kpi-label">Total Orders</p>
+          <h3 class="kpi-value">{{ stats.total }}</h3>
         </div>
       </div>
     </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+    
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">schedule</span>
         </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Completed</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.completed }}</h3>
+        <div class="kpi-data">
+          <p class="kpi-label">Pending</p>
+          <h3 class="kpi-value">{{ stats.pending }}</h3>
         </div>
       </div>
     </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-rose-600">cancel</span>
+    
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">check_circle</span>
         </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Cancelled</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.cancelled }}</h3>
+        <div class="kpi-data">
+          <p class="kpi-label">Completed</p>
+          <h3 class="kpi-value">{{ stats.completed }}</h3>
+        </div>
+      </div>
+    </div>
+    
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">cancel</span>
+        </div>
+        <div class="kpi-data">
+          <p class="kpi-label">Cancelled</p>
+          <h3 class="kpi-value">{{ stats.cancelled }}</h3>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+  <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Orders by Status</h3>
+      <div style="height: 250px;">
+        <canvas baseChart
+          [data]="statusChartData"
+          [options]="statusChartOptions"
+          [type]="statusChartType">
+        </canvas>
+      </div>
+    </div>
+    
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Revenue Trend</h3>
+      <div style="height: 250px;">
+        <canvas baseChart
+          [data]="revenueChartData"
+          [options]="revenueChartOptions"
+          [type]="revenueChartType">
+        </canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="apple-card table-card">
+    <div class="table-responsive">
+      <table class="apple-table">
+        <thead>
           <tr>
-            <th class="px-8 py-5">Order ID</th>
-            <th class="px-8 py-5">Date</th>
-            <th class="px-8 py-5">Receiver</th>
-            <th class="px-8 py-5">Total</th>
-            <th class="px-8 py-5">Status</th>
-            <th class="px-8 py-5 text-right">Actions</th>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Receiver</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody>
 
           @for (order of orders; track order.id) {
-          <tr class="hover:bg-slate-50 transition-colors group">
-            <td class="px-8 py-5">
-              <span class="text-sm font-extrabold text-slate-800">#{{ order.id.split('-')[0] }}</span>
+          <tr>
+            <td>
+              <span class="font-bold text-dark">#{{ order.id.split('-')[0] }}</span>
             </td>
-            <td class="px-8 py-5">
-              <span class="text-sm text-slate-600">{{ order.orderDate | date:'mediumDate' }}</span>
+            <td>
+              <span class="text-secondary">{{ order.orderDate | date:'mediumDate' }}</span>
             </td>
-            <td class="px-8 py-5">
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-700">{{ order.receiverName || 'N/A' }}</span>
-                <span class="text-[11px] text-slate-500">{{ order.shippingCity || 'N/A' }}</span>
+            <td>
+              <div class="stacked-info">
+                <span class="font-bold text-dark">{{ order.receiverName || 'N/A' }}</span>
+                <span class="text-small text-secondary">{{ order.shippingCity || 'N/A' }}</span>
               </div>
             </td>
-            <td class="px-8 py-5">
-              <span class="text-sm font-extrabold text-emerald-700">${{ order.finalTotal || order.totalAmount }}</span>
+            <td>
+              <span class="font-extrabold text-green">${{ order.finalTotal || order.totalAmount }}</span>
             </td>
-            <td class="px-8 py-5">
-              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest {{ order.statusClass }}">
+            <td>
+              <span class="status-badge {{ order.statusClass }}">
                 {{ order.status }}
               </span>
             </td>
-            <td class="px-8 py-5 text-right">
-              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+            <td class="text-right">
+              <div class="row-actions">
+                <button class="action-btn hover-green">
+                  <span class="material-symbols-outlined">visibility</span>
                 </button>
-                <button
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                <button class="action-btn hover-blue">
+                  <span class="material-symbols-outlined">edit</span>
                 </button>
               </div>
             </td>
@@ -126,9 +185,14 @@
 
           @if (orders.length === 0) {
             <tr>
-              <td colspan="6" class="py-16 text-center">
-                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">shopping_cart</span>
-                <p class="text-slate-500 font-medium">No orders found for this organization.</p>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="empty-icon-wrapper">
+                    <span class="material-symbols-outlined empty-icon">shopping_cart</span>
+                  </div>
+                  <p class="empty-title">No orders found</p>
+                  <p class="empty-desc">You don't have any orders matching the current filter.</p>
+                </div>
               </td>
             </tr>
           }

@@ -1,170 +1,250 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="apple-dashboard">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
-    <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Team & Roles</h2>
-      <p class="text-sm text-slate-500">Manage your organization's members and invitations.</p>
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Team & Roles</h1>
+        <button class="icon-btn help-btn" (click)="toggleMembersHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeMembersHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Team Guide</h4>
+            <button class="icon-btn" (click)="closeMembersHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Members:</strong> Manage current users, their assigned roles, and access levels.</p>
+            <p style="margin-top: 8px;"><strong>Invitations:</strong> Invite new members to join your organization.</p>
+            <p style="margin-top: 8px;"><strong>Ownership:</strong> Only the current owner can transfer ownership to another member.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
+        Manage your organization's members, roles, and pending invitations.
+      </p>
     </div>
-    <div class="flex gap-3">
-      <!-- Tab Switcher -->
-      <div class="inline-flex rounded-xl border border-slate-200 p-1 bg-white">
-        <button (click)="setTab('members')"
-          [class.bg-slate-900]="activeTab() === 'members'"
-          [class.text-white]="activeTab() === 'members'"
-          [class.bg-white]="activeTab() !== 'members'"
-          [class.text-slate-600]="activeTab() !== 'members'"
-          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
+    <div class="header-actions">
+      <div
+        style="display: flex; align-items: center; gap: 4px; background-color: #f1f5f9; padding: 4px; border-radius: 8px;">
+
+        <button [class.active-filter]="activeTab() === 'members'" (click)="setTab('members')"
+          style="flex: 1; border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 500; white-space: nowrap; border: none; cursor: pointer; transition: all 0.2s ease; color: #1d1d1f;"
+          [style.background]="activeTab() === 'members' ? '#ffffff' : 'transparent'"
+          [style.boxShadow]="activeTab() === 'members' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'">
           Members
         </button>
-        <button (click)="setTab('invitations')"
-          [class.bg-slate-900]="activeTab() === 'invitations'"
-          [class.text-white]="activeTab() === 'invitations'"
-          [class.bg-white]="activeTab() !== 'invitations'"
-          [class.text-slate-600]="activeTab() !== 'invitations'"
-          class="px-4 py-2 text-sm font-bold rounded-lg transition-all">
+
+        <button [class.active-filter]="activeTab() === 'invitations'" (click)="setTab('invitations')"
+          style="flex: 1; border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 500; white-space: nowrap; border: none; cursor: pointer; transition: all 0.2s ease; color: #1d1d1f;"
+          [style.background]="activeTab() === 'invitations' ? '#ffffff' : 'transparent'"
+          [style.boxShadow]="activeTab() === 'invitations' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'">
           Invitations
         </button>
+
       </div>
     </div>
-  </div>
+  </header>
 
   @if (activeTab() === 'members') {
-    <!-- Members Tab -->
-    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Chart -->
+    <div class="lg:col-span-1 apple-card"
+      style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 24px;">
+      <h3 class="table-title" style="margin-bottom: 24px; align-self: flex-start;">Roles Distribution</h3>
+      <div
+        style="position: relative; width: 160px; height: 160px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"
+        [style.background]="getDonutGradient()">
+        <div
+          style="position: absolute; width: 120px; height: 120px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <span style="font-size: 28px; font-weight: 700; color: #1d1d1f; line-height: 1;">{{ totalMembers }}</span>
+          <span style="font-size: 12px; color: #86868b; margin-top: 4px; font-weight: 500;">Members</span>
+        </div>
+      </div>
+      <div style="margin-top: 32px; width: 100%; display: flex; flex-direction: column; gap: 12px;">
+        @for (item of roleDistribution; track item.role) {
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span [style.background]="item.color"
+              style="width: 12px; height: 12px; border-radius: 50%; display: inline-block;"></span>
+            <span style="color: #1d1d1f; font-weight: 500;">{{ item.role }}</span>
+          </div>
+          <span style="font-weight: 600; color: #1d1d1f;">{{ item.count }}</span>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="lg:col-span-2 apple-card table-card">
+      <div class="table-toolbar">
+        <h2 class="table-title">Active Members</h2>
+      </div>
+
+      <div class="table-responsive">
+        <table class="apple-table">
+          <thead>
             <tr>
-              <th class="px-8 py-5">User</th>
-              <th class="px-8 py-5">Role</th>
-              <th class="px-8 py-5">Joined At</th>
-              <th class="px-8 py-5 text-right">Actions</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Joined At</th>
+              <th class="table-actions-header"></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody>
             @for (member of members; track member.id) {
-            <tr class="hover:bg-slate-50 transition-colors group">
-              <td class="px-8 py-5">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+            <tr>
+              <td>
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                    style="background: var(--color-primary);">
                     {{ member.userName?.charAt(0) || 'U' }}
                   </div>
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-slate-700">{{ member.userName || 'Unknown' }}</span>
-                    <span class="text-[11px] text-slate-500">{{ member.userEmail || 'N/A' }}</span>
+                  <div class="product-info">
+                    <span class="product-name">{{ member.userName || 'Unknown' }}</span>
+                    <span class="product-sku">{{ member.userEmail || 'N/A' }}</span>
                   </div>
                 </div>
               </td>
-              <td class="px-8 py-5">
-                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-700">
-                  {{ member.roleName || 'Member' }}
+              <td>
+                <span class="status-badge"
+                  style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
+                  {{ (member.roles && member.roles.length > 0) ? member.roles.join(', ') : (member.userId ===
+                  activeOrg()?.ownerId ? 'OWNER' : 'MEMBER') }}
                 </span>
               </td>
-              <td class="px-8 py-5">
-                <span class="text-sm text-slate-600">{{ member.joinedAt | date:'mediumDate' }}</span>
-              </td>
-              <td class="px-8 py-5 text-right">
-                <button (click)="removeMember(member.id)"
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
-                  <span class="material-symbols-outlined text-[18px]">person_remove</span>
+              <td class="text-secondary font-medium">{{ member.joinedAt | date:'mediumDate' }}</td>
+              <td class="table-actions">
+                @if (authService.hasPermission('Permissions.Members.Remove') && member.userId !== activeOrg()?.ownerId)
+                {
+                <button class="icon-btn row-action-btn text-error" title="Remove Member"
+                  (click)="removeMember(member.id)">
+                  <span class="material-symbols-outlined icon">person_remove</span>
                 </button>
+                }
+                @if (authService.currentUser()?.roles?.includes('Owner') && member.userId !== activeOrg()?.ownerId) {
+                <button class="icon-btn row-action-btn" style="color: #007aff;" title="Make Owner"
+                  (click)="changeOwner(member.userId || member.id)">
+                  <span class="material-symbols-outlined icon">admin_panel_settings</span>
+                </button>
+                }
               </td>
             </tr>
             }
+
             @if (members.length === 0) {
-              <tr>
-                <td colspan="4" class="py-16 text-center">
-                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">group</span>
-                  <p class="text-slate-500 font-medium">No members found.</p>
-                </td>
-              </tr>
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined empty-icon">group</span>
+                  <p class="empty-title">No members found</p>
+                  <p class="empty-desc">Your organization has no active members yet.</p>
+                </div>
+              </td>
+            </tr>
             }
           </tbody>
         </table>
       </div>
     </div>
+  </div>
   } @else {
-    <!-- Invitations Tab -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Invite Form -->
-      <div class="lg:col-span-1 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 h-fit">
-        <h3 class="text-xl font-bold text-slate-800 mb-4">Invite Member</h3>
-        <div class="space-y-4">
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Email Address</label>
-            <input type="email" [(ngModel)]="newInvite.email" placeholder="user@example.com"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Role (Optional)</label>
-            <input type="text" [(ngModel)]="newInvite.roleId" placeholder="Role ID"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm">
-          </div>
-          <button (click)="sendInvite()"
-            [disabled]="!newInvite.email"
-            class="w-full py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all disabled:bg-slate-300 disabled:shadow-none">
-            Send Invitation
-          </button>
-        </div>
-      </div>
+  <!-- ── Invitations Tab ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-      <!-- Invitations List -->
-      <div class="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
-              <tr>
-                <th class="px-8 py-5">Invitee</th>
-                <th class="px-8 py-5">Status</th>
-                <th class="px-8 py-5">Date</th>
-                <th class="px-8 py-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (invite of invitations; track invite.id) {
-              <tr class="hover:bg-slate-50 transition-colors group">
-                <td class="px-8 py-5">
-                  <div class="flex flex-col">
-                    <span class="text-sm font-bold text-slate-700">{{ invite.inviteeEmail }}</span>
-                  </div>
-                </td>
-                <td class="px-8 py-5">
-                  <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
-                    [class.bg-amber-100]="invite.status === 'Pending'"
-                    [class.text-amber-700]="invite.status === 'Pending'"
-                    [class.bg-emerald-100]="invite.status === 'Accepted'"
-                    [class.text-emerald-700]="invite.status === 'Accepted'"
-                    [class.bg-rose-100]="invite.status === 'Expired' || invite.status === 'Revoked'"
-                    [class.text-rose-700]="invite.status === 'Expired' || invite.status === 'Revoked'">
-                    {{ invite.status }}
-                  </span>
-                </td>
-                <td class="px-8 py-5">
-                  <span class="text-sm text-slate-600">{{ invite.createdAt | date:'mediumDate' }}</span>
-                </td>
-                <td class="px-8 py-5 text-right">
-                  @if (invite.status === 'Pending') {
-                    <button (click)="revokeInvitation(invite.id)"
-                      class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100">
-                      <span class="material-symbols-outlined text-[18px]">cancel</span>
-                    </button>
-                  }
-                </td>
-              </tr>
-              }
-              @if (invitations.length === 0) {
-                <tr>
-                  <td colspan="4" class="py-16 text-center">
-                    <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">mail</span>
-                    <p class="text-slate-500 font-medium">No invitations found.</p>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+    <!-- Invite Form -->
+    <div class="lg:col-span-1 apple-card" style="height: fit-content;">
+      <h3 class="table-title" style="margin-bottom: 24px; padding: 20px 24px 0;">Invite Member</h3>
+      <div style="padding: 0 24px 24px;">
+        <div class="input-group">
+          <label>Email Address *</label>
+          <input type="email" [(ngModel)]="newInvite.email" placeholder="user@example.com" class="apple-input">
         </div>
+        <div class="input-group">
+          <label>Role *</label>
+          <select [(ngModel)]="newInvite.roleId" required class="apple-input">
+            <option value="">Select a role...</option>
+            @for (role of roles; track role.id) {
+            <option [value]="role.id">{{ role.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Expiry Date *</label>
+          <input type="date" [(ngModel)]="newInvite.expiryDate" required class="apple-input">
+        </div>
+        <button (click)="sendInvite()" [disabled]="!newInvite.email || !newInvite.roleId" class="apple-btn-filled"
+          style="width: 100%; justify-content: center; margin-top: 16px;">
+          Send Invitation
+        </button>
       </div>
     </div>
+
+    <!-- Invitations List -->
+    <div class="lg:col-span-2 apple-card table-card">
+      <div class="table-toolbar">
+        <h2 class="table-title">Pending & Sent Invitations</h2>
+      </div>
+
+      <div class="table-responsive">
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>Invitee</th>
+              <th>Status</th>
+              <th>Sent Date</th>
+              <th class="table-actions-header"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (invite of invitations; track invite.id) {
+            <tr>
+              <td>
+                <span class="product-name">{{ invite.email }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [class.pending]="getStatusText(invite.status) === 'Pending'"
+                  [class.approved]="getStatusText(invite.status) === 'Accepted'"
+                  [class.rejected]="getStatusText(invite.status) === 'Expired' || getStatusText(invite.status) === 'Revoked'">
+                  {{ getStatusText(invite.status) }}
+                </span>
+              </td>
+              <td class="text-secondary font-medium">{{ invite.sentAt | date:'mediumDate' }}</td>
+              <td class="table-actions">
+                @if (invite.status === 'Pending') {
+                <button class="icon-btn row-action-btn text-error" title="Revoke Invite"
+                  (click)="revokeInvitation(invite.id)">
+                  <span class="material-symbols-outlined icon">cancel</span>
+                </button>
+                }
+              </td>
+            </tr>
+            }
+
+            @if (invitations.length === 0) {
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined empty-icon">mail</span>
+                  <p class="empty-title">No invitations found</p>
+                  <p class="empty-desc">You haven't sent out any invitations yet.</p>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
   }
 
 </div>

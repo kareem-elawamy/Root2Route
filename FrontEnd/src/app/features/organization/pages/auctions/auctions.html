@@ -1,138 +1,261 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="apple-dashboard">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
-    <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Auctions Management</h2>
-      <div class="flex items-center gap-3">
-        <span
-          class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
-          {{ stats.total }} Total Auctions
-        </span>
-        <span class="text-sm text-slate-500">Created by your organization</span>
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Auctions Management</h1>
+        <button class="icon-btn help-btn" (click)="toggleAuctionsHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeAuctionsHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Auctions Guide</h4>
+            <button class="icon-btn" (click)="closeAuctionsHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Auctions Inventory:</strong> Monitor your live bids, scheduled events, and finalized auctions.</p>
+            <p style="margin-top: 8px;"><strong>Actionable KPIs:</strong> Monitor active bidding wars and incoming revenue.</p>
+            <p style="margin-top: 8px;"><strong>Management:</strong> Use the filters to drill down into specific statuses or create new events.</p>
+          </div>
+        </div>
+        }
       </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
+        Monitor your live bids, scheduled events, and finalized auctions.
+      </p>
     </div>
-    <div class="flex gap-3">
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
-        <span class="material-symbols-outlined text-lg">filter_list</span>
-        Filters
-      </button>
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all">
-        <span class="material-symbols-outlined text-lg">add_circle</span>
+    
+    <div class="header-actions">
+      <div class="dropdown-wrapper">
+        <button class="apple-btn-outline" (click)="toggleFilterDropdown($event)">
+          <span class="material-symbols-outlined icon">filter_list</span>
+          {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
+        </button>
+
+        @if (isFilterDropdownOpen()) {
+          <div class="apple-dropdown">
+            <button class="dropdown-item" (click)="setFilter('All')">All Auctions</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" (click)="setFilter('Active')">Active</button>
+            <button class="dropdown-item" (click)="setFilter('Pending')">Pending</button>
+            <button class="dropdown-item" (click)="setFilter('Completed')">Completed</button>
+            <button class="dropdown-item text-error" (click)="setFilter('Cancelled')">Cancelled</button>
+          </div>
+        }
+      </div>
+      
+      <button class="apple-btn-filled" (click)="openCreateModal()">
+        <span class="material-symbols-outlined icon">add_circle</span>
         Create Auction
       </button>
     </div>
+  </header>
+
+  <!-- ── KPI Cards ── -->
+  <div class="kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+    <div class="apple-card kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-icon-wrapper bg-green-tint">
+          <span class="material-symbols-outlined text-green">{{ kpi.icon || 'info' }}</span>
+        </div>
+        <div class="kpi-data">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <p class="kpi-label">{{ kpi.label || 'Metric' }}</p>
+            <span class="kpi-trend-badge" [class.positive]="kpi.isUp" [class.negative]="!kpi.isUp">{{ kpi.trend }}</span>
+          </div>
+          <h3 class="kpi-value">{{ kpi.value || '0' }}</h3>
+        </div>
+      </div>
+    </div>
+    }
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-slate-600">gavel</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Auctions</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.total }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-emerald-600">bolt</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Active</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.active }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-blue-600">check_circle</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Completed</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.completed }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-rose-600">cancel</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Cancelled</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.cancelled }}</h3>
+  <!-- ── Charts ── -->
+  <div class="charts-grid" style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Auctions by Status</h3>
+      <div style="height: 250px; display: flex; justify-content: center;">
+        <div style="width: 100%; max-width: 500px;">
+          <canvas baseChart
+            [data]="statusChartData"
+            [options]="statusChartOptions"
+            [type]="statusChartType">
+          </canvas>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
-          <tr>
-            <th class="px-8 py-5">Auction ID</th>
-            <th class="px-8 py-5">Title</th>
-            <th class="px-8 py-5">Current Bid</th>
-            <th class="px-8 py-5">Time Left</th>
-            <th class="px-8 py-5">Status</th>
-            <th class="px-8 py-5 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-
-          @for (auction of auctions; track auction.id) {
-          <tr class="hover:bg-slate-50 transition-colors group">
-            <td class="px-8 py-5">
-              <span class="text-sm font-extrabold text-slate-800">#{{ auction.id.split('-')[0] }}</span>
-            </td>
-            <td class="px-8 py-5">
-              <span class="text-sm font-bold text-slate-700">{{ auction.title || 'Unnamed Auction' }}</span>
-            </td>
-            <td class="px-8 py-5">
-              <span class="text-sm font-extrabold text-emerald-700">${{ auction.currentHighestBid || auction.startBiddingPrice }}</span>
-            </td>
-            <td class="px-8 py-5">
-              <span class="text-sm text-slate-600">{{ auction.timeLeft }}</span>
-            </td>
-            <td class="px-8 py-5">
-              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest {{ auction.statusClass }}">
-                {{ auction.status }}
-              </span>
-            </td>
-            <td class="px-8 py-5 text-right">
-              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">visibility</span>
-                </button>
-                <button
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">edit</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-          }
-
-          @if (auctions.length === 0) {
-            <tr>
-              <td colspan="6" class="py-16 text-center">
-                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">gavel</span>
-                <p class="text-slate-500 font-medium">No auctions found for this organization.</p>
-              </td>
-            </tr>
-          }
-
-        </tbody>
-      </table>
+  <!-- ── Auctions Grid View ── -->
+  <div class="auction-dashboard-section">
+    <div class="table-toolbar" style="background: transparent; border: none; padding: 0 0 24px 0;">
+      <h2 class="table-title">Live & Upcoming Auctions</h2>
+      <div class="toolbar-actions">
+        <div class="apple-search-bar">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" class="apple-search-input" placeholder="Search title or product…" 
+                 [value]="searchTerm()" (input)="onSearchChange($event)" />
+        </div>
+      </div>
     </div>
-  </div>
 
+    <div class="auction-grid">
+      @for (auction of auctionsList; track auction.id) {
+      <div class="auction-card">
+        <!-- Header: Status and Dropdown -->
+        <div class="auction-card-header">
+          <span class="status-badge-premium"
+                [class.live]="auction.status === 'Active'"
+                [class.pending]="auction.status === 'Pending'"
+                [class.ended]="auction.status === 'Completed' || auction.status === 'Cancelled'">
+            @if (auction.status === 'Active') {
+              <span class="pulse-indicator"></span> LIVE
+            } @else {
+              {{ auction.status | uppercase }}
+            }
+          </span>
+          
+          <div class="card-actions-wrapper">
+            <button class="action-btn hover-green" (click)="toggleDropdown(auction.id, $event)">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+            @if (activeDropdownId() === auction.id) {
+            <div class="apple-dropdown">
+              @if (auction.status === 'Active' || auction.status === 'Pending') {
+              <button class="dropdown-item text-error" (click)="cancelAuction(auction.id)">
+                <span class="material-symbols-outlined icon">cancel</span> Cancel
+              </button>
+              } @else {
+              <button class="dropdown-item" disabled style="color: #94a3b8;">
+                <span class="material-symbols-outlined icon">info</span> No Actions
+              </button>
+              }
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Body: Title, Product, Price -->
+        <div class="auction-card-body">
+          <h3 class="product-title">{{ auction.productName || auction.title }}</h3>
+          <p class="auction-id">ID: {{ auction.id.split('-')[0] }}</p>
+          
+          <div class="price-section">
+            <span class="price-label">Start Price</span>
+            <span class="price-value">${{ auction.startPrice | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Footer: Timer -->
+        <div class="auction-card-footer">
+          <div class="timer-badge" [class.urgent]="auction.status === 'Active'">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ auction.timeLeft }}
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (auctionsList.length === 0) {
+      <div class="empty-state-grid">
+        <div class="empty-icon-wrapper">
+          <span class="material-symbols-outlined empty-icon">gavel</span>
+        </div>
+        <p class="empty-title">No auctions found</p>
+        <p class="empty-desc">You haven't scheduled any auctions yet.</p>
+        <button class="apple-btn-filled mt-4" (click)="openCreateModal()">
+          <span class="material-symbols-outlined icon">add_circle</span>
+          Create Auction
+        </button>
+      </div>
+      }
+    </div>
+
+    @if (auctionsList.length > 0) {
+    <div class="table-footer" style="background: transparent; border: none;">
+      <p class="pagination-text">
+        Showing {{ auctionsList.length }} auctions
+      </p>
+    </div>
+    }
+  </div>
 </div>
+
+<!-- ── Create Auction Modal ── -->
+@if (isCreateModalOpen()) {
+<div class="apple-modal-overlay">
+  <div class="apple-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Create New Auction</h2>
+      <button class="icon-btn" (click)="closeCreateModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form id="create-auction-form" (submit)="submitAuction($event)" class="modal-body custom-scrollbar-y" style="max-height: 60vh;">
+      
+      <div class="input-group">
+        <label>Auction Title *</label>
+        <input type="text" name="aucTitle" required class="apple-input" placeholder="e.g., Spring Wheat Surplus" />
+      </div>
+
+      <div class="input-group">
+        <label>Select Product *</label>
+        <select name="aucProduct" required class="apple-input">
+          @for (prod of orgProducts; track prod.id) {
+            <option [value]="prod.id">{{ prod.name }} (Stock: {{ prod.stockQuantity ?? prod.stock }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Start Date & Time *</label>
+          <input type="datetime-local" name="aucStartDate" required class="apple-input" />
+        </div>
+        <div class="input-group flex-1">
+          <label>End Date & Time *</label>
+          <input type="datetime-local" name="aucEndDate" required class="apple-input" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Starting Price ($) *</label>
+          <input type="number" step="0.01" name="aucStartPrice" required class="apple-input" placeholder="0.00" min="0" />
+        </div>
+        <div class="input-group flex-1">
+          <label>Min Bid Increment ($) *</label>
+          <input type="number" step="0.01" name="aucMinBid" required class="apple-input" placeholder="0.00" min="0" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Reserve Price ($) (Optional)</label>
+        <input type="number" step="0.01" name="aucReserve" class="apple-input" placeholder="0.00" min="0" />
+      </div>
+
+    </form>
+    
+    <div class="modal-footer">
+      <button type="button" class="apple-btn-outline" (click)="closeCreateModal()">Cancel</button>
+      <button type="submit" form="create-auction-form" class="apple-btn-filled" [disabled]="isCreatingAuction()">
+        @if (isCreatingAuction()) {
+          Scheduling...
+        } @else {
+          Schedule Auction
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}

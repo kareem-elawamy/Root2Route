@@ -1,83 +1,79 @@
-<div class="p-10 space-y-10">
-
-  <div class="flex items-end justify-between">
-    <div>
-      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Super Admin Overview</h1>
-      <p class="text-on-surface-variant mt-2 font-medium">Monitoring platform economics and ML infrastructure health.
-      </p>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Super Admin Overview</h1>
+      <p class="dashboard-subtitle">Monitoring platform economics and ML infrastructure health.</p>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
-      <p class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Gross Revenue</p>
-      <p class="text-3xl font-extrabold text-on-surface">${{ overviewStats?.grossRevenue || 0 }}</p>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-bg"><span class="material-symbols-outlined">payments</span></div>
+      <p class="stat-label">Gross Revenue</p>
+      <p class="stat-value">${{ overviewStats.grossRevenue }}</p>
     </div>
-    <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-2xl shadow-lg text-black">
-      <p class="text-emerald-50 text-sm font-semibold uppercase tracking-wider mb-1 text-black">Platform Fees (Net)</p>
-      <p class="text-3xl font-extrabold">${{ overviewStats?.platformFees || 0 }}</p>
+    
+    <div class="stat-card stat-card-highlight">
+      <div class="stat-icon-bg"><span class="material-symbols-outlined">account_balance</span></div>
+      <p class="stat-label">Platform Fees (Net)</p>
+      <p class="stat-value">${{ overviewStats.platformFees }}</p>
     </div>
-    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
-      <p class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Pending Organizations</p>
-      <p class="text-3xl font-extrabold text-on-surface">{{ overviewStats?.pendingOrganizations || 0 }}</p>
+    
+    <div class="stat-card">
+      <div class="stat-icon-bg"><span class="material-symbols-outlined">domain_add</span></div>
+      <p class="stat-label">Pending Organizations</p>
+      <p class="stat-value">{{ overviewStats.pendingOrganizations }}</p>
     </div>
-    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm">
-      <p class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Total ML Diagnoses</p>
-      <p class="text-3xl font-extrabold text-on-surface">{{ overviewStats?.totalMLDiagnoses || 0 }}</p>
+    
+    <div class="stat-card">
+      <div class="stat-icon-bg"><span class="material-symbols-outlined">psychiatry</span></div>
+      <p class="stat-label">Total ML Diagnoses</p>
+      <p class="stat-value">{{ overviewStats.totalMLDiagnoses }}</p>
     </div>
   </div>
 
-  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
-    <div class="p-6 flex justify-between items-center border-b border-surface-container-high">
-      <h3 class="text-lg font-bold text-on-surface">Pending Organization Approvals</h3>
+  <div class="data-section">
+    <div class="data-header">
+      <h3 class="data-title">Pending Organization Approvals</h3>
     </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead class="bg-surface-container-low text-on-surface-variant text-xs uppercase font-bold tracking-wider">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
           <tr>
-            <th class="px-6 py-4">Org Name</th>
-            <th class="px-6 py-4">Business Type</th>
-            <th class="px-6 py-4">Contact Info</th>
-            <th class="px-6 py-4">Request Date</th>
-            <th class="px-6 py-4 text-right">Actions</th>
+            <th>Org Name</th>
+            <th>Business Type</th>
+            <th>Contact Info</th>
+            <th>Request Date</th>
+            <th class="text-right">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-surface-container-high">
-
+        <tbody>
           @for (org of organizations; track org.name) {
-          <tr class="hover:bg-surface-container-low/30 transition-colors">
-            <td class="px-6 py-5">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-8 h-8 rounded-lg {{ org.bgClass }} flex items-center justify-center {{ org.textClass }} font-bold">
+          <tr class="table-row">
+            <td>
+              <div class="org-info">
+                <div class="org-avatar {{ org.bgClass }} {{ org.textClass }}">
                   {{ org.initial }}
                 </div>
-                <span class="text-sm font-bold text-on-surface">{{ org.name }}</span>
+                <span class="org-name">{{ org.name }}</span>
               </div>
             </td>
-            <td class="px-6 py-5">
-              <span
-                class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full uppercase">{{
-                org.type }}</span>
+            <td>
+              <span class="org-type">{{ org.type }}</span>
             </td>
-            <td class="px-6 py-5">
-              <p class="text-xs text-on-surface font-medium">{{ org.email }}</p>
+            <td>
+              <p class="org-email">{{ org.email }}</p>
             </td>
-            <td class="px-6 py-5">
-              <p class="text-xs text-on-surface-variant">{{ org.date }}</p>
+            <td>
+              <p class="org-date">{{ org.date }}</p>
             </td>
-            <td class="px-6 py-5 text-right">
-              <div class="flex gap-2 justify-end">
-                <button
-                  class="px-3 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-full hover:bg-emerald-700 transition-colors shadow-sm">Approve</button>
-              </div>
+            <td class="text-right">
+              <button class="action-btn action-approve">Approve</button>
             </td>
           </tr>
           }
-
         </tbody>
       </table>
     </div>
   </div>
-
 </div>

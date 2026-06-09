@@ -18,4 +18,12 @@ export class AuctionService {
   getOrganizationAuctions(organizationId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/my-organization/${organizationId}`);
   }
+
+  createAuction(payload: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/create`, payload);
+  }
+
+  cancelAuction(auctionId: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${auctionId}/cancel`, {});
+  }
 }

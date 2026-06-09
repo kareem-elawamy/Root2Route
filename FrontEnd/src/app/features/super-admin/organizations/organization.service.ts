@@ -21,4 +21,14 @@ export class OrganizationService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.put(`${this.baseUrl}/${id}/status`, newStatus, { headers });
   }
+
+  // Create a new organization
+  createOrganization(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}`, data);
+  }
+
+  // Update an existing organization
+  updateOrganization(data: FormData): Observable<any> {
+    return this.http.put(`${this.baseUrl}`, data);
+  }
 }

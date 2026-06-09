@@ -1,194 +1,294 @@
-<div class="space-y-6 animate-fade-in pb-10">
+<div class="apple-dashboard">
 
-  <!-- ── Page Header ──────────────────────────────────────────────────── -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-    <div>
-      <h1 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-1">
-        Products Management
-      </h1>
-      <p class="text-sm font-body text-on-surface-variant font-medium">
+  <!-- ── Page Header ── -->
+  <header class="apple-header">
+    <div class="header-text">
+      <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+        <h1 class="header-title" style="margin: 0;">Products Management</h1>
+        <button class="icon-btn" (click)="toggleProductsHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
+        </button>
+        @if (isHelpOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeProductsHelp()"></div>
+        <div class="help-popover">
+          <div class="help-popover-header">
+            <h4>Products Guide</h4>
+            <button class="icon-btn" (click)="closeProductsHelp()" style="width: 24px; height: 24px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+            </button>
+          </div>
+          <div class="help-popover-body">
+            <p><strong>Products Inventory:</strong> Track all your digital agrarian stock levels.</p>
+            <p style="margin-top: 8px;"><strong>Actionable KPIs:</strong> Monitor 'Low Stock Alerts' and total 'Inventory Value' at a glance.</p>
+            <p style="margin-top: 8px;"><strong>Management:</strong> Use the filters to drill down into specific categories or search for goods directly.</p>
+          </div>
+        </div>
+        }
+      </div>
+      <p class="header-subtitle" style="margin-top: 8px;">
         Organize and monitor your digital agrarian inventory.
       </p>
     </div>
-    <div class="flex items-center gap-3">
-      <button
-        class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-sm font-label font-semibold hover:bg-surface-container-low transition-colors shadow-sm">
-        <span class="material-symbols-outlined text-lg">filter_list</span>
-        Filters
-      </button>
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold shadow-md shadow-primary/20 hover:opacity-90 transition-opacity">
-        <span class="material-symbols-outlined text-lg">add_circle</span>
+    <div class="header-actions">
+      <div style="position: relative;">
+        <button class="apple-btn-outline" (click)="toggleFilterDropdown($event)">
+          <span class="material-symbols-outlined icon">filter_list</span>
+          {{ activeFilter() === 'All' ? 'Filters' : activeFilter() }}
+        </button>
+
+        @if (isFilterDropdownOpen()) {
+        <div class="apple-dropdown" style="top: 48px; right: 0;">
+          <button class="dropdown-item" (click)="setFilter('All')">All Products</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" (click)="setFilter('Approved')">Approved Only</button>
+          <button class="dropdown-item" (click)="setFilter('Pending')">Pending Only</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" (click)="setFilter('Raw Crop')">Raw Crops</button>
+          <button class="dropdown-item" (click)="setFilter('Processed')">Processed</button>
+          <button class="dropdown-item" (click)="setFilter('Tool')">Tools</button>
+        </div>
+        }
+      </div>
+
+      <button class="apple-btn-filled" (click)="openCreateModal()">
+        <span class="material-symbols-outlined icon">add_circle</span>
         Add New Product
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- ── KPI Cards ────────────────────────────────────────────────────── -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+  <!-- ── KPI Cards ── -->
+  <div class="kpi-grid">
     @for (kpi of kpis(); track kpi.label) {
-    <div
-      class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-      <div class="flex justify-between items-start mb-4">
-        <div
-          class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:scale-110 transition-transform">
+    <div class="apple-card kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon-wrapper">
           <span class="material-symbols-outlined">{{ kpi.icon || 'info' }}</span>
         </div>
-        <span class="px-2.5 py-1 rounded-full text-xs font-label font-bold"
-          [class.bg-primary-fixed]="kpi.isUp"
-          [class.text-on-primary-fixed-variant]="kpi.isUp"
-          [class.bg-error-container]="!kpi.isUp"
-          [class.text-on-error-container]="!kpi.isUp">
+        <div class="kpi-trend" [class.positive]="kpi.isUp" [class.negative]="!kpi.isUp">
           {{ kpi.trend || '—' }}
-        </span>
+        </div>
       </div>
-      <div class="font-body">
-        <p class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest mb-1">
-          {{ kpi.label || 'Metric' }}
-        </p>
-        <p class="text-2xl font-headline font-bold text-on-surface">
-          {{ kpi.value || '0' }}
-        </p>
-      </div>
-      <!-- Decorative ghost icon -->
-      <div class="absolute -bottom-6 -right-6 text-primary/5 pointer-events-none">
-        <span class="material-symbols-outlined text-8xl" style="font-variation-settings:'FILL' 1">
-          {{ kpi.icon || 'info' }}
-        </span>
+      <div class="kpi-body">
+        <h3 class="kpi-title">{{ kpi.label || 'Metric' }}</h3>
+        <p class="kpi-value">{{ kpi.value || '0' }}</p>
       </div>
     </div>
     }
   </div>
 
-  <!-- ── Product Table ─────────────────────────────────────────────────── -->
-  <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant">
+  <!-- ── Charts Section ── -->
+  <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Products by Category</h3>
+      <div style="height: 250px;">
+        <canvas baseChart
+          [data]="categoryChartData"
+          [options]="categoryChartOptions"
+          [type]="categoryChartType">
+        </canvas>
+      </div>
+    </div>
+    
+    <div class="apple-card chart-card">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Inventory Value by Category</h3>
+      <div style="height: 250px;">
+        <canvas baseChart
+          [data]="inventoryChartData"
+          [options]="inventoryChartOptions"
+          [type]="inventoryChartType">
+        </canvas>
+      </div>
+    </div>
+  </div>
 
-    <!-- Table Toolbar -->
-    <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
-      <h2 class="text-base font-headline font-bold text-on-surface">All Products</h2>
-      <div
-        class="flex items-center gap-2 px-3 py-2 bg-surface-container-low rounded-xl border border-outline-variant text-sm text-on-surface-variant w-64">
-        <span class="material-symbols-outlined text-[18px]">search</span>
-        <span class="font-body text-xs">Search products…</span>
+  <!-- ── Product Data Table ── -->
+  <div class="apple-card table-card">
+    <div class="table-toolbar">
+      <h2 class="table-title">{{ showPending() ? 'Pending Products' : 'All Products' }}</h2>
+      <div class="toolbar-actions">
+        <button class="apple-btn-outline" [class.active-filter]="showPending()" (click)="togglePending()">
+          <span class="material-symbols-outlined icon">pending_actions</span>
+          {{ showPending() ? 'Show All' : 'Show Pending' }}
+        </button>
+        <div class="apple-search-bar">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" class="apple-search-input" placeholder="Search products…" 
+                 [value]="searchTerm()" (input)="onSearchChange($event)" />
+        </div>
       </div>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+    <div class="table-responsive">
+      <table class="apple-table">
         <thead>
-          <tr class="bg-surface-container-low/60">
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Product</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Category</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Price</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Stock</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Date Added</th>
-            <th class="px-6 py-4 text-[11px] font-label font-extrabold uppercase tracking-widest text-outline">Status</th>
-            <th class="px-6 py-4 text-right"></th>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Date Added</th>
+            <th>Status</th>
+            <th class="table-actions-header"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-outline-variant/30 font-body">
-
+        <tbody>
           @for (product of productsList; track product.id) {
-          <tr class="group hover:bg-surface-container-low/40 transition-colors">
-
-            <!-- Product Name + SKU + Image -->
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 border border-outline-variant">
+          <tr>
+            <td>
+              <div class="product-cell">
+                <div class="product-image">
                   @if (product.imageUrl) {
-                  <img class="w-full h-full object-cover"
-                    [src]="product.imageUrl"
-                    [alt]="product.name || 'Product image'" />
+                  <img [src]="product.imageUrl" [alt]="product.name" (error)="onImageError($event)" />
                   } @else {
-                  <div class="w-full h-full flex items-center justify-center">
-                    <span class="material-symbols-outlined text-outline text-2xl">image_not_supported</span>
+                  <div class="product-placeholder">
+                    <span class="material-symbols-outlined">image_not_supported</span>
                   </div>
                   }
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-on-surface">{{ product.name || 'Unnamed Product' }}</p>
-                  <p class="text-xs text-on-surface-variant">SKU: {{ product.sku || 'N/A' }}</p>
+                <div class="product-info">
+                  <span class="product-name">{{ product.name }}</span>
+                  <span class="product-sku">SKU: {{ product.sku }}</span>
                 </div>
               </div>
             </td>
-
-            <!-- Category -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant font-medium">
-              {{ product.category || 'Uncategorized' }}
-            </td>
-
-            <!-- Price -->
-            <td class="px-6 py-4 text-sm font-bold text-on-surface">
-              ${{ (product.price ?? 0) | number:'1.2-2' }}
-            </td>
-
-            <!-- Stock -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant">
-              {{ (product.stock ?? 0) | number }} Units
-            </td>
-
-            <!-- Date Added -->
-            <td class="px-6 py-4 text-sm text-on-surface-variant">
-              {{ product.dateAdded || '—' }}
-            </td>
-
-            <!-- Status Badge -->
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-label font-bold uppercase tracking-wider"
-                [ngClass]="getStatusClasses(product.status || 'Draft')">
-                <span class="w-1.5 h-1.5 rounded-full"
-                  [ngClass]="getDotClasses(product.status || 'Draft')"></span>
-                {{ product.status || 'Unknown' }}
+            <td class="text-secondary font-medium">{{ product.category }}</td>
+            <td class="font-bold">${{ product.price | number:'1.2-2' }}</td>
+            <td class="text-secondary font-medium">{{ product.stock | number }} Units</td>
+            <td class="text-secondary font-medium">{{ product.dateAdded }}</td>
+            <td>
+              <span class="status-badge"
+                [class.approved]="product.status === 'Approved'"
+                [class.pending]="product.status === 'Pending'"
+                [class.rejected]="product.status === 'Rejected'">
+                {{ product.status }}
               </span>
             </td>
-
-            <!-- Actions -->
-            <td class="px-6 py-4 text-right">
-              <button class="p-2 hover:bg-surface-container rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                <span class="material-symbols-outlined text-outline">more_vert</span>
+            <td class="table-actions" style="position: relative;">
+              <button class="icon-btn row-action-btn" (click)="toggleDropdown(product.id, $event)">
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
+              
+              <!-- Dropdown -->
+              @if (activeDropdownId() === product.id) {
+              <div class="apple-dropdown action-dropdown">
+                <button class="dropdown-item" (click)="openEditModal(product)">
+                  <span class="material-symbols-outlined icon">edit</span> Edit
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item text-error" (click)="deleteProduct(product.id)">
+                  <span class="material-symbols-outlined icon">delete</span> Delete
+                </button>
+              </div>
+              }
             </td>
           </tr>
           }
 
           @empty {
           <tr>
-            <td colspan="7" class="px-6 py-16 text-center">
-              <div class="flex flex-col items-center gap-3 text-on-surface-variant">
-                <span class="material-symbols-outlined text-5xl text-outline"
-                  style="font-variation-settings:'FILL' 0">inventory_2</span>
-                <p class="text-sm font-semibold font-body">No products found</p>
-                <p class="text-xs font-body">Add your first product to get started.</p>
-                <button
-                  class="mt-2 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-label font-semibold hover:opacity-90 transition-opacity">
-                  <span class="material-symbols-outlined text-base">add_circle</span>
+            <td colspan="7">
+              <div class="empty-state">
+                <span class="material-symbols-outlined empty-icon">inventory_2</span>
+                <p class="empty-title">No products found</p>
+                <p class="empty-desc">You don't have any products matching your criteria.</p>
+                <button class="apple-btn-filled mt-4" (click)="openCreateModal()">
+                  <span class="material-symbols-outlined icon">add_circle</span>
                   Add Product
                 </button>
               </div>
             </td>
           </tr>
           }
-
         </tbody>
       </table>
     </div>
 
-    <!-- Pagination Footer -->
-    <div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
-      <p class="text-xs text-on-surface-variant font-body font-medium">
-        Showing {{ productsList.length || 0 }} of {{ kpis()[0]?.value || '0' }} products
+    <div class="table-footer">
+      <p class="pagination-text">
+        Showing {{ productsList.length }} products
       </p>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
-          Previous
-        </button>
-        <button
-          class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-label font-bold text-on-surface-variant hover:bg-surface-container-low transition-colors">
-          Next
-        </button>
-      </div>
     </div>
-
   </div>
 </div>
+
+<!-- ── Add Product Modal ── -->
+@if (isCreateModalOpen()) {
+<div class="apple-modal-overlay">
+  <div class="apple-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">{{ editingProduct() ? 'Edit Product' : 'Create New Product' }}</h2>
+      <button class="icon-btn" (click)="closeCreateModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form id="create-product-form" (submit)="submitProduct($event)" class="modal-body custom-scrollbar-y" style="max-height: 60vh;">
+      
+      <div class="input-group">
+        <label>Product Name *</label>
+        <input type="text" name="prodName" required class="apple-input" placeholder="e.g., Premium Wheat Seed" [value]="editingProduct()?.originalData?.name || ''" />
+      </div>
+
+      <div class="input-group">
+        <label>Description</label>
+        <textarea name="prodDesc" class="apple-textarea" placeholder="Describe your product..." [value]="editingProduct()?.originalData?.description || ''"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group flex-1">
+          <label>Product Type</label>
+          <select name="prodType" class="apple-input" [value]="editingProduct()?.originalData?.productType || 0">
+            <option value="0">Raw Crop</option>
+            <option value="1">Processed</option>
+            <option value="2">Tool</option>
+            <option value="3">Chemical</option>
+          </select>
+        </div>
+        <div class="input-group flex-1">
+          <label>Stock Quantity</label>
+          <input type="number" name="prodStock" required class="apple-input" placeholder="e.g., 100" min="0" [value]="editingProduct()?.originalData?.stockQuantity ?? editingProduct()?.originalData?.stock ?? ''" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      
+      <div class="input-group">
+        <label class="toggle-label">
+          <input type="checkbox" name="isDirect" class="toggle-input" [checked]="editingProduct() ? editingProduct()?.originalData?.isAvailableForDirectSale : true" />
+          <span class="toggle-text">Available for Direct Sale</span>
+        </label>
+        <input type="number" step="0.01" name="directPrice" class="apple-input mt-2" placeholder="Direct Sale Price ($)" [value]="editingProduct()?.originalData?.directSalePrice ?? editingProduct()?.originalData?.price ?? ''" />
+      </div>
+
+      <div class="input-group">
+        <label class="toggle-label">
+          <input type="checkbox" name="isAuction" class="toggle-input" [checked]="editingProduct() ? editingProduct()?.originalData?.isAvailableForAuction : false" />
+          <span class="toggle-text">Available for Auction</span>
+        </label>
+        <input type="number" step="0.01" name="auctionPrice" class="apple-input mt-2" placeholder="Start Bidding Price ($)" [value]="editingProduct()?.originalData?.startBiddingPrice || ''" />
+      </div>
+
+      @if (!editingProduct()) {
+      <div class="divider"></div>
+      <div class="input-group">
+        <label>Product Image</label>
+        <input type="file" name="prodImage" accept="image/*" class="apple-file-input" />
+      </div>
+      }
+    </form>
+    
+    <div class="modal-footer">
+      <button type="button" class="apple-btn-outline" (click)="closeCreateModal()">Cancel</button>
+      <button type="submit" form="create-product-form" class="apple-btn-filled" [disabled]="isCreatingProduct()">
+        @if (isCreatingProduct()) {
+          Saving...
+        } @else {
+          {{ editingProduct() ? 'Update Product' : 'Create Product' }}
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}

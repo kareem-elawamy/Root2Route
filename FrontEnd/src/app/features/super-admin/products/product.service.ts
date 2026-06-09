@@ -22,6 +22,23 @@ export class ProductService {
     return this.http.get(`${this.baseUrl}/GetAll`, { params });
   }
 
+  getProductsByOrg(orgId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/Organization/${orgId}`);
+  }
+
+  getPendingProductsByOrg(orgId: string): Observable<any> {
+    return this.http.get(`https://root2route.runasp.net/api/v1/dashboard/org/${orgId}/products/pending`);
+  }
+
+  createProduct(formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}/Add`, formData);
+  }
+
+  updateProduct(command: any): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.put(`${this.baseUrl}/Update`, command, { headers });
+  }
+
   changeStatus(productId: string, newStatus: number): Observable<any> {
     const body = {
       productId: productId,

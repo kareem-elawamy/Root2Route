@@ -18,7 +18,11 @@ export class ShipmentsService {
     return this.http.post(`${this.baseUrl}/addresses`, command);
   }
 
-  dispatchOrder(command: { orderId: string; shippingAddressId: string }): Observable<any> {
+  dispatchOrder(command: { orderId: string; carrierName: string; trackingNumber: string; driverPhone?: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/dispatch`, command);
+  }
+
+  updateShipmentStatus(id: string, newStatus: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/status/${id}`, { newStatus });
   }
 }
