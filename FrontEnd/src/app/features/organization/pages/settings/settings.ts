@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { OrganizationService } from '../../../super-admin/organizations/organization.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -15,6 +16,7 @@ export class SettingsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly orgCtx = inject(OrgContextService);
   private readonly orgApi = inject(OrganizationService);
+  private readonly toast = inject(ToastService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
   
@@ -88,13 +90,14 @@ export class SettingsComponent implements OnInit {
     this.orgApi.updateOrganization(formData).subscribe({
       next: () => {
         this.isSaving.set(false);
+        this.toast.success('Settings updated successfully!');
         // Refresh context
         this.orgCtx.myOrganization().subscribe();
       },
       error: (err) => {
         this.isSaving.set(false);
         console.error('Failed to update settings', err);
-        alert('Failed to update settings.');
+        this.toast.error('Failed to update settings.');
       }
     });
   }

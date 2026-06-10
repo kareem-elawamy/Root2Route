@@ -1,30 +1,38 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect, signal } from '@angular/core';
+import { Component, OnInit, inject, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MembersService } from '../../members.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
+
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-members',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SkeletonComponent],
   templateUrl: './members.html',
   styleUrl: './members.css'
 })
 export class MembersComponent implements OnInit {
   private membersService = inject(MembersService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
+
   public authService = inject(AuthService);
+  private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
-  members: any[] = [];
-  invitations: any[] = [];
-  roles: any[] = [];
+  members = signal<any[]>([]);
+  invitations = signal<any[]>([]);
+  roles = signal<any[]>([]);
   
   activeTab = signal<'members' | 'invitations'>('members');
   isHelpOpen = signal(false);
+  isLoadingMembers = signal(true);
+  isLoadingInvitations = signal(true);
   
   newInvite = {
     email: '',
@@ -60,8 +68,7 @@ export class MembersComponent implements OnInit {
     this.membersService.getOrganizationRoles(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        this.roles = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
+        this.roles.set(Array.isArray(data) ? data : []);
       },
       error: (error: any) => {
         console.error('Error fetching roles', error);
@@ -70,27 +77,31 @@ export class MembersComponent implements OnInit {
   }
 
   loadMembers(orgId: string) {
+    this.isLoadingMembers.set(true);
     this.membersService.getMembers(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        this.members = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
+        this.members.set(Array.isArray(data) ? data : []);
+        this.isLoadingMembers.set(false);
       },
       error: (error: any) => {
         console.error('Error fetching members', error);
+        this.isLoadingMembers.set(false);
       }
     });
   }
 
   loadInvitations(orgId: string) {
+    this.isLoadingInvitations.set(true);
     this.membersService.getInvitations(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        this.invitations = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
+        this.invitations.set(Array.isArray(data) ? data : []);
+        this.isLoadingInvitations.set(false);
       },
       error: (error: any) => {
         console.error('Error fetching invitations', error);
+        this.isLoadingInvitations.set(false);
       }
     });
   }
@@ -99,7 +110,7 @@ export class MembersComponent implements OnInit {
     const org = this.activeOrg();
     if (!org || !org.id) return;
     if (!this.newInvite.roleId) {
-      alert('Please select a role.');
+      this.toast.warning('Please select a role.');
       return;
     }
 
@@ -112,7 +123,7 @@ export class MembersComponent implements OnInit {
 
     this.membersService.sendInvitation(command).subscribe({
       next: () => {
-        alert('Invitation sent successfully!');
+        this.toast.success('Invitation sent successfully!');
         this.newInvite.email = '';
         this.newInvite.roleId = '';
         this.newInvite.expiryDate = this.getDefaultExpiryDate();
@@ -120,40 +131,54 @@ export class MembersComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error sending invitation', error);
-        alert('Failed to send invitation.');
+        this.toast.error('Failed to send invitation.');
       }
     });
   }
 
   removeMember(memberId: string) {
-    if (!confirm('Are you sure you want to remove this member?')) return;
+    this.confirmDialog.open({
+      title: 'Remove Member',
+      message: 'Are you sure you want to remove this member?',
+      confirmLabel: 'Remove',
+      isDestructive: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.membersService.removeMember(memberId).subscribe({
-      next: () => {
-        alert('Member removed successfully!');
-        const org = this.activeOrg();
-        if (org) this.loadMembers(org.id);
-      },
-      error: (error: any) => {
-        console.error('Error removing member', error);
-        alert('Failed to remove member.');
-      }
+      this.membersService.removeMember(memberId).subscribe({
+        next: () => {
+          this.toast.success('Member removed successfully!');
+          const org = this.activeOrg();
+          if (org) this.loadMembers(org.id);
+        },
+        error: (error: any) => {
+          console.error('Error removing member', error);
+          this.toast.error('Failed to remove member.');
+        }
+      });
     });
   }
 
   revokeInvitation(invitationId: string) {
-    if (!confirm('Are you sure you want to revoke this invitation?')) return;
+    this.confirmDialog.open({
+      title: 'Revoke Invitation',
+      message: 'Are you sure you want to revoke this invitation?',
+      confirmLabel: 'Revoke',
+      isDestructive: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.membersService.revokeInvitation(invitationId).subscribe({
-      next: () => {
-        alert('Invitation revoked successfully!');
-        const org = this.activeOrg();
-        if (org) this.loadInvitations(org.id);
-      },
-      error: (error: any) => {
-        console.error('Error revoking invitation', error);
-        alert('Failed to revoke invitation.');
-      }
+      this.membersService.revokeInvitation(invitationId).subscribe({
+        next: () => {
+          this.toast.success('Invitation revoked successfully!');
+          const org = this.activeOrg();
+          if (org) this.loadInvitations(org.id);
+        },
+        error: (error: any) => {
+          console.error('Error revoking invitation', error);
+          this.toast.error('Failed to revoke invitation.');
+        }
+      });
     });
   }
 
@@ -181,47 +206,40 @@ export class MembersComponent implements OnInit {
   }
 
   changeOwner(memberId: string) {
-    if (!confirm('Are you sure you want to transfer ownership to this member? You will lose Owner privileges.')) return;
     const org = this.activeOrg();
     if (!org) return;
 
-    // Call the change owner API
-    const token = localStorage.getItem('access_token');
-    fetch(`https://root2route.runasp.net/api/v1/organizations/${org.id}/change-owner`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ newOwnerId: memberId }) // Assuming the body expects newOwnerId
-    })
-    .then(async res => {
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || 'Failed to change owner');
-      }
-      return res.json();
-    })
-    .then(() => {
-      alert('Ownership transferred successfully! Please login again to refresh permissions.');
-      this.authService.clearSession();
-      window.location.href = '/login';
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error transferring ownership: ' + err.message);
+    this.confirmDialog.open({
+      title: 'Transfer Ownership',
+      message: 'Are you sure you want to transfer ownership to this member? You will lose Owner privileges.',
+      confirmLabel: 'Transfer',
+      isDestructive: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.membersService.changeOrganizationOwner(org.id, memberId).subscribe({
+        next: () => {
+          this.toast.success('Ownership transferred successfully! Please login again to refresh permissions.');
+          this.authService.clearSession();
+          window.location.href = '/login';
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.toast.error('Error transferring ownership.');
+        }
+      });
     });
   }
 
   get totalMembers(): number {
-    return this.members.length;
+    return this.members().length;
   }
 
   get roleDistribution() {
     const dist = new Map<string, number>();
     const orgOwnerId = this.activeOrg()?.ownerId;
 
-    for (const m of this.members) {
+    for (const m of this.members()) {
       let role = 'MEMBER';
       if (m.roles && m.roles.length > 0) {
         // Ensure consistent casing for grouping
@@ -257,5 +275,20 @@ export class MembersComponent implements OnInit {
     }
 
     return `conic-gradient(${gradientParts.join(', ')})`;
+  }
+
+  assignRoleToMember(memberId: string, roleId: string) {
+    if (!roleId) return;
+    this.membersService.assignRoleToMember(memberId, roleId).subscribe({
+      next: () => {
+        this.toast.success('Role assigned successfully.');
+        const org = this.activeOrg();
+        if (org) this.loadMembers(org.id);
+      },
+      error: (err: any) => {
+        console.error('Error assigning role', err);
+        this.toast.error('Failed to assign role.');
+      }
+    });
   }
 }

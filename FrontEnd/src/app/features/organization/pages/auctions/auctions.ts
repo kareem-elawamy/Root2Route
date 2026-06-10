@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,9 @@ import { AuctionService } from '../../../super-admin/auctions/auction.service';
 import { ProductService } from '../../../super-admin/products/product.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { BaseChartDirective } from 'ng2-charts';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 
 export interface AuctionKpi {
@@ -28,9 +31,12 @@ export class AuctionsComponent implements OnInit {
   private auctionService = inject(AuctionService);
   private productService = inject(ProductService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
+  public readonly auth = inject(AuthService);
 
   readonly kpis = signal<AuctionKpi[]>([
     { label: 'Total Auctions', value: '0', trend: '+0%', isUp: true, icon: 'gavel', accentClass: 'text-primary' },
@@ -145,7 +151,7 @@ export class AuctionsComponent implements OnInit {
     this.auctionsList = filtered;
     this.updateKpis();
     this.updateCharts();
-    this.cdr.detectChanges();
+
   }
 
   onSearchChange(event: Event): void {
@@ -221,12 +227,25 @@ export class AuctionsComponent implements OnInit {
   }
 
   cancelAuction(id: string): void {
-    if(confirm('Are you sure you want to cancel this auction?')) {
+    this.confirmDialog.open({
+      title: 'Cancel Auction',
+      message: 'Are you sure you want to cancel this auction?',
+      confirmLabel: 'Cancel Auction',
+      isDestructive: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      
       this.auctionService.cancelAuction(id).subscribe({
-        next: () => this.loadAuctions(),
-        error: (err) => { console.error(err); alert('Error cancelling auction'); }
+        next: () => {
+          this.toast.success('Auction cancelled successfully.');
+          this.loadAuctions();
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toast.error('Error cancelling auction'); 
+        }
       });
-    }
+    });
   }
 
   // ── Modal Logic ──
@@ -239,16 +258,16 @@ export class AuctionsComponent implements OnInit {
       next: (res: any) => {
         let products = res.data || res.items || res || [];
         if (products.length === 0) {
-          alert('You must add a product first before creating an auction.');
+          this.toast.warning('You must add a product first before creating an auction.');
           return;
         }
         this.orgProducts = products;
         this.isCreateModalOpen.set(true);
-        this.cdr.detectChanges();
+
       },
       error: (err) => {
         console.error('Error fetching products', err);
-        alert('Could not fetch products to create an auction.');
+        this.toast.error('Could not fetch products to create an auction.');
       }
     });
   }
@@ -275,13 +294,14 @@ export class AuctionsComponent implements OnInit {
     this.auctionService.createAuction(payload).subscribe({
       next: () => {
         this.isCreatingAuction.set(false);
+        this.toast.success('Auction created successfully!');
         this.closeCreateModal();
         this.loadAuctions();
       },
       error: (err) => {
         this.isCreatingAuction.set(false);
         console.error(err);
-        alert('Error creating auction. Check console.');
+        this.toast.error('Error creating auction.');
       }
     });
   }

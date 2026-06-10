@@ -1,0 +1,164 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">User Management</h1>
+      <p class="page-subtitle">View and manage all platform users</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon bg-indigo-500/10"><span class="material-symbols-outlined text-indigo-400">group</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Users</span>
+        <span class="stat-value">{{ stats().total }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-emerald-500/10"><span class="material-symbols-outlined text-emerald-400">verified_user</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Active</span>
+        <span class="stat-value">{{ stats().active }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-rose-500/10"><span class="material-symbols-outlined text-rose-400">person_off</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Suspended</span>
+        <span class="stat-value">{{ stats().suspended }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" placeholder="Search by name or email..." [value]="searchTerm()" (input)="onSearchChange($event)" />
+    </div>
+    <div class="filter-chips">
+      <button class="chip" [class.active]="filterStatus() === 'all'" (click)="onFilterChange('all')">All</button>
+      <button class="chip" [class.active]="filterStatus() === 'active'" (click)="onFilterChange('active')">Active</button>
+      <button class="chip" [class.active]="filterStatus() === 'suspended'" (click)="onFilterChange('suspended')">Suspended</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (isLoading()) {
+    <app-skeleton type="table" [rows]="8" [columns]="5"></app-skeleton>
+  } @else if (users().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">person_search</span>
+      <h3>No Users Found</h3>
+      <p>Try adjusting your search or filter criteria.</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Organizations</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr (click)="openDetail(user)">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar">{{ getUserInitial(user) }}</div>
+                  <span class="user-name">{{ user.fullName || 'No Name' }}</span>
+                </div>
+              </td>
+              <td class="email-cell">{{ user.email }}</td>
+              <td class="org-count-cell">
+                <span class="org-badge">{{ user.organizationCount || 0 }}</span>
+              </td>
+              <td class="date-cell">{{ user.createdAt | date:'mediumDate' }}</td>
+              <td>
+                @if (user.isDeleted || user.isSuspended) {
+                  <span class="status-badge suspended">Suspended</span>
+                } @else {
+                  <span class="status-badge active">Active</span>
+                }
+              </td>
+              <td>
+                <button class="action-btn" (click)="toggleSuspend(user); $event.stopPropagation()">
+                  @if (user.isDeleted || user.isSuspended) {
+                    <span class="material-symbols-outlined text-emerald-400">lock_open</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-rose-400">block</span>
+                  }
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalCount]="totalCount()"
+      (pageChange)="goToPage($event)">
+    </app-pagination>
+  }
+</div>
+
+<!-- Detail Drawer -->
+@if (isDrawerOpen()) {
+  <div class="drawer-backdrop" (click)="closeDetail()"></div>
+  <div class="drawer">
+    <div class="drawer-header">
+      <h2>User Details</h2>
+      <button class="close-btn" (click)="closeDetail()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    @if (selectedUser(); as user) {
+      <div class="drawer-body">
+        <div class="drawer-avatar">{{ getUserInitial(user) }}</div>
+        <h3 class="drawer-name">{{ user.fullName || 'No Name' }}</h3>
+        <p class="drawer-email">{{ user.email }}</p>
+
+        <div class="drawer-info-grid">
+          <div class="drawer-info-item">
+            <span class="drawer-info-label">Phone</span>
+            <span class="drawer-info-value">{{ user.phoneNumber || 'N/A' }}</span>
+          </div>
+          <div class="drawer-info-item">
+            <span class="drawer-info-label">Organizations</span>
+            <span class="drawer-info-value">{{ user.organizationCount || 0 }}</span>
+          </div>
+          <div class="drawer-info-item">
+            <span class="drawer-info-label">Joined</span>
+            <span class="drawer-info-value">{{ user.createdAt | date:'longDate' }}</span>
+          </div>
+          <div class="drawer-info-item">
+            <span class="drawer-info-label">Status</span>
+            @if (user.isDeleted || user.isSuspended) {
+              <span class="status-badge suspended">Suspended</span>
+            } @else {
+              <span class="status-badge active">Active</span>
+            }
+          </div>
+        </div>
+
+        <button class="drawer-action-btn" [class.destructive]="!(user.isDeleted || user.isSuspended)" (click)="toggleSuspend(user)">
+          <span class="material-symbols-outlined">
+            {{ (user.isDeleted || user.isSuspended) ? 'lock_open' : 'block' }}
+          </span>
+          {{ (user.isDeleted || user.isSuspended) ? 'Reactivate User' : 'Suspend User' }}
+        </button>
+      </div>
+    }
+  </div>
+}

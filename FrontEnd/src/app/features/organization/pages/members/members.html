@@ -89,69 +89,91 @@
       </div>
 
       <div class="table-responsive">
-        <table class="apple-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Role</th>
-              <th>Joined At</th>
-              <th class="table-actions-header"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (member of members; track member.id) {
-            <tr>
-              <td>
-                <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    style="background: var(--color-primary);">
-                    {{ member.userName?.charAt(0) || 'U' }}
+        @if (isLoadingMembers()) {
+          <div style="padding: 24px;">
+            <app-skeleton type="table" [rows]="4" [columns]="4"></app-skeleton>
+          </div>
+        } @else {
+          <table class="apple-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Joined At</th>
+                <th class="table-actions-header"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (member of members(); track member.id) {
+              <tr>
+                <td>
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                      style="background: var(--color-primary);">
+                      {{ member.userName?.charAt(0) || 'U' }}
+                    </div>
+                    <div class="product-info">
+                      <span class="product-name">{{ member.userName || 'Unknown' }}</span>
+                      <span class="product-sku">{{ member.userEmail || 'N/A' }}</span>
+                    </div>
                   </div>
-                  <div class="product-info">
-                    <span class="product-name">{{ member.userName || 'Unknown' }}</span>
-                    <span class="product-sku">{{ member.userEmail || 'N/A' }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="status-badge"
-                  style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
-                  {{ (member.roles && member.roles.length > 0) ? member.roles.join(', ') : (member.userId ===
-                  activeOrg()?.ownerId ? 'OWNER' : 'MEMBER') }}
-                </span>
-              </td>
-              <td class="text-secondary font-medium">{{ member.joinedAt | date:'mediumDate' }}</td>
-              <td class="table-actions">
-                @if (authService.hasPermission('Permissions.Members.Remove') && member.userId !== activeOrg()?.ownerId)
-                {
-                <button class="icon-btn row-action-btn text-error" title="Remove Member"
-                  (click)="removeMember(member.id)">
-                  <span class="material-symbols-outlined icon">person_remove</span>
-                </button>
-                }
-                @if (authService.currentUser()?.roles?.includes('Owner') && member.userId !== activeOrg()?.ownerId) {
-                <button class="icon-btn row-action-btn" style="color: #007aff;" title="Make Owner"
-                  (click)="changeOwner(member.userId || member.id)">
-                  <span class="material-symbols-outlined icon">admin_panel_settings</span>
-                </button>
-                }
-              </td>
-            </tr>
-            }
+                </td>
+                <td>
+                  @if (member.userId === activeOrg()?.ownerId) {
+                    <span class="status-badge"
+                      style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
+                      OWNER
+                    </span>
+                  } @else if (authService.hasPermission('Permissions.Roles.Assign')) {
+                    <select class="apple-input"
+                      style="padding: 4px 8px; font-size: 12px; min-width: 120px; border-radius: 6px;"
+                      [ngModel]="member.roles?.[0] || ''"
+                      (ngModelChange)="assignRoleToMember(member.id, $event)">
+                      <option value="" disabled>Select role</option>
+                      @for (role of roles(); track role.id) {
+                        <option [value]="role.id">{{ role.name }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <span class="status-badge"
+                      style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
+                      {{ member.roles?.[0] || 'Member' }}
+                    </span>
+                  }
+                </td>
+                <td class="text-secondary font-medium">{{ member.joinedAt | date:'mediumDate' }}</td>
+                <td class="table-actions">
+                  @if (authService.hasPermission('Permissions.Members.Remove') && member.userId !== activeOrg()?.ownerId)
+                  {
+                  <button class="icon-btn row-action-btn text-error" title="Remove Member"
+                    (click)="removeMember(member.id)">
+                    <span class="material-symbols-outlined icon">person_remove</span>
+                  </button>
+                  }
+                  @if (authService.currentUser()?.roles?.includes('Owner') && member.userId !== activeOrg()?.ownerId) {
+                  <button class="icon-btn row-action-btn" style="color: #007aff;" title="Make Owner"
+                    (click)="changeOwner(member.userId || member.id)">
+                    <span class="material-symbols-outlined icon">admin_panel_settings</span>
+                  </button>
+                  }
+                </td>
+              </tr>
+              }
 
-            @if (members.length === 0) {
-            <tr>
-              <td colspan="4">
-                <div class="empty-state">
-                  <span class="material-symbols-outlined empty-icon">group</span>
-                  <p class="empty-title">No members found</p>
-                  <p class="empty-desc">Your organization has no active members yet.</p>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+              @if (members().length === 0) {
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">group</span>
+                    <p class="empty-title">No members found</p>
+                    <p class="empty-desc">Your organization has no active members yet.</p>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        }
       </div>
     </div>
   </div>
@@ -162,6 +184,7 @@
     <!-- Invite Form -->
     <div class="lg:col-span-1 apple-card" style="height: fit-content;">
       <h3 class="table-title" style="margin-bottom: 24px; padding: 20px 24px 0;">Invite Member</h3>
+      @if (authService.hasPermission('Permissions.Members.Invite')) {
       <div style="padding: 0 24px 24px;">
         <div class="input-group">
           <label>Email Address *</label>
@@ -171,7 +194,7 @@
           <label>Role *</label>
           <select [(ngModel)]="newInvite.roleId" required class="apple-input">
             <option value="">Select a role...</option>
-            @for (role of roles; track role.id) {
+            @for (role of roles(); track role.id) {
             <option [value]="role.id">{{ role.name }}</option>
             }
           </select>
@@ -185,6 +208,12 @@
           Send Invitation
         </button>
       </div>
+      } @else {
+      <div style="padding: 0 24px 24px; text-align: center; color: #64748b;">
+        <span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px;">lock</span>
+        <p>You don't have permission to invite new members.</p>
+      </div>
+      }
     </div>
 
     <!-- Invitations List -->
@@ -194,53 +223,59 @@
       </div>
 
       <div class="table-responsive">
-        <table class="apple-table">
-          <thead>
-            <tr>
-              <th>Invitee</th>
-              <th>Status</th>
-              <th>Sent Date</th>
-              <th class="table-actions-header"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (invite of invitations; track invite.id) {
-            <tr>
-              <td>
-                <span class="product-name">{{ invite.email }}</span>
-              </td>
-              <td>
-                <span class="status-badge" [class.pending]="getStatusText(invite.status) === 'Pending'"
-                  [class.approved]="getStatusText(invite.status) === 'Accepted'"
-                  [class.rejected]="getStatusText(invite.status) === 'Expired' || getStatusText(invite.status) === 'Revoked'">
-                  {{ getStatusText(invite.status) }}
-                </span>
-              </td>
-              <td class="text-secondary font-medium">{{ invite.sentAt | date:'mediumDate' }}</td>
-              <td class="table-actions">
-                @if (invite.status === 'Pending') {
-                <button class="icon-btn row-action-btn text-error" title="Revoke Invite"
-                  (click)="revokeInvitation(invite.id)">
-                  <span class="material-symbols-outlined icon">cancel</span>
-                </button>
-                }
-              </td>
-            </tr>
-            }
+        @if (isLoadingInvitations()) {
+          <div style="padding: 24px;">
+            <app-skeleton type="table" [rows]="3" [columns]="4"></app-skeleton>
+          </div>
+        } @else {
+          <table class="apple-table">
+            <thead>
+              <tr>
+                <th>Invitee</th>
+                <th>Status</th>
+                <th>Sent Date</th>
+                <th class="table-actions-header"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invite of invitations(); track invite.id) {
+              <tr>
+                <td>
+                  <span class="product-name">{{ invite.email }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.pending]="getStatusText(invite.status) === 'Pending'"
+                    [class.approved]="getStatusText(invite.status) === 'Accepted'"
+                    [class.rejected]="getStatusText(invite.status) === 'Expired' || getStatusText(invite.status) === 'Revoked'">
+                    {{ getStatusText(invite.status) }}
+                  </span>
+                </td>
+                <td class="text-secondary font-medium">{{ invite.sentAt | date:'mediumDate' }}</td>
+                <td class="table-actions">
+                  @if ((invite.status === 'Pending' || invite.status === 0) && authService.hasPermission('Permissions.Members.Invite')) {
+                  <button class="icon-btn row-action-btn text-error" title="Revoke Invite"
+                    (click)="revokeInvitation(invite.id)">
+                    <span class="material-symbols-outlined icon">cancel</span>
+                  </button>
+                  }
+                </td>
+              </tr>
+              }
 
-            @if (invitations.length === 0) {
-            <tr>
-              <td colspan="4">
-                <div class="empty-state">
-                  <span class="material-symbols-outlined empty-icon">mail</span>
-                  <p class="empty-title">No invitations found</p>
-                  <p class="empty-desc">You haven't sent out any invitations yet.</p>
-                </div>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+              @if (invitations().length === 0) {
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">mail</span>
+                    <p class="empty-title">No invitations found</p>
+                    <p class="empty-desc">You haven't sent out any invitations yet.</p>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        }
       </div>
     </div>
 

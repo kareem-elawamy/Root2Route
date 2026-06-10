@@ -25,7 +25,11 @@
     </div>
   </div>
 
-  @if (activeLots.length === 0) {
+  @if (isLoading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">
+      <app-skeleton type="card" [rows]="1" [columns]="3"></app-skeleton>
+    </div>
+  } @else if (activeLots.length === 0) {
   <div
     class="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 mt-8">
     <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">

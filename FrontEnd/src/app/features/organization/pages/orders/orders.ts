@@ -1,21 +1,24 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, effect, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../order.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, BaseChartDirective, SkeletonComponent],
   templateUrl: './orders.html',
   styleUrl: './orders.css'
 })
 export class OrdersComponent implements OnInit {
   private orderService = inject(OrderService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
+
+  private toast = inject(ToastService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
   orders: any[] = [];
@@ -24,6 +27,7 @@ export class OrdersComponent implements OnInit {
   activeFilter = signal('All');
   isFilterDropdownOpen = signal(false);
   isHelpOpen = signal(false);
+  isLoading = signal(true);
 
   stats = {
     total: 0,
@@ -88,6 +92,7 @@ export class OrdersComponent implements OnInit {
   }
 
   loadOrders(orgId: string) {
+    this.isLoading.set(true);
     this.orderService.getReceivedOrders(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response.items || response || [];
@@ -108,9 +113,11 @@ export class OrdersComponent implements OnInit {
         this.stats.cancelled = items.filter((o: any) => o.status === 'Cancelled').length;
 
         this.filterOrders();
+        this.isLoading.set(false);
       },
       error: (error: any) => {
         console.error('Error fetching orders', error);
+        this.isLoading.set(false);
       }
     });
   }
@@ -145,12 +152,12 @@ export class OrdersComponent implements OnInit {
       this.orders = this.allOrders.filter(o => o.status === filter);
     }
     this.updateCharts();
-    this.cdr.detectChanges();
+
   }
 
   exportOrders(): void {
     if (this.orders.length === 0) {
-      alert("No orders to export.");
+      this.toast.warning("No orders to export.");
       return;
     }
 

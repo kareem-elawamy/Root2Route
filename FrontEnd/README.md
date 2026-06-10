@@ -1,59 +1,49 @@
-# FrontEnd
+# Root2Route Frontend 🌐
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.1.
+![Angular](https://img.shields.io/badge/Angular-17+-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![RxJS](https://img.shields.io/badge/RxJS-B7178C?style=for-the-badge&logo=reactivex&logoColor=white)
 
-## Development server
+The frontend application for **Root2Route**, a robust B2B logistics and trading platform. Built entirely with modern **Angular 17+** features, this platform relies entirely on **Angular Signals** for reactive state management, completely eliminating legacy `ChangeDetectorRef` patterns.
 
-To start a local development server, run:
+## ✨ Key Features
 
-```bash
-ng serve
-```
+- **Signals-Based Reactivity:** The entire application state (from data grids to auth context) is managed using Angular `signal`, `computed`, and `effect`.
+- **Role-Based Access Control (RBAC):** UI elements, sidebar navigation, and routes are dynamically gated based on JWT permission claims (`auth.hasPermission()`).
+- **Modern Routing:** Standalone components with lazy-loaded routes and strict `permissionGuard` protection.
+- **Smart Polling:** Network-efficient RxJS `switchMap` patterns for live features like Chat, avoiding unnecessary polling when components are idle.
+- **Reusable UI:** A robust library of standalone components (Modals, Pagination, Toasts, Confirm Dialogs) built for consistency and speed.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## 🚀 Getting Started
 
-## Code scaffolding
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- Angular CLI (`npm install -g @angular/cli`)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Installation & Setup
 
-```bash
-ng generate component component-name
-```
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+2. **Development Server:**
+   Start the local development server:
+   ```bash
+   ng serve
+   ```
+   Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-```bash
-ng generate --help
-```
+3. **Production Build:**
+   Compile the application for production:
+   ```bash
+   ng build --configuration=production
+   ```
+   The build artifacts will be stored in the `dist/` directory.
 
-## Building
+## 🏗️ Architecture Standards
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Standalone Components Only:** No `NgModules`. Every component defines its own imports.
+- **Strict Dependency Injection:** Uses the modern `inject()` function pattern instead of constructor injection.
+- **No `alert()` or `confirm()`:** All user prompts use the internal `ToastService` and `ConfirmDialogService`.
+- **Smart vs. Dumb Components:** Pages (Smart) handle data fetching and pass signals down to visual pieces (Dumb).

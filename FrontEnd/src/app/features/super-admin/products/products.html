@@ -63,19 +63,24 @@
 
   <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
-          <tr>
-            <th class="px-8 py-5">Product Details</th>
-            <th class="px-8 py-5">Stock & Category</th>
-            <th class="px-8 py-5">Pricing</th>
-            <th class="px-8 py-5">Status</th>
-            <th class="px-8 py-5 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
+      @if (isLoading()) {
+        <div class="p-6">
+          <app-skeleton type="table" [rows]="5" [columns]="5"></app-skeleton>
+        </div>
+      } @else {
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+            <tr>
+              <th class="px-8 py-5">Product Details</th>
+              <th class="px-8 py-5">Stock & Category</th>
+              <th class="px-8 py-5">Pricing</th>
+              <th class="px-8 py-5">Status</th>
+              <th class="px-8 py-5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
 
-          @for (product of products; track product.id) {
+            @for (product of products(); track product.id) {
           <tr class="hover:bg-slate-50 transition-colors group">
             <td class="px-8 py-5">
               <div class="flex items-center gap-4">
@@ -125,17 +130,18 @@
           </tr>
           }
 
-          @if (products.length === 0) {
-            <tr>
-              <td colspan="5" class="py-16 text-center">
-                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inventory_2</span>
-                <p class="text-slate-500 font-medium">No products found in the catalog.</p>
-              </td>
-            </tr>
-          }
+            @if (products().length === 0) {
+              <tr>
+                <td colspan="5" class="py-16 text-center">
+                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inventory_2</span>
+                  <p class="text-slate-500 font-medium">No products found in the catalog.</p>
+                </td>
+              </tr>
+            }
 
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      }
     </div>
   </div>
 

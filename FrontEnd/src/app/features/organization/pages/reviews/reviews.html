@@ -8,7 +8,7 @@
         <button class="icon-btn help-btn" (click)="toggleReviewsHelp()" style="width: 28px; height: 28px; background: rgba(0,0,0,0.04); color: #1d1d1f; border-radius: 50%;">
           <span class="material-symbols-outlined" style="font-size: 18px;">help</span>
         </button>
-        @if (isHelpOpen) {
+        @if (isHelpOpen()) {
         <!-- Click away overlay -->
         <div class="popover-backdrop" (click)="closeReviewsHelp()"></div>
         <div class="help-popover">
@@ -32,13 +32,13 @@
     
     <div class="header-actions">
       <div class="apple-card" style="padding: 12px 24px; display: flex; align-items: center; gap: 16px; margin: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-        <span style="font-size: 32px; font-weight: 800; color: #1d1d1f; line-height: 1;">{{ stats.average }}</span>
+        <span style="font-size: 32px; font-weight: 800; color: #1d1d1f; line-height: 1;">{{ stats().average }}</span>
         <div style="display: flex; flex-direction: column;">
           <div style="display: flex; color: #f59e0b; font-size: 18px;">
-            @for (star of getStars(stats.average); track $index) {
+            @for (star of getStars(stats().average); track $index) {
               <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
             }
-            @for (star of getEmptyStars(stats.average); track $index) {
+            @for (star of getEmptyStars(stats().average); track $index) {
               <span class="material-symbols-outlined">star</span>
             }
           </div>
@@ -53,11 +53,16 @@
   <!-- ── Reviews List ── -->
   <div class="apple-card table-card mt-4">
     <div class="table-toolbar">
-      <h2 class="table-title">All Reviews ({{ stats.total }})</h2>
+      <h2 class="table-title">All Reviews ({{ stats().total }})</h2>
     </div>
 
     <div style="display: flex; flex-direction: column;">
-      @for (review of reviews; track review.id) {
+      @if (isLoading()) {
+        <div style="padding: 24px;">
+          <app-skeleton type="list" [rows]="4" [columns]="1"></app-skeleton>
+        </div>
+      } @else {
+      @for (review of reviews(); track review.id) {
         <div style="padding: 24px; border-bottom: 1px solid #ebebf0; transition: background 0.2s;"
              onmouseover="this.style.background='#fcfcfd'"
              onmouseout="this.style.background='transparent'">
@@ -91,7 +96,7 @@
         </div>
       }
       
-      @if (reviews.length === 0) {
+      @if (reviews().length === 0) {
         <div class="empty-state">
           <div class="empty-icon-wrapper" style="background: rgba(245, 158, 11, 0.1);">
             <span class="material-symbols-outlined empty-icon" style="color: #f59e0b;">star</span>
@@ -99,6 +104,7 @@
           <p class="empty-title">No reviews yet</p>
           <p class="empty-desc">When customers purchase your products, their reviews will appear here.</p>
         </div>
+      }
       }
     </div>
   </div>

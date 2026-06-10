@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MembersService } from '../../../organization/members.service';
 import { Router } from '@angular/router';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-my-invitations',
@@ -13,29 +14,28 @@ import { OrgContextService } from '../../../../core/services/org-context.service
 export class MyInvitationsComponent implements OnInit {
   private membersService = inject(MembersService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
-  private router = inject(Router);
 
-  invitations: any[] = [];
-  isLoading = true;
+  private router = inject(Router);
+  private toast = inject(ToastService);
+
+  invitations = signal<any[]>([]);
+  isLoading = signal(true);
 
   ngOnInit() {
     this.loadInvitations();
   }
 
   loadInvitations() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.membersService.getMyInvitations().subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        this.invitations = Array.isArray(data) ? data : [];
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.invitations.set(Array.isArray(data) ? data : []);
+        this.isLoading.set(false);
       },
       error: (err: any) => {
         console.error('Error fetching my invitations', err);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.isLoading.set(false);
       }
     });
   }
@@ -43,7 +43,7 @@ export class MyInvitationsComponent implements OnInit {
   acceptInvitation(invitationId: string, token: string) {
     this.membersService.acceptInvitation(invitationId, token).subscribe({
       next: () => {
-        alert('Invitation accepted successfully!');
+        this.toast.success('Invitation accepted successfully!');
         // Reload organizations so the user can now access their new org
         this.orgCtx.myOrganization().subscribe(() => {
           this.router.navigate(['/org']);
@@ -51,7 +51,7 @@ export class MyInvitationsComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error accepting invitation', err);
-        alert('Failed to accept invitation.');
+        this.toast.error('Failed to accept invitation.');
       }
     });
   }

@@ -1,0 +1,108 @@
+.skeleton-wrapper {
+  width: 100%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.skeleton-cell, .skeleton-avatar, .skeleton-line {
+  background-color: #e2e8f0; /* slate-200 */
+  border-radius: 0.25rem;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Table Skeleton */
+.skeleton-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9; /* slate-100 */
+}
+
+.skeleton-row.header {
+  border-bottom: 2px solid #e2e8f0; /* slate-200 */
+  padding-bottom: 0.5rem;
+}
+
+.skeleton-row.header .skeleton-cell {
+  height: 1rem;
+  background-color: #cbd5e1; /* slate-300 */
+}
+
+.skeleton-row .skeleton-cell {
+  height: 1.25rem;
+  flex: 1;
+}
+
+/* Card Skeleton */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+/* List Skeleton */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+/* Common elements */
+.skeleton-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+}
+
+.skeleton-avatar.small {
+  width: 2rem;
+  height: 2rem;
+}
+
+.skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-line {
+  height: 1rem;
+  width: 100%;
+}
+
+.skeleton-line.title {
+  height: 1.25rem;
+  width: 60%;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}

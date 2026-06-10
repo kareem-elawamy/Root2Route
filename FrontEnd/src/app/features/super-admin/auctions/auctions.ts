@@ -1,16 +1,19 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuctionService } from './auction.service';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-auctions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkeletonComponent],
   templateUrl: './auctions.html'
 })
 export class Auctions implements OnInit {
   private auctionService = inject(AuctionService);
-  private cdr = inject(ChangeDetectorRef); // 🟢 1. حقنّا المنبه بتاع الأنجولار
+
+
+  isLoading = signal(true);
 
   // 2. قيم مبدئية للإحصائيات عشان الـ HTML ميضربش إيرور
   marketStats: any = {
@@ -26,6 +29,7 @@ export class Auctions implements OnInit {
   }
 
   loadAuctions() {
+    this.isLoading.set(true);
     this.auctionService.getActiveAuctions().subscribe({
       next: (response: any) => {
         const actualData = response.data || response;
@@ -101,11 +105,12 @@ export class Auctions implements OnInit {
 
         console.log('Active Auctions:', this.activeLots);
 
-        // 🟢 3. الضربة القاضية: حدّث الشاشة حالا!
-        this.cdr.detectChanges();
+        this.isLoading.set(false);
+
       },
       error: (error: any) => {
         console.error('Error fetching auctions', error);
+        this.isLoading.set(false);
       }
     });
   }

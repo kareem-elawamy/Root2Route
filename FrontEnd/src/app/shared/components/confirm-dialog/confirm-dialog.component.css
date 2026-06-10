@@ -1,0 +1,136 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4); /* slate-900 with opacity */
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dialog-container {
+  background: white;
+  border-radius: 1.25rem;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.dialog-header {
+  padding: 1.5rem 1.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dialog-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: #e0e7ff; /* indigo-100 */
+  color: #4f46e5; /* indigo-600 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.dialog-icon .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+
+.dialog-header.destructive .dialog-icon {
+  background-color: #fee2e2; /* red-100 */
+  color: #ef4444; /* red-500 */
+}
+
+.dialog-title {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a; /* slate-900 */
+}
+
+.dialog-body {
+  padding: 0.5rem 1.5rem 1.5rem;
+  text-align: center;
+}
+
+.dialog-body p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #475569; /* slate-600 */
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  padding: 1.25rem 1.5rem;
+  background-color: #f8fafc; /* slate-50 */
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-cancel {
+  background-color: transparent;
+  color: #475569; /* slate-600 */
+}
+
+.btn-cancel:hover {
+  background-color: #f1f5f9; /* slate-100 */
+  color: #0f172a; /* slate-900 */
+}
+
+.btn-confirm {
+  background-color: #4f46e5; /* indigo-600 */
+  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-confirm:hover {
+  background-color: #4338ca; /* indigo-700 */
+}
+
+.btn-destructive {
+  background-color: #ef4444; /* red-500 */
+}
+
+.btn-destructive:hover {
+  background-color: #dc2626; /* red-600 */
+}

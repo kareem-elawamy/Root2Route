@@ -1,36 +1,38 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, OnInit, inject, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReviewsService } from '../../reviews.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-reviews',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SkeletonComponent],
   templateUrl: './reviews.html',
-  // styleUrl: './reviews.css'
+  styleUrl: './reviews.css'
 })
 export class ReviewsComponent implements OnInit {
   private reviewsService = inject(ReviewsService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
+
 
   readonly activeOrg = this.orgCtx.activeOrg;
-  reviews: any[] = [];
+  reviews = signal<any[]>([]);
   
-  stats = {
+  stats = signal({
     total: 0,
     average: 0
-  };
+  });
   
-  isHelpOpen = false;
+  isHelpOpen = signal(false);
+  isLoading = signal(true);
 
   toggleReviewsHelp() {
-    this.isHelpOpen = !this.isHelpOpen;
+    this.isHelpOpen.update(v => !v);
   }
 
   closeReviewsHelp() {
-    this.isHelpOpen = false;
+    this.isHelpOpen.set(false);
   }
 
   constructor() {
@@ -46,6 +48,7 @@ export class ReviewsComponent implements OnInit {
   }
 
   loadReviews(orgId: string) {
+    this.isLoading.set(true);
     this.reviewsService.getOrganizationReviews(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
@@ -54,14 +57,17 @@ export class ReviewsComponent implements OnInit {
           userName: r.reviewerName
         })) : [];
 
-        this.reviews = items;
-        this.stats.total = items.length;
-        this.stats.average = this.calculateAverage(items);
+        this.reviews.set(items);
+        this.stats.set({
+          total: items.length,
+          average: this.calculateAverage(items)
+        });
 
-        this.cdr.detectChanges();
+        this.isLoading.set(false);
       },
       error: (error: any) => {
         console.error('Error fetching reviews', error);
+        this.isLoading.set(false);
       }
     });
   }

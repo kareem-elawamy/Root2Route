@@ -1,9 +1,12 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../../chat.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../../core/services/toast.service';
+import { Subscription, BehaviorSubject, timer, EMPTY } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-chat',
@@ -15,19 +18,21 @@ import { FormsModule } from '@angular/forms';
 export class ChatComponent implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
+  private toast = inject(ToastService);
 
   get currentUserId() {
     return this.authService.currentUser()?.id;
   }
 
-  rooms: any[] = [];
+  rooms = signal<any[]>([]);
   activeRoom = signal<any>(null);
-  messages: any[] = [];
+  messages = signal<any[]>([]);
   newMessage = '';
   isHelpOpen = signal(false);
-  private pollingInterval: any;
+
+  private activeRoom$ = new BehaviorSubject<any>(null);
+  private pollingSub?: Subscription;
 
   toggleChatHelp() {
     this.isHelpOpen.update(v => !v);
@@ -39,33 +44,33 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadRooms();
-    
-    // Auto-refresh chat and rooms every 5 seconds
-    this.pollingInterval = setInterval(() => {
+
+    // Smart polling: only poll when a room is selected
+    this.pollingSub = this.activeRoom$.pipe(
+      switchMap(room => room ? timer(5000, 5000) : EMPTY)
+    ).subscribe(() => {
       this.loadRooms();
       const room = this.activeRoom();
       if (room) {
         this.loadHistory(room.id, true);
       }
-    }, 5000);
+    });
   }
 
   ngOnDestroy() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
+    this.pollingSub?.unsubscribe();
+    this.activeRoom$.complete();
   }
 
   loadRooms() {
     this.chatService.getMyRooms().subscribe({
       next: (response: any) => {
         const data = response.data || response || [];
-        this.rooms = (Array.isArray(data) ? data : []).map((r: any) => ({
+        this.rooms.set((Array.isArray(data) ? data : []).map((r: any) => ({
           ...r,
           otherParticipantName: r.otherPartyName,
           lastMessage: r.lastMessageSnippet
-        }));
-        this.cdr.detectChanges();
+        })));
       },
       error: (error: any) => {
         console.error('Error fetching chat rooms', error);
@@ -75,6 +80,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   selectRoom(room: any) {
     this.activeRoom.set(room);
+    this.activeRoom$.next(room); // trigger smart polling
     this.loadHistory(room.id);
     this.chatService.markAsRead(room.id).subscribe();
   }
@@ -85,7 +91,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         const data = response.data || response || [];
         const userId = this.currentUserId;
         
-        this.messages = (Array.isArray(data) ? data : []).map((msg: any) => {
+        this.messages.set((Array.isArray(data) ? data : []).map((msg: any) => {
           let offerStatus = '';
           if (msg.type === 3) offerStatus = 'Pending';
           else if (msg.type === 4) offerStatus = 'Accepted';
@@ -107,8 +113,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             offerStatus: offerStatus,
             offerId: msg.id
           };
-        });
-        this.cdr.detectChanges();
+        }));
       },
       error: (error: any) => {
         console.error('Error fetching chat history', error);
@@ -125,7 +130,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const phoneRegex = /(?:\d[\s-]*){8,15}/;
 
     if (emailRegex.test(this.newMessage) || phoneRegex.test(this.newMessage)) {
-      alert('Sharing emails or phone numbers is not allowed for privacy reasons.');
+      this.toast.warning('Sharing emails or phone numbers is not allowed for privacy reasons.');
       return;
     }
 
@@ -147,7 +152,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   acceptOffer(offerId: string) {
     this.chatService.acceptOffer({ offerId }).subscribe({
       next: () => {
-        alert('Offer accepted!');
+        this.toast.success('Offer accepted!');
         const room = this.activeRoom();
         if (room) this.loadHistory(room.id);
       },
@@ -160,7 +165,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   rejectOffer(offerId: string) {
     this.chatService.rejectOffer({ offerId }).subscribe({
       next: () => {
-        alert('Offer rejected!');
+        this.toast.warning('Offer rejected.');
         const room = this.activeRoom();
         if (room) this.loadHistory(room.id);
       },

@@ -1,64 +1,180 @@
-<div class="app-layout">
-  <aside class="app-sidebar">
+<div class="admin-shell theme-admin">
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- Dark Sidebar — Command Center -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
+
+    <!-- Brand -->
     <div class="sidebar-brand">
-      <span class="brand-title">Root2Route</span>
-      <p class="brand-subtitle">Super Admin</p>
+      <div class="brand-icon">
+        <span class="material-symbols-outlined">hub</span>
+      </div>
+      @if (!sidebarCollapsed()) {
+        <div class="brand-text">
+          <h2 class="brand-title">Root2Route</h2>
+          <p class="brand-subtitle">Control Plane</p>
+        </div>
+      }
     </div>
 
+    <!-- Collapse Toggle -->
+    <button class="collapse-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
+      <span class="material-symbols-outlined">
+        {{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
+      </span>
+    </button>
+
+    <!-- Navigation -->
     <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/super-admin/dashboard" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-        <span class="nav-label">Dashboard</span>
+
+      <!-- Section: Platform -->
+      @if (!sidebarCollapsed()) {
+        <span class="nav-section-label">Platform</span>
+      }
+      <a class="nav-item" routerLink="/admin-dashboard/dashboard" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">dashboard</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Dashboard</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/organizations" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
-        <span class="nav-label">Organizations</span>
+      <a class="nav-item" routerLink="/admin-dashboard/organizations" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">corporate_fare</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Organizations</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/auctions" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="gavel">gavel</span>
-        <span class="nav-label">Auctions</span>
+      <a class="nav-item" routerLink="/admin-dashboard/users" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">group</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Users</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/products" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-        <span class="nav-label">Products</span>
+
+      <!-- Section: Commerce -->
+      @if (!sidebarCollapsed()) {
+        <span class="nav-section-label">Commerce</span>
+      } @else {
+        <div class="nav-divider"></div>
+      }
+      <a class="nav-item" routerLink="/admin-dashboard/products" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">inventory_2</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Products</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/ai-lab" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="science">science</span>
-        <span class="nav-label">AI Models</span>
+      <a class="nav-item" routerLink="/admin-dashboard/auctions" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">gavel</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Auctions</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/reports" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="description">description</span>
-        <span class="nav-label">Reports</span>
+      <a class="nav-item" routerLink="/admin-dashboard/transactions" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">receipt_long</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Transactions</span> }
       </a>
-      <a class="nav-item" routerLink="/super-admin/settings" routerLinkActive="active">
-        <span class="material-symbols-outlined" data-icon="settings">settings</span>
-        <span class="nav-label">Settings</span>
+
+      <!-- Section: Intelligence -->
+      @if (!sidebarCollapsed()) {
+        <span class="nav-section-label">Intelligence</span>
+      } @else {
+        <div class="nav-divider"></div>
+      }
+      <a class="nav-item" routerLink="/admin-dashboard/ai-lab" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">science</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">AI Lab</span> }
+      </a>
+      <a class="nav-item" routerLink="/admin-dashboard/reports" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">analytics</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Reports</span> }
+      </a>
+
+      <!-- Section: System -->
+      @if (!sidebarCollapsed()) {
+        <span class="nav-section-label">System</span>
+      } @else {
+        <div class="nav-divider"></div>
+      }
+      <a class="nav-item" routerLink="/admin-dashboard/settings" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">settings</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Settings</span> }
+      </a>
+      <a class="nav-item" routerLink="/admin-dashboard/audit-log" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">shield</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Audit Log</span> }
       </a>
     </nav>
 
+    <!-- Footer -->
     <div class="sidebar-footer">
-      <div class="user-profile">
-        <img alt="User" src="https://ui-avatars.com/api/?name=Admin&background=006c49&color=fff" />
-        <span class="user-name">Admin User</span>
+      <div class="admin-badge" [class.collapsed]="sidebarCollapsed()">
+        <div class="admin-avatar">
+          {{ userInitial() }}
+        </div>
+        @if (!sidebarCollapsed()) {
+          <div class="admin-info">
+            <span class="admin-name">{{ currentUser()?.name || 'Admin' }}</span>
+            <span class="admin-role">Super Admin</span>
+          </div>
+        }
       </div>
-      <button (click)="logout()" class="logout-btn" title="Logout">
-        <span class="material-symbols-outlined" data-icon="logout">logout</span>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <span class="material-symbols-outlined">logout</span>
       </button>
     </div>
   </aside>
 
-  <main class="app-main">
-    <header class="app-header">
-      <div class="search-bar">
-        <span class="material-symbols-outlined">search</span>
-        <input placeholder="Search global registry..." type="text" />
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- Main Content Area -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <main class="admin-main" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <!-- Top Header Bar -->
+    <header class="admin-header">
+      <div class="header-left">
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input placeholder="Search platform..." type="text" />
+        </div>
       </div>
-      <div class="header-actions">
-        <!-- Optional icons like notifications can go here -->
+
+      <div class="header-right">
+        <!-- Notification Bell -->
+        <div class="notif-wrapper">
+          <button class="header-icon-btn" (click)="toggleNotifications()" title="Notifications">
+            <span class="material-symbols-outlined">notifications</span>
+            @if (unreadCount() > 0) {
+              <span class="notif-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+            }
+          </button>
+
+          @if (showNotifications()) {
+            <div class="notif-dropdown">
+              <div class="notif-header">
+                <h3>Notifications</h3>
+              </div>
+              <div class="notif-list">
+                @if (notifications().length === 0) {
+                  <div class="notif-empty">
+                    <span class="material-symbols-outlined">notifications_off</span>
+                    <p>No new notifications</p>
+                  </div>
+                } @else {
+                  @for (notif of notifications(); track notif.id) {
+                    <div class="notif-item">
+                      <p class="notif-message">{{ notif.message }}</p>
+                      <span class="notif-time">{{ notif.createdAt }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Admin Identity -->
+        <div class="header-admin-id">
+          <div class="header-admin-meta">
+            <span class="header-admin-name">{{ currentUser()?.name || 'Admin' }}</span>
+            <span class="header-admin-role-badge">Super Admin</span>
+          </div>
+          <div class="header-admin-avatar">
+            {{ userInitial() }}
+          </div>
+        </div>
       </div>
     </header>
 
-    <div class="content-wrapper">
+    <!-- Page Content -->
+    <div class="admin-content">
       <router-outlet></router-outlet>
     </div>
   </main>

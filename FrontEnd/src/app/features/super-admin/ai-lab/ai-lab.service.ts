@@ -8,15 +8,20 @@ import { Observable, forkJoin } from 'rxjs';
 export class AiLabService {
   private http = inject(HttpClient);
   
-  // اللينك الأساسي من الصورة بتاعتك
   private baseUrl = 'https://root2route.runasp.net/api/v1/dashboard/superadmin';
+  private analysisUrl = 'https://root2route.runasp.net/api/v1/model-analysis';
 
   getAiDashboardData(): Observable<any> {
-    // forkJoin بتبعت الطلبات دي كلها للسيرفر مع بعض في نفس اللحظة
     return forkJoin({
       topDiseases: this.http.get(`${this.baseUrl}/ml/top-diseases`),
       accuracyTrend: this.http.get(`${this.baseUrl}/ml/accuracy-trend`),
-      heatmap: this.http.get(`${this.baseUrl}/ml/disease-heatmap`) // لو هتحتاجها مستقبلاً
+      heatmap: this.http.get(`${this.baseUrl}/ml/disease-heatmap`)
     });
   }
-}
+
+  analyzeImage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('Image', file);
+    return this.http.post(`${this.analysisUrl}/analyze`, formData);
+  }
+}

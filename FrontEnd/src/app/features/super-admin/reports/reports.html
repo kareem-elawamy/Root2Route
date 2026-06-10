@@ -10,11 +10,11 @@
         <div class="grid grid-cols-1 gap-3">
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
-            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="text" [value]="dateFilters.start"/>
+            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="date" [ngModel]="dateStart()" (ngModelChange)="dateStart.set($event); onDateChange()"/>
           </div>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">event</span>
-            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="text" [value]="dateFilters.end"/>
+            <input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20" type="date" [ngModel]="dateEnd()" (ngModelChange)="dateEnd.set($event); onDateChange()"/>
           </div>
         </div>
       </div>
@@ -27,11 +27,9 @@
         </select>
       </div>
       <div class="space-y-3">
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Export Format</label>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Export</label>
         <div class="flex p-1 bg-surface-container-low rounded-xl">
-          @for (fmt of exportFormats; track fmt.label) {
-            <button class="flex-1 py-2 text-xs rounded-lg {{ fmt.class }}">{{ fmt.label }}</button>
-          }
+          <button class="flex-1 py-2 text-xs rounded-lg bg-white text-emerald-700 shadow-sm font-bold" (click)="exportCsv()">CSV</button>
         </div>
       </div>
       <button class="w-full mt-4 py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-[0_10px_20px_-5px_rgba(0,108,73,0.3)] hover:scale-[0.98] active:opacity-90 transition-all">
@@ -60,7 +58,7 @@
         <p class="text-on-surface-variant font-body mt-2">Visualizing results for October 2023 — Financial Summary</p>
       </div>
       <div class="flex gap-3">
-        <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-emerald-50 transition-colors text-sm">
+        <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-emerald-50 transition-colors text-sm" (click)="exportCsv()">
           <span class="material-symbols-outlined text-lg">download</span>
           Download Report
         </button>
@@ -83,7 +81,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            @for (trx of transactions; track trx.id) {
+            @for (trx of transactions(); track trx.id) {
               <tr class="hover:bg-slate-50/50 transition-colors">
                 <td class="px-6 py-5 text-sm text-on-surface font-medium">{{ trx.date }}</td>
                 <td class="px-6 py-5 text-sm text-slate-500 font-mono">{{ trx.id }}</td>
@@ -112,18 +110,18 @@
     <div class="grid grid-cols-3 gap-6 mb-8">
       <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
         <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Revenue</div>
-        <div class="text-2xl font-extrabold text-emerald-950">{{ summary.revenue }}</div>
+        <div class="text-2xl font-extrabold text-emerald-950">{{ summary().revenue }}</div>
         <div class="mt-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
           <span class="material-symbols-outlined text-xs">trending_up</span>
-          {{ summary.revenueGrowth }}
+          {{ summary().revenueGrowth }}
         </div>
       </div>
       <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
         <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Transactions</div>
-        <div class="text-2xl font-extrabold text-emerald-950">{{ summary.transactions }}</div>
+        <div class="text-2xl font-extrabold text-emerald-950">{{ summary().transactions }}</div>
         <div class="mt-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
           <span class="material-symbols-outlined text-xs">bolt</span>
-          {{ summary.transactionsAvg }}
+          {{ summary().transactionsAvg }}
         </div>
       </div>
       <div class="bg-primary/5 rounded-2xl p-6 flex flex-col justify-center items-center text-center border border-primary/10">
