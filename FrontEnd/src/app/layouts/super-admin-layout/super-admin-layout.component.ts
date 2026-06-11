@@ -1,24 +1,74 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-
-// 🟢 اتأكد إن السطر ده موجود عشان نستخدم خدمة المصادقة
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './main-layout.html'
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  templateUrl: './main-layout.html',
+  styleUrl: './main-layout.css'
 })
 export class SuperAdminLayoutComponent {
-  private router = inject(Router);
-  private authService = inject(AuthService); // 🟢 بنحقن الخدمة هنا
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly elRef = inject(ElementRef);
+  private readonly notifService = inject(NotificationService);
 
-  logout() {
-    // 1. بننادي على الفانكشن اللي التيم عاملها بتمسح كل حاجة من الذاكرة
+  readonly currentUser = this.authService.currentUser;
+
+  // Sidebar
+  sidebarCollapsed = signal(false);
+
+  // Notifications
+  unreadCount = signal(0);
+  notifications = signal<any[]>([]);
+  showNotifications = signal(false);
+
+  ngOnInit(): void {
+    this.loadNotifications();
+  }
+
+  loadNotifications(): void {
+    this.notifService.getUnreadCount().subscribe({
+      next: (res: any) => this.unreadCount.set(res?.data || res || 0),
+      error: () => {}
+    });
+    this.notifService.getNotifications().subscribe({
+      next: (res: any) => this.notifications.set(res?.data || res || []),
+      error: () => {}
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!this.elRef.nativeElement.contains(target)) {
+      this.showNotifications.set(false);
+    }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update(v => !v);
+  }
+
+  toggleNotifications(): void {
+    this.showNotifications.update(v => !v);
+    if (this.showNotifications()) {
+      this.notifService.markAllAsRead().subscribe(() => {
+        this.unreadCount.set(0);
+      });
+    }
+  }
+
+  userInitial(): string {
+    return this.currentUser()?.name?.charAt(0)?.toUpperCase() ?? 'A';
+  }
+
+  logout(): void {
     this.authService.clearSession();
-
-    // 2. بنخرج لصفحة اللوجين
     this.router.navigate(['/auth/login']);
   }
 }

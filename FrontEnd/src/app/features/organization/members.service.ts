@@ -45,6 +45,11 @@ export class MembersService {
     return this.http.post(`${this.invitationsUrl}/revoke`, { InvitationId: invitationId });
   }
 
+  changeOrganizationOwner(orgId: string, newOwnerId: string): Observable<any> {
+    const body = { newOwnerId };
+    return this.http.put(`https://root2route.runasp.net/api/v1/organizations/${orgId}/change-owner`, body);
+  }
+
   getMyInvitations(): Observable<any> {
     return this.http.get(`${this.invitationsUrl}/my`);
   }
@@ -53,4 +58,17 @@ export class MembersService {
     const body = { invitationId };
     return this.http.post(`${this.invitationsUrl}/accept?token=${encodeURIComponent(token)}`, body);
   }
+
+  deleteRole(roleId: string): Observable<any> {
+    return this.http.delete(`${this.rolesUrl}/${roleId}`);
+  }
+
+  updateRole(roleId: string, data: any): Observable<any> {
+    return this.http.put(`${this.rolesUrl}/${roleId}`, data);
+  }
+
+  assignRoleToMember(memberId: string, roleId: string): Observable<any> {
+    return this.http.put(`${this.membersUrl}/${memberId}/role`, { roleId });
+  }
 }
+

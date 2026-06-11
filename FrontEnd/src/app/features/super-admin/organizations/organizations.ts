@@ -1,15 +1,22 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { OrganizationService } from './organization.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-organizations',
   standalone: true,
+  imports: [CommonModule, FormsModule, SkeletonComponent],
   templateUrl: './organizations.html'
 })
 export class Organizations implements OnInit {
   private orgService = inject(OrganizationService);
-  private cdr = inject(ChangeDetectorRef); // 🟢 1. حقنّا "المنبه" بتاع الأنجولار
 
+  private toast = inject(ToastService);
+
+  isLoading = signal(true);
   isDrawerOpen = false;
   selectedOrg: any = null;
 
@@ -19,19 +26,25 @@ export class Organizations implements OnInit {
     suspended: '0'
   };
 
-  organizations: any[] = [];
+  organizations = signal<any[]>([]);
+
+  // New state for approve/reject flow
+  rejectionReason = signal('');
+  isProcessing = signal(false);
+  actionResult = signal<{type: 'success' | 'error', message: string} | null>(null);
 
   ngOnInit() {
     this.loadOrganizations();
   }
 
   loadOrganizations() {
+    this.isLoading.set(true);
     this.orgService.getAllOrganizations().subscribe({
       next: (response: any) => {
         const rawData = response.data || response || [];
         const items = Array.isArray(rawData) ? rawData : [];
 
-        this.organizations = items.map((org: any) => {
+        const processed = items.map((org: any) => {
           const statusMap = ['Pending', 'Approved', 'Rejected', 'Suspended'];
           const typeMap = ['Farm', 'Restaurant', 'Factory', 'Tradesman'];
           
@@ -61,28 +74,18 @@ export class Organizations implements OnInit {
           };
         });
 
-        // 1. حساب الإجمالي
-        this.stats.total = this.organizations.length.toString();
+        this.organizations.set(processed);
 
-        // 2. فلترة وعد المنظمات اللي في الانتظار
-        const pendingOrgs = this.organizations.filter(
-          org => org.statusValue === 0
-        );
-        this.stats.pending = pendingOrgs.length.toString();
+        this.stats.total = this.organizations().length.toString();
+        this.stats.pending = this.organizations().filter(org => org.statusValue === 0).length.toString();
+        this.stats.suspended = this.organizations().filter(org => org.statusValue === 3).length.toString();
 
-        // 3. فلترة وعد المنظمات الموقوفة
-        const suspendedOrgs = this.organizations.filter(
-          org => org.statusValue === 3
-        );
-        this.stats.suspended = suspendedOrgs.length.toString();
+        this.isLoading.set(false);
 
-        console.log('All Organizations:', this.organizations);
-
-        // 🟢 2. الضربة القاضية: بنقول للأنجولار يعرض الداتا الجديدة على الشاشة فوراً
-        this.cdr.detectChanges();
       },
       error: (error: any) => {
         console.error('Error fetching organizations', error);
+        this.isLoading.set(false);
       }
     });
   }
@@ -90,39 +93,64 @@ export class Organizations implements OnInit {
   openDetails(org: any) {
     this.selectedOrg = org;
     this.isDrawerOpen = true;
+    this.rejectionReason.set('');
+    this.actionResult.set(null);
   }
 
   closeDetails() {
     this.isDrawerOpen = false;
     this.selectedOrg = null;
+    this.rejectionReason.set('');
+    this.actionResult.set(null);
   }
 
   approveOrg() {
     if (!this.selectedOrg) return;
-    this.orgService.updateStatus(this.selectedOrg.id, 1).subscribe({
+    
+    this.isProcessing.set(true);
+    this.actionResult.set(null);
+
+    this.orgService.approveOrganization(this.selectedOrg.id).subscribe({
       next: () => {
-        alert(`Done: Approved ${this.selectedOrg.name}`);
+        this.actionResult.set({ type: 'success', message: `Approved ${this.selectedOrg.name} successfully.` });
         this.loadOrganizations();
-        this.closeDetails();
+        setTimeout(() => {
+          this.isProcessing.set(false);
+          this.closeDetails();
+        }, 1500);
       },
       error: (err: any) => {
         console.error(err);
-        alert('Error approving organization');
+        this.isProcessing.set(false);
+        this.actionResult.set({ type: 'error', message: 'Error approving organization.' });
       }
     });
   }
 
   rejectOrg() {
     if (!this.selectedOrg) return;
-    this.orgService.updateStatus(this.selectedOrg.id, 2).subscribe({
+    
+    if (!this.rejectionReason().trim()) {
+      this.actionResult.set({ type: 'error', message: 'Rejection reason is required.' });
+      return;
+    }
+
+    this.isProcessing.set(true);
+    this.actionResult.set(null);
+
+    this.orgService.rejectOrganization(this.selectedOrg.id, this.rejectionReason()).subscribe({
       next: () => {
-        alert(`Rejected ${this.selectedOrg.name}`);
+        this.actionResult.set({ type: 'success', message: `Rejected ${this.selectedOrg.name} successfully.` });
         this.loadOrganizations();
-        this.closeDetails();
+        setTimeout(() => {
+          this.isProcessing.set(false);
+          this.closeDetails();
+        }, 1500);
       },
       error: (err: any) => {
         console.error(err);
-        alert('Error rejecting organization');
+        this.isProcessing.set(false);
+        this.actionResult.set({ type: 'error', message: 'Error rejecting organization.' });
       }
     });
   }

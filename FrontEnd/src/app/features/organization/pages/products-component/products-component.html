@@ -51,10 +51,12 @@
         }
       </div>
 
+      @if (auth.hasPermission('Permissions.Market.CreateProduct')) {
       <button class="apple-btn-filled" (click)="openCreateModal()">
         <span class="material-symbols-outlined icon">add_circle</span>
         Add New Product
       </button>
+      }
     </div>
   </header>
 
@@ -121,20 +123,25 @@
     </div>
 
     <div class="table-responsive">
-      <table class="apple-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Date Added</th>
-            <th>Status</th>
-            <th class="table-actions-header"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (product of productsList; track product.id) {
+      @if (isLoading()) {
+        <div style="padding: 24px;">
+          <app-skeleton type="table" [rows]="5" [columns]="6"></app-skeleton>
+        </div>
+      } @else {
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Date Added</th>
+              <th>Status</th>
+              <th class="table-actions-header"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of productsList; track product.id) {
           <tr>
             <td>
               <div class="product-cell">
@@ -173,13 +180,19 @@
               <!-- Dropdown -->
               @if (activeDropdownId() === product.id) {
               <div class="apple-dropdown action-dropdown">
+                @if (auth.hasPermission('Permissions.Market.EditProduct')) {
                 <button class="dropdown-item" (click)="openEditModal(product)">
                   <span class="material-symbols-outlined icon">edit</span> Edit
                 </button>
+                }
+                @if (auth.hasPermission('Permissions.Market.EditProduct') && auth.hasPermission('Permissions.Market.DeleteProduct')) {
                 <div class="dropdown-divider"></div>
+                }
+                @if (auth.hasPermission('Permissions.Market.DeleteProduct')) {
                 <button class="dropdown-item text-error" (click)="deleteProduct(product.id)">
                   <span class="material-symbols-outlined icon">delete</span> Delete
                 </button>
+                }
               </div>
               }
             </td>
@@ -193,16 +206,19 @@
                 <span class="material-symbols-outlined empty-icon">inventory_2</span>
                 <p class="empty-title">No products found</p>
                 <p class="empty-desc">You don't have any products matching your criteria.</p>
+                @if (auth.hasPermission('Permissions.Market.CreateProduct')) {
                 <button class="apple-btn-filled mt-4" (click)="openCreateModal()">
                   <span class="material-symbols-outlined icon">add_circle</span>
                   Add Product
                 </button>
+                }
               </div>
             </td>
           </tr>
           }
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      }
     </div>
 
     <div class="table-footer">

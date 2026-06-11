@@ -51,26 +51,34 @@
         <span class="material-symbols-outlined nav-icon">dashboard</span>
         <span>Overview</span>
       </a>
+      @if (auth.hasPermission('Permissions.Market.ViewProducts')) {
       <a routerLink="/company-dashboard/products" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">inventory_2</span>
         <span>Products</span>
       </a>
+      }
       <a routerLink="/company-dashboard/orders" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">shopping_cart</span>
         <span>Orders</span>
       </a>
+      @if (auth.hasPermission('Permissions.Auctions.View')) {
       <a routerLink="/company-dashboard/auctions" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">gavel</span>
         <span>Auctions</span>
       </a>
+      }
+      @if (auth.hasPermission('Permissions.Members.View')) {
       <a routerLink="/company-dashboard/members" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">group</span>
         <span>Team</span>
       </a>
+      }
+      @if (auth.hasPermission('Permissions.Roles.View')) {
       <a routerLink="/company-dashboard/roles" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
         <span>Roles &amp; Permissions</span>
       </a>
+      }
       <a routerLink="/company-dashboard/chat" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">forum</span>
         <span>Chat &amp; Offers</span>
@@ -83,20 +91,24 @@
         <span class="material-symbols-outlined nav-icon">local_shipping</span>
         <span>Shipments</span>
       </a>
+      @if (auth.hasPermission('Permissions.Organization.ManageSettings')) {
       <a routerLink="/company-dashboard/settings" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">settings</span>
         <span>Settings</span>
       </a>
+      }
     </nav>
 
     <!-- New Auction CTA -->
     <div class="mt-4 pt-4 border-t border-outline-variant space-y-2">
+      @if (auth.hasPermission('Permissions.Auctions.Create')) {
       <button [routerLink]="['/company-dashboard/auctions']" [queryParams]="{ create: 'true' }"
         class="w-full py-3 px-4 rounded-xl font-body font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg text-white hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
         style="background: linear-gradient(135deg, #006B3D 0%, #004d2c 100%); box-shadow: 0 4px 15px rgba(0, 107, 61, 0.3); border: 1px solid rgba(255,255,255,0.1);">
         <span class="material-symbols-outlined text-[20px]">add_circle</span>
         New Auction
       </button>
+      }
       <!-- Logout -->
       <button id="sidebar-logout" (click)="logout()"
         class="w-full py-2.5 px-4 rounded-xl font-body font-semibold text-sm flex items-center gap-2 text-error hover:bg-error-container/30 transition-all">
@@ -243,7 +255,7 @@
         <div class="text-right font-body">
           <p class="text-sm font-semibold text-on-surface leading-none">{{ currentUser()?.name || 'User' }}</p>
           <p class="text-[10px] text-outline uppercase tracking-widest font-bold mt-0.5">
-            {{ currentUser()?.permissions?.length ? 'Member' : 'Admin' }}
+            {{ currentUser()?.roles?.includes('Owner') ? 'Owner' : (currentUser()?.roles?.[currentUser()?.roles!.length - 1] || 'Member') }}
           </p>
         </div>
         <!-- Avatar: Initial fallback -->

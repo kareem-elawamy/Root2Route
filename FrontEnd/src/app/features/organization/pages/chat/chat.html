@@ -42,7 +42,7 @@
       </div>
       
       <div style="flex: 1; overflow-y: auto;" class="custom-scrollbar-y">
-        @for (room of rooms; track room.id) {
+        @for (room of rooms(); track room.id) {
           <button (click)="selectRoom(room)"
             style="width: 100%; padding: 16px 20px; display: flex; align-items: center; gap: 12px; border: none; border-bottom: 1px solid #ebebf0; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s;"
             [style.background]="activeRoom()?.id === room.id ? '#ffffff' : 'transparent'"
@@ -67,7 +67,7 @@
             }
           </button>
         }
-        @if (rooms.length === 0) {
+        @if (rooms().length === 0) {
           <div style="padding: 40px 20px; text-align: center; color: #86868b;">
             <span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px; opacity: 0.5;">forum</span>
             <p style="margin: 0; font-size: 14px;">No active chats.</p>
@@ -95,7 +95,7 @@
 
         <!-- Messages Area -->
         <div style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px;" class="custom-scrollbar-y">
-          @for (msg of messages; track msg.id) {
+          @for (msg of messages(); track msg.id) {
             <div style="display: flex; gap: 12px; align-items: flex-end;" [style.flexDirection]="msg.isMine ? 'row-reverse' : 'row'">
               
               @if (!msg.isMine) {

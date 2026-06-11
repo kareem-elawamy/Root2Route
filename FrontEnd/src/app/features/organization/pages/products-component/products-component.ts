@@ -1,8 +1,11 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, inject, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrgContextService } from '../../../../core/services/org-context.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ProductService } from '../../../super-admin/products/product.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
 
@@ -28,17 +31,22 @@ export interface ProductKpi {
   accentClass: string;
 }
 
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
+
 @Component({
   selector: 'app-products-component',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective],
+  imports: [CommonModule, FormsModule, BaseChartDirective, SkeletonComponent],
   templateUrl: './products-component.html',
   styleUrl: './products-component.css',
 })
 export class ProductsComponent implements OnInit {
   private readonly productService = inject(ProductService);
-  private readonly cdr = inject(ChangeDetectorRef);
+
   private readonly orgCtx = inject(OrgContextService);
+  private readonly toast = inject(ToastService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  public readonly auth = inject(AuthService);
 
   constructor() {
     Chart.register(...registerables);
@@ -58,6 +66,7 @@ export class ProductsComponent implements OnInit {
   showPending = signal(false);
   activeFilter = signal('All');
   isFilterDropdownOpen = signal(false);
+  isLoading = signal(true);
   isCreatingProduct = signal(false);
   isCreateModalOpen = signal(false);
   editingProduct = signal<Product | null>(null);
@@ -152,6 +161,7 @@ export class ProductsComponent implements OnInit {
         console.error('Error loading products', err);
         this.allProducts = [];
         this.filterProducts();
+        this.isLoading.set(false);
       }
     });
   }
@@ -194,7 +204,8 @@ export class ProductsComponent implements OnInit {
     this.productsList = filtered;
     this.updateKpis();
     this.updateCharts();
-    this.cdr.detectChanges();
+    this.isLoading.set(false);
+
   }
 
   toggleFilterDropdown(event: Event): void {
@@ -329,13 +340,14 @@ export class ProductsComponent implements OnInit {
       this.productService.updateProduct(updateCmd).subscribe({
         next: () => {
           this.isCreatingProduct.set(false);
+          this.toast.success('Product updated successfully!');
           this.closeCreateModal();
           this.loadProducts();
         },
         error: (err) => {
           this.isCreatingProduct.set(false);
           console.error(err);
-          alert('Error updating product. Check console.');
+          this.toast.error('Error updating product. Check console.');
         }
       });
     } else {
@@ -362,13 +374,14 @@ export class ProductsComponent implements OnInit {
       this.productService.createProduct(formData).subscribe({
         next: () => {
           this.isCreatingProduct.set(false);
+          this.toast.success('Product created successfully!');
           this.closeCreateModal();
           this.loadProducts();
         },
         error: (err) => {
           this.isCreatingProduct.set(false);
           console.error(err);
-          alert('Error creating product. Check console.');
+          this.toast.error('Error creating product. Check console.');
         }
       });
     }
@@ -385,14 +398,25 @@ export class ProductsComponent implements OnInit {
   }
 
   deleteProduct(id: string): void {
-    if(confirm('Are you sure you want to delete this product?')) {
+    this.confirmDialog.open({
+      title: 'Delete Product',
+      message: 'Are you sure you want to delete this product? This action cannot be undone.',
+      confirmLabel: 'Delete Product',
+      isDestructive: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      
       this.productService.deleteProduct(id).subscribe({
         next: () => {
+          this.toast.success('Product deleted successfully.');
           this.loadProducts();
         },
-        error: (err) => { console.error(err); alert('Error deleting product'); }
+        error: (err) => { 
+          console.error(err); 
+          this.toast.error('Error deleting product'); 
+        }
       });
-    }
+    });
   }
 
 

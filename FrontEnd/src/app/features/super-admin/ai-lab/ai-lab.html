@@ -8,10 +8,10 @@
             stroke-width="8"></circle>
           <circle class="text-primary-container transition-all duration-1000 ease-in-out" cx="64" cy="64"
             fill="transparent" r="56" stroke="currentColor" stroke-dasharray="351.85"
-            [attr.stroke-dashoffset]="metrics.confidenceOffset" stroke-width="8"></circle>
+            [attr.stroke-dashoffset]="metrics().confidenceOffset" stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
-          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.modelAverageConfidence
+          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics().modelAverageConfidence
             }}</span>
         </div>
       </div>
@@ -27,10 +27,10 @@
             stroke-width="8"></circle>
           <circle class="text-primary-container transition-all duration-1000 ease-in-out" cx="64" cy="64"
             fill="transparent" r="56" stroke="currentColor" stroke-dasharray="351.85"
-            [attr.stroke-dashoffset]="metrics.diagnosesOffset" stroke-width="8"></circle>
+            [attr.stroke-dashoffset]="metrics().diagnosesOffset" stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center flex-col">
-          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics.totalDiagnoses }}</span>
+          <span class="font-headline font-extrabold text-2xl text-on-surface">{{ metrics().totalDiagnoses }}</span>
         </div>
       </div>
       <h3 class="font-headline font-semibold text-on-surface">Total Diagnoses</h3>
@@ -44,11 +44,11 @@
           <circle class="text-surface-container-low" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor"
             stroke-width="8"></circle>
           <circle class="text-tertiary transition-all duration-1000 ease-in-out" cx="64" cy="64" fill="transparent"
-            r="56" stroke="currentColor" stroke-dasharray="351.85" [attr.stroke-dashoffset]="metrics.driftOffset"
+            r="56" stroke="currentColor" stroke-dasharray="351.85" [attr.stroke-dashoffset]="metrics().driftOffset"
             stroke-width="8"></circle>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center flex-col">
-          <span class="font-headline font-extrabold text-2xl text-tertiary">{{ metrics.accuracyDrift }}</span>
+          <span class="font-headline font-extrabold text-2xl text-tertiary">{{ metrics().accuracyDrift }}</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -71,7 +71,7 @@
         <div class="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-slate-100">
           <h4 class="font-headline font-bold text-sm mb-3">Disease Heatmap</h4>
           <div class="space-y-2">
-            @for (disease of diseases; track disease.name) {
+            @for (disease of diseases(); track disease.name) {
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 rounded-full {{ disease.colorClass }}"></div>
               <span class="text-xs font-medium">{{ disease.name }}</span>
@@ -89,14 +89,19 @@
           <span
             class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded uppercase tracking-wider">Beta</span>
         </div>
-        <div
+        <label for="playground-upload"
           class="border-2 border-dashed border-emerald-200 rounded-xl p-8 flex flex-col items-center justify-center bg-emerald-50/30 group hover:bg-emerald-50 transition-colors cursor-pointer mb-6">
           <span
             class="material-symbols-outlined text-4xl text-emerald-500 mb-2 group-hover:scale-110 transition-transform"
             data-icon="upload_file">upload_file</span>
-          <p class="text-sm font-medium text-emerald-800">Drop field leaf images here</p>
+          @if (selectedFileName()) {
+            <p class="text-sm font-medium text-emerald-800">{{ selectedFileName() }}</p>
+          } @else {
+            <p class="text-sm font-medium text-emerald-800">Drop field leaf images here</p>
+          }
           <p class="text-[10px] text-emerald-600/70 mt-1">Supports JPG, PNG (Max 5MB)</p>
-        </div>
+          <input id="playground-upload" type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+        </label>
         <div class="mt-8 p-4 bg-surface rounded-xl border border-slate-100">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -104,18 +109,18 @@
             </div>
             <div>
               <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Top Prediction</p>
-              <p class="font-headline font-bold text-sm">{{ playgroundResult.topPrediction }}</p>
+              <p class="font-headline font-bold text-sm">{{ playgroundResult().topPrediction }}</p>
             </div>
           </div>
           <div class="space-y-3">
             <div class="space-y-1">
               <div class="flex justify-between text-[10px] font-medium">
                 <span>Confidence</span>
-                <span>{{ playgroundResult.confidenceLevel }}%</span>
+                <span>{{ playgroundResult().confidenceLevel }}%</span>
               </div>
               <div class="h-1.5 bg-slate-200 rounded-full">
                 <div class="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-in-out"
-                  [style.width.%]="playgroundResult.confidenceLevel">
+                  [style.width.%]="playgroundResult().confidenceLevel">
                 </div>
               </div>
             </div>

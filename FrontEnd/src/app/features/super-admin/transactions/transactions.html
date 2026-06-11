@@ -1,0 +1,110 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Transaction Ledger</h1>
+      <p class="page-subtitle">Platform-wide payment and transaction history</p>
+    </div>
+    <button class="export-btn" (click)="exportCsv()">
+      <span class="material-symbols-outlined">download</span>
+      Export CSV
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon bg-indigo-500/10"><span class="material-symbols-outlined text-indigo-400">payments</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Volume</span>
+        <span class="stat-value">${{ stats().totalVolume | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-emerald-500/10"><span class="material-symbols-outlined text-emerald-400">toll</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Platform Fees</span>
+        <span class="stat-value">${{ stats().platformFees | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-teal-500/10"><span class="material-symbols-outlined text-teal-400">check_circle</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Completed</span>
+        <span class="stat-value">{{ stats().completed }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-amber-500/10"><span class="material-symbols-outlined text-amber-400">schedule</span></div>
+      <div class="stat-body">
+        <span class="stat-label">Pending</span>
+        <span class="stat-value">{{ stats().pending }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <label>From</label>
+      <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+    </div>
+    <div class="filter-group">
+      <label>To</label>
+      <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event); onFilterChange()">
+        <option value="">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Completed">Completed</option>
+        <option value="Failed">Failed</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  @if (isLoading()) {
+    <app-skeleton type="table" [rows]="8" [columns]="6"></app-skeleton>
+  } @else if (payments().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">receipt_long</span>
+      <h3>No Transactions Found</h3>
+      <p>Adjust date range or status filter.</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>User</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Status</th>
+            <th>Paid At</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of payments(); track payment.id) {
+            <tr>
+              <td class="mono-cell">{{ payment.orderId | slice:0:8 }}...</td>
+              <td>{{ payment.userFullName || 'N/A' }}</td>
+              <td class="amount-cell">${{ payment.amount | number:'1.2-2' }}</td>
+              <td>{{ payment.paymentMethod }}</td>
+              <td><span class="status-badge" [ngClass]="getStatusClass(payment.paymentStatus)">{{ getStatusLabel(payment.paymentStatus) }}</span></td>
+              <td class="date-cell">{{ payment.paidAt | date:'medium' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalCount]="totalCount()"
+      (pageChange)="goToPage($event)">
+    </app-pagination>
+  }
+</div>

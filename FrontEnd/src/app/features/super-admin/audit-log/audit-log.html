@@ -1,0 +1,94 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Audit Log</h1>
+      <p class="page-subtitle">System-wide activity log and security audit trail</p>
+    </div>
+    <button class="export-btn" (click)="exportCsv()">
+      <span class="material-symbols-outlined">download</span>
+      Export CSV
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <label>Entity</label>
+      <select [ngModel]="filterEntity()" (ngModelChange)="filterEntity.set($event); onFilterChange()">
+        <option value="">All Entities</option>
+        @for (entity of entityTypes; track entity) {
+          <option [value]="entity">{{ entity }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Action</label>
+      <select [ngModel]="filterAction()" (ngModelChange)="filterAction.set($event); onFilterChange()">
+        <option value="">All Actions</option>
+        @for (action of actionTypes; track action) {
+          <option [value]="action">{{ action }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>From</label>
+      <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+    </div>
+    <div class="filter-group">
+      <label>To</label>
+      <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  @if (isLoading()) {
+    <app-skeleton type="list" [rows]="10" [columns]="1"></app-skeleton>
+  } @else if (logs().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">shield</span>
+      <h3>No Audit Entries</h3>
+      <p>No activity has been recorded yet or your filters returned no results.</p>
+    </div>
+  } @else {
+    <div class="timeline">
+      @for (log of logs(); track log.id) {
+        <div class="timeline-item" (click)="toggleExpand(log.id)">
+          <div class="timeline-dot" [ngClass]="getActionClass(log.action)">
+            <span class="material-symbols-outlined">{{ getActionIcon(log.action) }}</span>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="action-badge" [ngClass]="getActionClass(log.action)">{{ log.action }}</span>
+              <span class="entity-name">{{ log.entityName }}</span>
+              <span class="timeline-meta">by <strong>{{ log.userFullName || 'System' }}</strong></span>
+              <span class="timeline-time">{{ log.createdAt | date:'medium' }}</span>
+            </div>
+            @if (expandedLogId() === log.id) {
+              <div class="timeline-diff">
+                @if (log.oldValues) {
+                  <div class="diff-block old">
+                    <span class="diff-label">Previous</span>
+                    <pre>{{ log.oldValues }}</pre>
+                  </div>
+                }
+                @if (log.newValues) {
+                  <div class="diff-block new">
+                    <span class="diff-label">New</span>
+                    <pre>{{ log.newValues }}</pre>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalCount]="totalCount()"
+      (pageChange)="goToPage($event)">
+    </app-pagination>
+  }
+</div>

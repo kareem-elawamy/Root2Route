@@ -19,46 +19,56 @@
       <h2 class="font-headline font-bold text-lg">Organization Directory</h2>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
-          <tr>
-            <th class="px-6 py-4">Organization</th>
-            <th class="px-6 py-4">Type</th>
-            <th class="px-6 py-4">Date Joined</th>
-            <th class="px-6 py-4">Status</th>
-            <th class="px-6 py-4 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-
-          @for (org of organizations; track org.id) {
-          <tr (click)="openDetails(org)" class="hover:bg-slate-50 transition-colors cursor-pointer group">
-            <td class="px-6 py-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold {{ org.bgClass }}">
-                  {{ org.initial }}
-                </div>
-                <div>
-                  <p class="text-sm font-bold text-slate-800">{{ org.name }}</p>
-                  <p class="text-xs text-slate-500">{{ org.email }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-xs font-medium text-slate-700">{{ org.type }}</td>
-            <td class="px-6 py-4 text-xs text-slate-500">{{ org.date }}</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ org.statusClass }}">
-                {{ org.status }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-600">chevron_right</span>
-            </td>
-          </tr>
-          }
-
-        </tbody>
-      </table>
+      @if (isLoading()) {
+        <div class="p-6">
+          <app-skeleton type="table" [rows]="5" [columns]="5"></app-skeleton>
+        </div>
+      } @else {
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+            <tr>
+              <th class="px-6 py-4">Organization</th>
+              <th class="px-6 py-4">Type</th>
+              <th class="px-6 py-4">Date Joined</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @if (organizations().length === 0) {
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-slate-400">No organizations found.</td>
+              </tr>
+            } @else {
+              @for (org of organizations(); track org.id) {
+              <tr (click)="openDetails(org)" class="hover:bg-slate-50 transition-colors cursor-pointer group">
+                <td class="px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold {{ org.bgClass }}">
+                      {{ org.initial }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-slate-800">{{ org.name }}</p>
+                      <p class="text-xs text-slate-500">{{ org.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-xs font-medium text-slate-700">{{ org.type }}</td>
+                <td class="px-6 py-4 text-xs text-slate-500">{{ org.date }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ org.statusClass }}">
+                    {{ org.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-600">chevron_right</span>
+                </td>
+              </tr>
+              }
+            }
+          </tbody>
+        </table>
+      }
     </div>
   </div>
 </div>
@@ -134,14 +144,46 @@
   </div>
 
   <div class="p-8 border-t border-slate-100 bg-white space-y-3">
-    <button (click)="approveOrg()"
-      class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl hover:bg-emerald-700 transition-colors">
-      Approve Organization
-    </button>
-    <button (click)="rejectOrg()"
-      class="w-full border-2 border-rose-500 text-rose-500 font-bold py-4 rounded-2xl hover:bg-rose-50 transition-colors">
-      Reject Application
-    </button>
+    @if (actionResult()) {
+      <div class="p-4 rounded-xl text-sm font-semibold flex items-center gap-2 mb-4"
+           [class.bg-emerald-100]="actionResult()?.type === 'success'"
+           [class.text-emerald-800]="actionResult()?.type === 'success'"
+           [class.bg-rose-100]="actionResult()?.type === 'error'"
+           [class.text-rose-800]="actionResult()?.type === 'error'">
+        <span class="material-symbols-outlined">{{ actionResult()?.type === 'success' ? 'check_circle' : 'error' }}</span>
+        {{ actionResult()?.message }}
+      </div>
+    }
+
+    <!-- Rejection Reason Input (only show if pending) -->
+    @if (selectedOrg.statusValue === 0) {
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rejection Reason (If rejecting)</label>
+        <textarea 
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all"
+          rows="2" 
+          placeholder="Briefly explain why this organization is being rejected..."
+          [ngModel]="rejectionReason()" 
+          (ngModelChange)="rejectionReason.set($event)">
+        </textarea>
+      </div>
+
+      <button (click)="approveOrg()" [disabled]="isProcessing()"
+        class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-4 rounded-2xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+        Approve Organization
+      </button>
+      <button (click)="rejectOrg()" [disabled]="isProcessing()"
+        class="w-full flex items-center justify-center gap-2 border-2 border-rose-500 text-rose-500 font-bold py-4 rounded-2xl hover:bg-rose-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+        Reject Application
+      </button>
+    } @else {
+      <!-- If already approved/rejected, show status instead of buttons -->
+      <div class="w-full text-center p-4 bg-slate-50 rounded-2xl text-sm font-bold text-slate-500 uppercase tracking-widest">
+        This organization is {{ selectedOrg.status }}
+      </div>
+    }
   </div>
 </div>
 }

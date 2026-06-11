@@ -15,6 +15,7 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'auctions',
+    canActivate: [permissionGuard('Permissions.Auctions.View')],
     loadComponent: () =>
       import('./pages/auctions/auctions').then(
         (m) => m.AuctionsComponent
@@ -22,6 +23,7 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'products',
+    canActivate: [permissionGuard('Permissions.Market.ViewProducts')],
     component: ProductsComponent
   },
   {
@@ -58,6 +60,7 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'settings',
+    canActivate: [permissionGuard('Permissions.Organization.ManageSettings')],
     loadComponent: () =>
       import('./pages/settings/settings').then(
         (m) => m.SettingsComponent

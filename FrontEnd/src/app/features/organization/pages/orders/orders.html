@@ -135,18 +135,23 @@
 
   <div class="apple-card table-card">
     <div class="table-responsive">
-      <table class="apple-table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Date</th>
-            <th>Receiver</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      @if (isLoading()) {
+        <div style="padding: 24px;">
+          <app-skeleton type="table" [rows]="5" [columns]="6"></app-skeleton>
+        </div>
+      } @else {
+        <table class="apple-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Receiver</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
 
           @for (order of orders; track order.id) {
           <tr>
@@ -199,6 +204,7 @@
 
         </tbody>
       </table>
+      }
     </div>
   </div>
 

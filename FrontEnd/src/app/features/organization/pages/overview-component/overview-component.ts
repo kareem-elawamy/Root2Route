@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DashboardService } from '../../dashboard.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-overview',
@@ -16,21 +17,14 @@ export class OverviewComponent implements OnInit {
   private readonly orgCtx = inject(OrgContextService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly cdr = inject(ChangeDetectorRef);
+
   private readonly dashboardService = inject(DashboardService);
+  private readonly toast = inject(ToastService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
   readonly currentUser = this.auth.currentUser;
   metrics = signal<any[]>([]);
-  chartData = signal<any[]>([
-    { month: 'Jan', netRevenue: 12000 },
-    { month: 'Feb', netRevenue: 15000 },
-    { month: 'Mar', netRevenue: 18000 },
-    { month: 'Apr', netRevenue: 14000 },
-    { month: 'May', netRevenue: 22000 },
-    { month: 'Jun', netRevenue: 26000 },
-    { month: 'Jul', netRevenue: 30000 }
-  ]);
+  chartData = signal<any[]>([]);
 
   recentOrders = signal<any[]>([]);
   liveBids = signal<any[]>([]);
@@ -64,7 +58,7 @@ export class OverviewComponent implements OnInit {
       next: (response: any) => {
         const data = response?.data || response || [];
         this.recentOrders.set(Array.isArray(data) ? data : []);
-        this.cdr.detectChanges();
+
       },
       error: (err) => {
         console.error('Error fetching latest orders', err);
@@ -76,7 +70,7 @@ export class OverviewComponent implements OnInit {
       next: (response: any) => {
         const data = response?.data || response || [];
         this.liveBids.set(Array.isArray(data) ? data : []);
-        this.cdr.detectChanges();
+
       },
       error: (err) => {
         console.error('Error fetching live bids', err);
@@ -96,7 +90,7 @@ export class OverviewComponent implements OnInit {
           { title: 'Pending Orders', value: data.pendingOrders || 0, trend: data.ordersTrend || '-0%', isUp: false, icon: 'local_shipping' },
           { title: 'Unread Messages', value: data.unreadMessages || 0, trend: 'New', isUp: true, icon: 'forum' },
         ]);
-        this.cdr.detectChanges();
+
       },
       error: (err) => {
         console.error('Error fetching overview stats', err);
@@ -111,7 +105,7 @@ export class OverviewComponent implements OnInit {
         if (Array.isArray(data) && data.length > 0) {
            this.chartData.set(data);
         }
-        this.cdr.detectChanges();
+
       },
       error: (err) => console.error('Error fetching chart', err)
     });
@@ -134,7 +128,7 @@ export class OverviewComponent implements OnInit {
   }
 
   actionPlaceholder(actionName: string): void {
-    alert(`Feature '${actionName}' is coming soon!`);
+    this.toast.info(`Feature '${actionName}' is coming soon!`);
   }
 
   toggleChartOptions(): void {
@@ -179,7 +173,7 @@ export class OverviewComponent implements OnInit {
   exportReport(): void {
     const orders = this.recentOrders();
     if (!orders || orders.length === 0) {
-      alert("No data to export.");
+      this.toast.warning("No data to export.");
       return;
     }
     

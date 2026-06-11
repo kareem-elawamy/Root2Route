@@ -10,6 +10,7 @@ export class OrganizationService {
 
   // اللينك الأساسي للمنظمات
   private baseUrl = 'https://root2route.runasp.net/api/v1/organizations';
+  private dashboardUrl = 'https://root2route.runasp.net/api/v1/dashboard/superadmin';
 
   // فانكشن بتجيب كل المنظمات
   getAllOrganizations(): Observable<any> {
@@ -20,6 +21,14 @@ export class OrganizationService {
   updateStatus(id: string, newStatus: number): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.put(`${this.baseUrl}/${id}/status`, newStatus, { headers });
+  }
+
+  approveOrganization(id: string): Observable<any> {
+    return this.http.put(`${this.dashboardUrl}/organizations/${id}/approve`, null);
+  }
+
+  rejectOrganization(id: string, reason: string): Observable<any> {
+    return this.http.put(`${this.dashboardUrl}/organizations/${id}/reject?reason=${encodeURIComponent(reason)}`, null);
   }
 
   // Create a new organization

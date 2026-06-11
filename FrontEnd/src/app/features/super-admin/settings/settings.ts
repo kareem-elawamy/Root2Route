@@ -1,15 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SettingsService } from './settings.service';
+import { DashboardService } from '../dashboard/dashboard.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './settings.html'
 })
-export class Settings {
+export class Settings implements OnInit {
+  private settingsService = inject(SettingsService);
+  private dashboardService = inject(DashboardService);
+
+  // State signals
+  platformFeePercentage = signal('3.5');
+  isSaving = signal(false);
+  actionMessage = signal<{type: 'success' | 'error', text: string} | null>(null);
+
+  // Fake data for UI structure
   financialSettings = {
-    platformFeePercentage: '3.5',
     standardShippingFee: '12.00'
   };
 
@@ -19,31 +30,6 @@ export class Settings {
   };
 
   auditLogs = [
-    {
-      user: 'Marcus Sterling',
-      actionBadge: 'Updated Fees',
-      badgeClass: 'text-primary bg-primary/5',
-      time: 'Oct 24, 2023 • 14:22 PM',
-      icon: 'update',
-      iconClass: 'bg-primary',
-      hasDetails: true,
-      oldValue: '3.2%',
-      newValue: '3.5%',
-      hasMessage: false,
-      hasScan: false
-    },
-    {
-      user: 'Sarah Chen',
-      actionBadge: 'Purged Keys',
-      badgeClass: 'text-tertiary bg-tertiary/5',
-      time: 'Oct 23, 2023 • 09:15 AM',
-      icon: 'delete',
-      iconClass: 'bg-tertiary',
-      hasDetails: false,
-      hasMessage: true,
-      message: 'Removed expired API keys for deprecated legacy inventory system.',
-      hasScan: false
-    },
     {
       user: 'System Kernel',
       actionBadge: 'Security Audit',
@@ -59,4 +45,48 @@ export class Settings {
       scanMessage: 'Weekly automated compliance scan completed. 0 vulnerabilities found.'
     }
   ];
+
+  ngOnInit() {
+    this.loadCurrentFee();
+  }
+
+  loadCurrentFee() {
+    // We get the current fee from the overview stats since there is no GET /settings endpoint
+    this.dashboardService.getOverviewStats().subscribe({
+      next: (response: any) => {
+        const actualData = response.data || response;
+        if (actualData && actualData.platformFees !== undefined) {
+           // Wait, the overview stats return grossRevenue, platformFees, etc.
+           // They might not return the *percentage*.
+           // If it doesn't return percentage, we'll just keep the default '3.5' for now.
+           // In a real app we'd want a GET /settings.
+        }
+      },
+      error: (err) => console.error('Failed to load stats for fee', err)
+    });
+  }
+
+  saveFee() {
+    const feeValue = parseFloat(this.platformFeePercentage());
+    if (isNaN(feeValue)) {
+      this.actionMessage.set({ type: 'error', text: 'Please enter a valid number for the fee.' });
+      return;
+    }
+
+    this.isSaving.set(true);
+    this.actionMessage.set(null);
+
+    this.settingsService.updatePlatformFee(feeValue).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.actionMessage.set({ type: 'success', text: 'Platform fee updated successfully.' });
+        setTimeout(() => this.actionMessage.set(null), 3000);
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.actionMessage.set({ type: 'error', text: 'Failed to update platform fee.' });
+        console.error(err);
+      }
+    });
+  }
 }

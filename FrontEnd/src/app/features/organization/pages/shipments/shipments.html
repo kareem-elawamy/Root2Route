@@ -63,7 +63,11 @@
       <h2 class="table-title">{{ activeTab() }} Shipments</h2>
     </div>
 
-    @if (filteredShipments.length > 0) {
+    @if (isLoading()) {
+      <div style="padding: 24px;">
+        <app-skeleton type="table" [rows]="4" [columns]="5"></app-skeleton>
+      </div>
+    } @else if (filteredShipments.length > 0) {
       <div class="table-container">
         <table class="apple-table">
           <thead>
@@ -98,10 +102,14 @@
                 </td>
                 <td style="text-align: right;">
                   @if (shipment.status === 'Processing') {
+                    @if (canManageShipments()) {
                     <button class="apple-btn-filled" (click)="openDispatchModal(shipment.id)">Dispatch Order</button>
+                    }
                   }
                   @if (shipment.status === 'Shipped') {
+                    @if (canManageShipments()) {
                     <button class="apple-btn-outline" (click)="markAsDelivered(shipment.shipmentId)">Mark Delivered</button>
+                    }
                   }
                   @if (shipment.status === 'Completed') {
                     <span style="color: #059669; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">

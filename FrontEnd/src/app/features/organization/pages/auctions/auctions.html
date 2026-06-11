@@ -50,10 +50,12 @@
         }
       </div>
       
+      @if (auth.hasPermission('Permissions.Auctions.Create')) {
       <button class="apple-btn-filled" (click)="openCreateModal()">
         <span class="material-symbols-outlined icon">add_circle</span>
         Create Auction
       </button>
+      }
     </div>
   </header>
 
@@ -128,7 +130,7 @@
             </button>
             @if (activeDropdownId() === auction.id) {
             <div class="apple-dropdown">
-              @if (auction.status === 'Active' || auction.status === 'Pending') {
+              @if ((auction.status === 'Active' || auction.status === 'Pending') && auth.hasPermission('Permissions.Auctions.Manage')) {
               <button class="dropdown-item text-error" (click)="cancelAuction(auction.id)">
                 <span class="material-symbols-outlined icon">cancel</span> Cancel
               </button>
@@ -170,10 +172,12 @@
         </div>
         <p class="empty-title">No auctions found</p>
         <p class="empty-desc">You haven't scheduled any auctions yet.</p>
+        @if (auth.hasPermission('Permissions.Auctions.Create')) {
         <button class="apple-btn-filled mt-4" (click)="openCreateModal()">
           <span class="material-symbols-outlined icon">add_circle</span>
           Create Auction
         </button>
+        }
       </div>
       }
     </div>

@@ -1,14 +1,19 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect, signal } from '@angular/core';
+import { Component, OnInit, inject, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ShipmentsService } from '../../shipments.service';
 import { OrderService } from '../../order.service';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
+import { AuthService } from '../../../../core/services/auth.service';
+
+import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-shipments',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SkeletonComponent],
   templateUrl: './shipments.html',
   // styleUrl: './shipments.css'
 })
@@ -16,7 +21,10 @@ export class ShipmentsComponent implements OnInit {
   private shipmentsService = inject(ShipmentsService);
   private orderService = inject(OrderService);
   private orgCtx = inject(OrgContextService);
-  private cdr = inject(ChangeDetectorRef);
+
+  private toast = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
+  public readonly auth = inject(AuthService);
 
   readonly activeOrg = this.orgCtx.activeOrg;
   
@@ -24,6 +32,7 @@ export class ShipmentsComponent implements OnInit {
   filteredShipments: any[] = [];
   
   activeTab = signal('Pending'); // 'Pending', 'In Transit', 'Delivered'
+  isLoading = signal(true);
   
   stats = {
     total: 0,
@@ -51,6 +60,11 @@ export class ShipmentsComponent implements OnInit {
     driverPhone: ''
   };
 
+  canManageShipments(): boolean {
+    const roles = this.auth.currentUser()?.roles ?? [];
+    return roles.includes('Owner') || roles.includes('OrganizationOwner') || roles.includes('Admin');
+  }
+
   constructor() {
     effect(() => {
       const org = this.activeOrg();
@@ -63,6 +77,7 @@ export class ShipmentsComponent implements OnInit {
   ngOnInit() {}
 
   loadShipments(orgId: string) {
+    this.isLoading.set(true);
     this.orderService.getReceivedOrders(orgId).subscribe({
       next: (response: any) => {
         const data = response.data || response.items || response || [];
@@ -79,9 +94,11 @@ export class ShipmentsComponent implements OnInit {
         this.stats.delivered = this.shipments.filter(o => o.status === 'Completed').length;
 
         this.applyFilter();
+        this.isLoading.set(false);
       },
       error: (error: any) => {
         console.error('Error fetching shipments', error);
+        this.isLoading.set(false);
       }
     });
   }
@@ -100,7 +117,7 @@ export class ShipmentsComponent implements OnInit {
     } else if (tab === 'Delivered') {
       this.filteredShipments = this.shipments.filter(o => o.status === 'Completed');
     }
-    this.cdr.detectChanges();
+
   }
 
   openDispatchModal(orderId: string) {
@@ -124,34 +141,37 @@ export class ShipmentsComponent implements OnInit {
       driverPhone: this.dispatchForm.driverPhone
     }).subscribe({
       next: () => {
-        alert('Order dispatched successfully!');
+        this.toast.success('Order dispatched successfully!');
         this.closeDispatchModal();
         const org = this.activeOrg();
         if (org) this.loadShipments(org.id);
       },
       error: (error: any) => {
         console.error('Error dispatching order', error);
-        alert('Failed to dispatch order.');
+        this.toast.error('Failed to dispatch order.');
       }
     });
   }
 
   markAsDelivered(shipmentId: string) {
-    if (!confirm('Are you sure you want to mark this shipment as Delivered?')) return;
-    
-    // Assuming NewStatus 2 is Delivered based on common enum patterns.
-    // If we need the exact enum, we'll map it. (Typically 0:Pending, 1:InTransit, 2:Delivered/Completed).
-    // ShipmentStatus enum: 0:Pending, 1:PickedUp, 2:InTransit, 3:Delivered
-    this.shipmentsService.updateShipmentStatus(shipmentId, 3).subscribe({
-      next: () => {
-        alert('Shipment marked as delivered!');
-        const org = this.activeOrg();
-        if (org) this.loadShipments(org.id);
-      },
-      error: (error: any) => {
-        console.error('Error updating status', error);
-        alert('Failed to update shipment status.');
-      }
+    this.confirmDialog.open({
+      title: 'Mark as Delivered',
+      message: 'Are you sure you want to mark this shipment as Delivered?',
+      confirmLabel: 'Mark Delivered',
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      
+      this.shipmentsService.updateShipmentStatus(shipmentId, 3).subscribe({
+        next: () => {
+          this.toast.success('Shipment marked as delivered!');
+          const org = this.activeOrg();
+          if (org) this.loadShipments(org.id);
+        },
+        error: (error: any) => {
+          console.error('Error updating status', error);
+          this.toast.error('Failed to update shipment status.');
+        }
+      });
     });
   }
 }
