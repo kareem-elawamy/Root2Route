@@ -1,0 +1,11 @@
+{
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "ng build",
+  "outputDirectory": "dist/FrontEnd/browser",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

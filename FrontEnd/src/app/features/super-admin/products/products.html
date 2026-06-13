@@ -1,67 +1,114 @@
-<div class="px-8 pb-12 bg-surface">
+<div class="p-8 pb-24">
 
-  <div class="flex justify-between items-end mb-10 pt-8">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
     <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Products Management</h2>
-      <div class="flex items-center gap-3">
-        <span
-          class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
-          {{ stats.total }} Total Products
-        </span>
-        <span class="text-sm text-slate-500">Global catalog</span>
-      </div>
+      <h2 class="text-3xl font-black font-headline text-slate-800">Products Management</h2>
+      <p class="text-slate-500 mt-1 font-medium">View and manage the global product catalog</p>
     </div>
     <div class="flex gap-3">
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
+      <button (click)="toggleFilters()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all"
+        [class.ring-2]="showFilters()" [class.ring-emerald-500]="showFilters()">
         <span class="material-symbols-outlined text-lg">filter_list</span>
         Filters
       </button>
-      <button
-        class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+      <button (click)="exportCatalog()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition-all">
         <span class="material-symbols-outlined text-lg">download</span>
-        Export Catalog
+        Export
       </button>
     </div>
   </div>
 
+  <!-- Stats Cards -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-emerald-600">inventory_2</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Catalog</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.total }}</h3>
-        </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Total Catalog</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.total }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-rose-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Low Stock</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.lowStock }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-amber-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Active Auctions</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.activeAuctions }}</h3>
+    </div>
+  </div>
+
+  <!-- Sale Types Distribution Chart -->
+  <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-slate-200 mb-12">
+    <div class="flex justify-between items-end mb-6">
+      <div>
+        <h3 class="font-headline font-bold text-lg text-slate-800">Sale Types Distribution</h3>
+        <p class="text-sm text-slate-500">Product availability breakdown across sale channels</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total</p>
+        <p class="text-2xl font-black text-slate-800">{{ stats.total }}</p>
       </div>
     </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-rose-600">warning</span>
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Low Stock</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.lowStock }}</h3>
-        </div>
-      </div>
+
+    <!-- Stacked Bar -->
+    <div class="w-full h-4 rounded-full overflow-hidden flex bg-slate-100 mb-4 shadow-inner">
+      <div class="h-full bg-emerald-500 transition-all duration-500" [style.width]="chartData().directPercent + '%'" title="Direct Sale"></div>
+      <div class="h-full bg-amber-500 transition-all duration-500" [style.width]="chartData().auctionPercent + '%'" title="Auction"></div>
+      <div class="h-full bg-slate-300 transition-all duration-500" [style.width]="chartData().inactivePercent + '%'" title="Inactive"></div>
     </div>
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-      <div class="flex items-center gap-4 mb-2">
-        <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
-          <span class="material-symbols-outlined text-amber-600">gavel</span>
+
+    <!-- Pie Chart + Legend Side by Side -->
+    <div class="flex items-center gap-8 mt-4">
+      <div class="w-20 h-20 rounded-full shadow-inner shrink-0" [style.background]="chartData().gradient"></div>
+      <div class="flex flex-wrap gap-6 text-sm">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div>
+          <span class="font-bold text-slate-700">Direct Sale</span>
         </div>
-        <div>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Auctions</p>
-          <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ stats.activeAuctions }}</h3>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></div>
+          <span class="font-bold text-slate-700">Auction</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-slate-300 shadow-sm"></div>
+          <span class="font-bold text-slate-700">Inactive</span>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Product Table -->
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+    <!-- Header with Filters -->
+    <div class="px-6 py-5 border-b border-slate-100 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <h2 class="font-headline font-bold text-lg text-slate-800">Product Catalog</h2>
+
+      @if (showFilters()) {
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              class="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow w-full md:w-64"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            >
+          </div>
+          <select 
+            class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow font-medium text-slate-700"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="statusFilter.set($event)"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Direct Sale">Direct Sale</option>
+            <option value="Auction">Auction</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      }
+    </div>
+
     <div class="overflow-x-auto">
       @if (isLoading()) {
         <div class="p-6">
@@ -69,80 +116,152 @@
         </div>
       } @else {
         <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
             <tr>
-              <th class="px-8 py-5">Product Details</th>
-              <th class="px-8 py-5">Stock & Category</th>
-              <th class="px-8 py-5">Pricing</th>
-              <th class="px-8 py-5">Status</th>
-              <th class="px-8 py-5 text-right">Actions</th>
+              <th class="px-6 py-4">Product</th>
+              <th class="px-6 py-4">Stock & Type</th>
+              <th class="px-6 py-4">Pricing</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-
-            @for (product of products(); track product.id) {
-          <tr class="hover:bg-slate-50 transition-colors group">
-            <td class="px-8 py-5">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
-                  @if(product.mainImageUrl) {
-                    <img [src]="product.mainImageUrl" alt="{{ product.name }}" class="w-full h-full object-cover" />
-                  } @else {
-                    <span class="material-symbols-outlined text-slate-300 text-3xl">image</span>
-                  }
-                </div>
-                <div>
-                  <h4 class="text-sm font-extrabold text-slate-800">{{ product.name || 'Unnamed Product' }}</h4>
-                  <p class="text-[11px] text-slate-500 mt-0.5 truncate max-w-xs">{{ product.description || 'No description' }}</p>
-                  <p class="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-wider">ID: {{ product.id.split('-')[0] }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-8 py-5">
-              <div class="flex flex-col gap-1">
-                <span class="text-sm font-bold text-slate-700">{{ product.stockQuantity }} {{ product.weightUnit || 'Units' }}</span>
-                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{{ product.productType || 'General' }}</span>
-              </div>
-            </td>
-            <td class="px-8 py-5">
-              <div class="flex flex-col gap-1">
-                <span class="text-sm font-extrabold text-emerald-700">${{ product.displayPrice || 0 }}</span>
-                <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{{ product.priceLabel }}</span>
-              </div>
-            </td>
-            <td class="px-8 py-5">
-              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest {{ product.statusClass }}">
-                {{ product.statusLabel }}
-              </span>
-            </td>
-            <td class="px-8 py-5 text-right">
-              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">edit</span>
-                </button>
-                <button (click)="deleteProduct(product.id)"
-                  class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors">
-                  <span class="material-symbols-outlined text-[18px]">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-          }
-
-            @if (products().length === 0) {
+            @if (filteredProducts().length === 0) {
               <tr>
-                <td colspan="5" class="py-16 text-center">
-                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inventory_2</span>
-                  <p class="text-slate-500 font-medium">No products found in the catalog.</p>
+                <td colspan="5" class="px-6 py-12 text-center">
+                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-3">search_off</span>
+                  <p class="text-slate-500 font-medium">No products found matching your filters.</p>
                 </td>
               </tr>
+            } @else {
+              @for (product of filteredProducts(); track product.id) {
+                <tr class="hover:bg-slate-50 transition-colors group cursor-pointer">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                        @if(product.mainImageUrl) {
+                          <img [src]="product.mainImageUrl" alt="{{product.name}}" class="w-full h-full object-cover">
+                        } @else {
+                          <span class="material-symbols-outlined text-slate-300 text-xl">image</span>
+                        }
+                      </div>
+                      <div>
+                        <p class="text-sm font-bold text-slate-800">{{ product.name || 'Unnamed Product' }}</p>
+                        <p class="text-xs text-slate-500 truncate max-w-[200px]">{{ product.description || 'No description' }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col gap-1">
+                      <span class="text-sm font-bold text-slate-700">{{ product.stockQuantity }} {{ product.weightUnit || 'Units' }}</span>
+                      <span class="text-[10px] uppercase font-bold tracking-wider"
+                        [class]="product.stockQuantity < 10 ? 'text-rose-500' : 'text-slate-400'">
+                        {{ product.productType || 'General' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col gap-1">
+                      <span class="text-sm font-extrabold text-emerald-700">${{ product.displayPrice || 0 }}</span>
+                      <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{{ product.priceLabel }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ product.statusClass }}">
+                      {{ product.statusLabel }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button (click)="openEditDrawer(product); $event.stopPropagation()"
+                        class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors" title="Edit Product">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                      <button (click)="deleteProduct(product); $event.stopPropagation()"
+                        class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors" title="Delete Product">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
             }
-
           </tbody>
         </table>
       }
     </div>
   </div>
-
 </div>
+
+<!-- Edit Product Modal -->
+@if (isDrawerOpen()) {
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex items-center justify-center p-4" (click)="closeDrawer()">
+  
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative" (click)="$event.stopPropagation()">
+    <div class="p-8 pb-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-headline font-extrabold text-2xl text-slate-800">Edit Product</h2>
+      <button (click)="closeDrawer()" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8 space-y-5">
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Product Name *</label>
+        <input type="text" [(ngModel)]="formState.name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="e.g. Organic Tomatoes">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+        <textarea [(ngModel)]="formState.description" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" rows="3" placeholder="Product description..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Stock Quantity</label>
+          <input type="number" [(ngModel)]="formState.stockQuantity" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Barcode</label>
+          <input type="text" [(ngModel)]="formState.barcode" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/30">
+        <div class="flex items-center gap-3 mb-4">
+          <input type="checkbox" id="directSale" [(ngModel)]="formState.isAvailableForDirectSale" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+          <label for="directSale" class="text-sm font-bold text-slate-700">Available for Direct Sale</label>
+        </div>
+        @if (formState.isAvailableForDirectSale) {
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Direct Sale Price ($)</label>
+            <input type="number" [(ngModel)]="formState.directSalePrice" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+          </div>
+        }
+      </div>
+
+      <div class="p-4 rounded-xl border border-amber-100 bg-amber-50/30">
+        <div class="flex items-center gap-3 mb-4">
+          <input type="checkbox" id="auctionSale" [(ngModel)]="formState.isAvailableForAuction" class="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500">
+          <label for="auctionSale" class="text-sm font-bold text-slate-700">Available for Auction</label>
+        </div>
+        @if (formState.isAvailableForAuction) {
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Start Bidding Price ($)</label>
+            <input type="number" [(ngModel)]="formState.startBiddingPrice" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <div class="p-8 border-t border-slate-100 bg-white">
+      <button (click)="saveProduct()" [disabled]="isProcessing()"
+        class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-4 rounded-2xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+}

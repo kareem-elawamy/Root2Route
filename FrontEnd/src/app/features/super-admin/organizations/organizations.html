@@ -9,14 +9,79 @@
       <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.pending }}</h3>
     </div>
     <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-rose-500">
-      <p class="text-on-surface-variant text-sm font-medium mb-1">Suspended</p>
-      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.suspended }}</h3>
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Rejected</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ stats.rejected }}</h3>
+    </div>
+  </div>
+
+  <!-- Status Distribution Chart -->
+  <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border border-slate-200 mb-12">
+    <div class="flex justify-between items-end mb-6">
+      <div>
+        <h3 class="font-headline font-bold text-lg text-slate-800">Status Distribution</h3>
+        <p class="text-sm text-slate-500">Breakdown of all registered organizations</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total</p>
+        <p class="text-2xl font-black text-slate-800">{{ stats.total }}</p>
+      </div>
+    </div>
+
+    <!-- Stacked Bar -->
+    <div class="w-full h-4 rounded-full overflow-hidden flex bg-slate-100 mb-4 shadow-inner">
+      <div class="h-full bg-emerald-500 transition-all duration-500" [style.width]="chartData().approved.percent + '%'" title="Approved: {{ chartData().approved.count }}"></div>
+      <div class="h-full bg-amber-400 transition-all duration-500" [style.width]="chartData().pending.percent + '%'" title="Pending: {{ chartData().pending.count }}"></div>
+      <div class="h-full bg-rose-500 transition-all duration-500" [style.width]="chartData().rejected.percent + '%'" title="Rejected: {{ chartData().rejected.count }}"></div>
+    </div>
+
+    <!-- Chart Legend -->
+    <div class="flex flex-wrap gap-6 text-sm mt-4">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></div>
+        <span class="font-bold text-slate-700">Approved</span>
+        <span class="text-slate-400 font-medium ml-1">({{ chartData().approved.percent }}%)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-amber-400 shadow-sm"></div>
+        <span class="font-bold text-slate-700">Pending</span>
+        <span class="text-slate-400 font-medium ml-1">({{ chartData().pending.percent }}%)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-rose-500 shadow-sm"></div>
+        <span class="font-bold text-slate-700">Rejected/Suspended</span>
+        <span class="text-slate-400 font-medium ml-1">({{ chartData().rejected.percent }}%)</span>
+      </div>
     </div>
   </div>
 
   <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-    <div class="px-6 py-5 flex items-center justify-between bg-white">
-      <h2 class="font-headline font-bold text-lg">Organization Directory</h2>
+    <!-- Header with Filters -->
+    <div class="px-6 py-5 border-b border-slate-100 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <h2 class="font-headline font-bold text-lg text-slate-800">Organization Directory</h2>
+      
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
+          <input 
+            type="text" 
+            placeholder="Search organizations..." 
+            class="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow w-full md:w-64"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          >
+        </div>
+        <select 
+          class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow font-medium text-slate-700"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event)"
+        >
+          <option value="All">All Statuses</option>
+          <option value="Approved">Approved</option>
+          <option value="Pending">Pending Review</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Suspended">Suspended</option>
+        </select>
+      </div>
     </div>
     <div class="overflow-x-auto">
       @if (isLoading()) {
@@ -35,12 +100,15 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            @if (organizations().length === 0) {
+            @if (filteredOrganizations().length === 0) {
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-slate-400">No organizations found.</td>
+                <td colspan="5" class="px-6 py-12 text-center">
+                  <span class="material-symbols-outlined text-4xl text-slate-300 mb-3">search_off</span>
+                  <p class="text-slate-500 font-medium">No organizations found matching your filters.</p>
+                </td>
               </tr>
             } @else {
-              @for (org of organizations(); track org.id) {
+              @for (org of filteredOrganizations(); track org.id) {
               <tr (click)="openDetails(org)" class="hover:bg-slate-50 transition-colors cursor-pointer group">
                 <td class="px-6 py-4">
                   <div class="flex items-center space-x-3">
@@ -74,9 +142,9 @@
 </div>
 
 @if (isDrawerOpen && selectedOrg) {
-<div class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40" (click)="closeDetails()"></div>
-
-<div class="fixed right-0 top-0 h-full w-[420px] bg-white z-50 shadow-2xl flex flex-col border-l border-emerald-500/10">
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex items-center justify-center p-4" (click)="closeDetails()">
+  
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative animate-in fade-in zoom-in-95 duration-200" (click)="$event.stopPropagation()">
 
   <div class="p-8 pb-4">
     <div class="flex items-center justify-between mb-6">
@@ -90,23 +158,12 @@
       </span>
     </div>
     <h2 class="font-headline font-extrabold text-2xl mb-1">Organization Profile</h2>
-    <p class="text-slate-500 text-sm font-medium">{{ selectedOrg.name || 'Unnamed Org' }} (ID: {{ selectedOrg.id ||
-      'N/A' }})</p>
+    <p class="text-slate-500 text-sm font-medium">{{ selectedOrg.name || 'Unnamed Org' }}</p>
   </div>
 
   <div class="flex-1 overflow-y-auto p-8 space-y-8">
 
     <section class="space-y-6">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-slate-50 p-4 rounded-2xl">
-          <p class="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">Total Acreage</p>
-          <p class="text-xl font-black text-emerald-700">{{ selectedOrg.details?.acreage || 'N/A' }}</p>
-        </div>
-        <div class="bg-slate-50 p-4 rounded-2xl">
-          <p class="text-[10px] uppercase font-bold text-slate-500 mb-1 tracking-wider">Primary Crop</p>
-          <p class="text-xl font-black text-emerald-700">{{ selectedOrg.details?.crop || 'Not Specified' }}</p>
-        </div>
-      </div>
       <div>
         <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Description</h4>
         <p class="text-sm text-slate-700 leading-relaxed">{{ selectedOrg.details?.desc || 'No description provided by
@@ -121,15 +178,15 @@
       @for (file of selectedOrg.files; track file.name) {
       <div
         class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors group">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mr-4">
-          <span class="material-symbols-outlined text-emerald-700">description</span>
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mr-4">
+          <span class="material-symbols-outlined text-indigo-600">description</span>
         </div>
         <div class="flex-1">
           <p class="text-xs font-bold text-slate-800">{{ file.name }}</p>
           <p class="text-[10px] text-slate-500">{{ file.size }} • {{ file.details }}</p>
         </div>
         <span
-          class="material-symbols-outlined text-slate-300 group-hover:text-emerald-500 transition-colors">download</span>
+          class="material-symbols-outlined text-slate-300 group-hover:text-indigo-500 transition-colors">download</span>
       </div>
       }
       } @else {
@@ -143,47 +200,49 @@
 
   </div>
 
-  <div class="p-8 border-t border-slate-100 bg-white space-y-3">
-    @if (actionResult()) {
-      <div class="p-4 rounded-xl text-sm font-semibold flex items-center gap-2 mb-4"
-           [class.bg-emerald-100]="actionResult()?.type === 'success'"
-           [class.text-emerald-800]="actionResult()?.type === 'success'"
-           [class.bg-rose-100]="actionResult()?.type === 'error'"
-           [class.text-rose-800]="actionResult()?.type === 'error'">
-        <span class="material-symbols-outlined">{{ actionResult()?.type === 'success' ? 'check_circle' : 'error' }}</span>
-        {{ actionResult()?.message }}
-      </div>
-    }
+  <div class="p-6 bg-slate-50 border-t border-slate-100 mt-auto">
 
-    <!-- Rejection Reason Input (only show if pending) -->
+    <!-- Action Form (only show if pending) -->
     @if (selectedOrg.statusValue === 0) {
-      <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rejection Reason (If rejecting)</label>
-        <textarea 
-          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all"
-          rows="2" 
-          placeholder="Briefly explain why this organization is being rejected..."
-          [ngModel]="rejectionReason()" 
-          (ngModelChange)="rejectionReason.set($event)">
-        </textarea>
-      </div>
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="mb-5">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rejection Reason <span class="text-slate-400 font-normal lowercase">(required if rejecting)</span></label>
+          <textarea 
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+            rows="3" 
+            placeholder="Explain why this application cannot be approved..."
+            [ngModel]="rejectionReason()" 
+            (ngModelChange)="rejectionReason.set($event)">
+          </textarea>
+        </div>
 
-      <button (click)="approveOrg()" [disabled]="isProcessing()"
-        class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-4 rounded-2xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-        @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
-        Approve Organization
-      </button>
-      <button (click)="rejectOrg()" [disabled]="isProcessing()"
-        class="w-full flex items-center justify-center gap-2 border-2 border-rose-500 text-rose-500 font-bold py-4 rounded-2xl hover:bg-rose-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-        @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
-        Reject Application
-      </button>
+        <div class="flex gap-3">
+          <button (click)="approveOrg()" [disabled]="isProcessing()"
+            class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            <span class="material-symbols-outlined text-sm">check</span>
+            Approve
+          </button>
+          
+          <button (click)="rejectOrg()" [disabled]="isProcessing()"
+            class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-rose-500 text-rose-600 font-bold py-3 px-4 rounded-xl hover:bg-rose-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            <span class="material-symbols-outlined text-sm">close</span>
+            Reject
+          </button>
+        </div>
+      </div>
     } @else {
       <!-- If already approved/rejected, show status instead of buttons -->
-      <div class="w-full text-center p-4 bg-slate-50 rounded-2xl text-sm font-bold text-slate-500 uppercase tracking-widest">
-        This organization is {{ selectedOrg.status }}
+      <div class="w-full flex flex-col items-center justify-center p-6 bg-white border border-slate-200 rounded-2xl">
+        <span class="material-symbols-outlined text-3xl mb-2 {{ selectedOrg.statusValue === 1 ? 'text-indigo-500' : 'text-rose-500' }}">
+          {{ selectedOrg.statusValue === 1 ? 'verified' : 'cancel' }}
+        </span>
+        <p class="text-sm font-bold text-slate-700">Application {{ selectedOrg.status }}</p>
+        <p class="text-xs text-slate-500 mt-1">No further action required.</p>
       </div>
     }
+  </div>
   </div>
 </div>
 }

@@ -4,7 +4,6 @@ import { SuperAdminLayoutComponent } from '../../layouts/super-admin-layout/supe
 import { Dashboard } from './dashboard/dashboard';
 import { Organizations } from './organizations/organizations';
 import { Auctions } from './auctions/auctions';
-import { AiLab } from './ai-lab/ai-lab';
 import { Reports } from './reports/reports';
 import { Settings } from './settings/settings';
 import { Products } from './products/products';
@@ -19,9 +18,12 @@ export const superAdminRoutes: Routes = [
       { path: 'organizations', component: Organizations },
       { path: 'products', component: Products },
       { path: 'auctions', component: Auctions },
-      { path: 'ai-lab', component: AiLab },
       { path: 'reports', component: Reports },
       { path: 'settings', component: Settings },
+      { 
+        path: 'plants', 
+        loadComponent: () => import('./plants/plants').then(m => m.Plants) 
+      },
 
       // New pages (Phase 4)
       {

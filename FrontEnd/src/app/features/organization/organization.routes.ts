@@ -1,4 +1,6 @@
-import { Routes } from '@angular/router';
+import { Routes, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from '../../core/services/auth.service';
 import { OverviewComponent } from './pages/overview-component/overview-component';
 import { ProductsComponent } from './pages/products-component/products-component';
 import { permissionGuard } from '../../core/guards/permission.guard';
@@ -6,11 +8,35 @@ import { permissionGuard } from '../../core/guards/permission.guard';
 export const organizationRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'overview',
+    canActivate: [
+      () => {
+        const auth = inject(AuthService);
+        const router = inject(Router);
+
+        if (auth.hasPermission('Permissions.Organization.View')) {
+          return router.createUrlTree(['/company-dashboard/overview']);
+        }
+        if (auth.hasPermission('Permissions.Market.ViewProducts')) {
+          return router.createUrlTree(['/company-dashboard/products']);
+        }
+        if (auth.hasPermission('Permissions.Auctions.View')) {
+          return router.createUrlTree(['/company-dashboard/auctions']);
+        }
+        if (auth.hasPermission('Permissions.Members.View')) {
+          return router.createUrlTree(['/company-dashboard/members']);
+        }
+        if (auth.hasPermission('Permissions.Roles.View')) {
+          return router.createUrlTree(['/company-dashboard/roles']);
+        }
+        return router.createUrlTree(['/user/invitations']);
+      }
+    ],
     pathMatch: 'full',
+    component: OverviewComponent
   },
   {
     path: 'overview',
+    canActivate: [permissionGuard('Permissions.Organization.View')],
     component: OverviewComponent
   },
   {
@@ -28,6 +54,7 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'orders',
+    canActivate: [permissionGuard('Permissions.Market.ViewProducts')],
     loadComponent: () =>
       import('./pages/orders/orders').then((m) => m.OrdersComponent),
   },
@@ -45,16 +72,19 @@ export const organizationRoutes: Routes = [
   },
   {
     path: 'chat',
+    canActivate: [permissionGuard('Permissions.Market.ViewProducts')],
     loadComponent: () =>
       import('./pages/chat/chat').then((m) => m.ChatComponent),
   },
   {
     path: 'reviews',
+    canActivate: [permissionGuard('Permissions.Organization.ManageSettings')],
     loadComponent: () =>
       import('./pages/reviews/reviews').then((m) => m.ReviewsComponent),
   },
   {
     path: 'shipments',
+    canActivate: [permissionGuard('Permissions.Organization.ManageSettings')],
     loadComponent: () =>
       import('./pages/shipments/shipments').then((m) => m.ShipmentsComponent),
   },

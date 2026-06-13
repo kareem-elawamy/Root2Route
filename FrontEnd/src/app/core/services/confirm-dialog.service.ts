@@ -1,5 +1,5 @@
-import { Injectable, signal } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { UltraAlert } from '@kareem_elawamy/ultra-alert';
 
 export interface ConfirmDialogOptions {
   title: string;
@@ -13,29 +13,12 @@ export interface ConfirmDialogOptions {
   providedIn: 'root'
 })
 export class ConfirmDialogService {
-  options = signal<ConfirmDialogOptions | null>(null);
-  private resultSubject = new Subject<boolean>();
-
-  open(options: ConfirmDialogOptions): Observable<boolean> {
-    this.options.set({
-      confirmLabel: 'Confirm',
-      cancelLabel: 'Cancel',
-      isDestructive: false,
-      ...options
-    });
-    this.resultSubject = new Subject<boolean>();
-    return this.resultSubject.asObservable();
-  }
-
-  confirm() {
-    this.resultSubject.next(true);
-    this.resultSubject.complete();
-    this.options.set(null);
-  }
-
-  cancel() {
-    this.resultSubject.next(false);
-    this.resultSubject.complete();
-    this.options.set(null);
+  async open(options: ConfirmDialogOptions): Promise<boolean> {
+    if (options.isDestructive) {
+      const result = await UltraAlert.deleteConfirm(options.title, options.message);
+      return result.isConfirmed;
+    }
+    const result = await UltraAlert.confirm(options.title, options.message);
+    return result.isConfirmed;
   }
 }

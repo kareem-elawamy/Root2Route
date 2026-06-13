@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminUserService } from '../../../core/services/admin-user.service';
@@ -33,7 +33,17 @@ export class Users implements OnInit {
   isDrawerOpen = signal(false);
 
   // Stats
-  stats = signal({ total: 0, active: 0, suspended: 0 });
+  stats = signal({ total: 0, active: 0, blocked: 0 });
+
+  // Chart Data (Status Distribution)
+  chartData = computed(() => {
+    const s = this.stats();
+    const total = s.total || 1; // Prevent div by 0
+    return {
+      activePercent: Math.round((s.active / total) * 100),
+      blockedPercent: Math.round((s.blocked / total) * 100),
+    };
+  });
 
   private searchTimeout: any;
 
@@ -43,32 +53,33 @@ export class Users implements OnInit {
 
   loadUsers() {
     this.isLoading.set(true);
-    const suspended = this.filterStatus() === 'suspended' ? true :
+    const blocked = this.filterStatus() === 'blocked' ? true :
                       this.filterStatus() === 'active' ? false : undefined;
 
     this.userService.getAllUsers(
       this.currentPage(),
       this.pageSize,
       this.searchTerm() || undefined,
-      suspended
+      blocked
     ).subscribe({
       next: (response: any) => {
         const data = response.data || response;
-        const items = data.items || data.users || (Array.isArray(data) ? data : []);
+        const items = data.data || data.items || data.users || (Array.isArray(data) ? data : []);
         this.users.set(items);
         this.totalCount.set(data.totalCount || items.length);
         this.totalPages.set(Math.ceil(this.totalCount() / this.pageSize) || 1);
 
         this.stats.set({
           total: data.totalCount || items.length,
-          active: items.filter((u: any) => !u.isDeleted && !u.isSuspended).length,
-          suspended: items.filter((u: any) => u.isDeleted || u.isSuspended).length
+          active: items.filter((u: any) => !u.isDeleted && !u.isBlocked).length,
+          blocked: items.filter((u: any) => u.isDeleted || u.isBlocked).length
         });
 
         this.isLoading.set(false);
       },
       error: (err: any) => {
         console.error('Error loading users', err);
+        this.toast.error('Failed to load users.');
         this.isLoading.set(false);
       }
     });
@@ -108,29 +119,28 @@ export class Users implements OnInit {
     this.selectedUser.set(null);
   }
 
-  toggleSuspend(user: any) {
-    const isSuspended = user.isDeleted || user.isSuspended;
-    const action = isSuspended ? 'reactivate' : 'suspend';
+  async toggleBlock(user: any) {
+    const isBlocked = user.isDeleted || user.isBlocked;
+    const action = isBlocked ? 'reactivate' : 'block';
 
-    this.confirmDialog.open({
-      title: `${isSuspended ? 'Reactivate' : 'Suspend'} User`,
+    const confirmed = await this.confirmDialog.open({
+      title: `${isBlocked ? 'Reactivate' : 'Block'} User`,
       message: `Are you sure you want to ${action} ${user.fullName || user.email}?`,
-      confirmLabel: isSuspended ? 'Reactivate' : 'Suspend',
-      isDestructive: !isSuspended
-    }).subscribe((confirmed: any) => {
-      if (!confirmed) return;
+      confirmLabel: isBlocked ? 'Reactivate' : 'Block',
+      isDestructive: !isBlocked
+    });
+    if (!confirmed) return;
 
-      this.userService.suspendUser(user.id, !isSuspended).subscribe({
-        next: () => {
-          this.toast.success(`User ${action}d successfully.`);
-          this.loadUsers();
-          this.closeDetail();
-        },
-        error: (err: any) => {
-          console.error(err);
-          this.toast.error(`Failed to ${action} user.`);
-        }
-      });
+    this.userService.blockUser(user.id, !isBlocked).subscribe({
+      next: () => {
+        this.toast.success(`User ${action}d successfully.`);
+        this.loadUsers();
+        this.closeDetail();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.toast.error(`Failed to ${action} user.`);
+      }
     });
   }
 

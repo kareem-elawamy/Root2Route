@@ -6,6 +6,8 @@ import { OrgContextService } from '../../core/services/org-context.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { OrganizationService } from '../../features/super-admin/organizations/organization.service';
+import { ToastService } from '../../core/services/toast.service';
+import { UltraAlert } from '@kareem_elawamy/ultra-alert';
 
 @Component({
   selector: 'app-org-layout-component',
@@ -18,6 +20,7 @@ export class OrgLayoutComponent implements OnInit {
   private readonly orgCtx = inject(OrgContextService);
   private readonly elRef = inject(ElementRef);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
   readonly auth = inject(AuthService);
 
   readonly organizations = this.orgCtx.organizations;
@@ -89,13 +92,13 @@ export class OrgLayoutComponent implements OnInit {
       next: () => {
         this.orgCtx.switchOrganization(orgId);
         this.dropdownOpen.set(false);
-        this.router.navigate(['/company-dashboard/overview']);
+        this.router.navigate(['/company-dashboard']);
       },
       error: (err) => {
         console.error('Failed to switch organization context', err);
         this.orgCtx.switchOrganization(orgId);
         this.dropdownOpen.set(false);
-        this.router.navigate(['/company-dashboard/overview']);
+        this.router.navigate(['/company-dashboard']);
       }
     });
   }
@@ -111,7 +114,7 @@ export class OrgLayoutComponent implements OnInit {
   }
 
   actionPlaceholder(actionName: string): void {
-    alert(`Feature '${actionName}' is coming soon!`);
+    UltraAlert.info(`Feature '${actionName}' is coming soon!`);
   }
 
   toggleNotifications(): void {
@@ -144,6 +147,14 @@ export class OrgLayoutComponent implements OnInit {
     formData.append('Name', name);
     formData.append('Description', (form.elements.namedItem('orgDesc') as HTMLInputElement).value);
     formData.append('Type', (form.elements.namedItem('orgType') as HTMLSelectElement).value);
+    
+    const complianceFileInput = form.elements.namedItem('complianceFile') as HTMLInputElement;
+    if (complianceFileInput && complianceFileInput.files && complianceFileInput.files.length > 0) {
+      formData.append('ComplianceFile', complianceFileInput.files[0]);
+    } else {
+      this.toast.error('Compliance file is required.');
+      return;
+    }
 
     this.isCreatingOrg.set(true);
     this.orgApi.createOrganization(formData).subscribe({
@@ -151,11 +162,11 @@ export class OrgLayoutComponent implements OnInit {
         this.isCreatingOrg.set(false);
         this.closeCreateModal();
         this.loadOrgs();
-        alert('Organization created successfully!');
+        this.toast.success('Organization created successfully!');
       },
       error: (err) => {
         this.isCreatingOrg.set(false);
-        alert('Error creating organization.');
+        this.toast.error('Error creating organization.');
         console.error(err);
       }
     });

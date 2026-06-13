@@ -124,16 +124,6 @@
                       style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
                       OWNER
                     </span>
-                  } @else if (authService.hasPermission('Permissions.Roles.Assign')) {
-                    <select class="apple-input"
-                      style="padding: 4px 8px; font-size: 12px; min-width: 120px; border-radius: 6px;"
-                      [ngModel]="member.roles?.[0] || ''"
-                      (ngModelChange)="assignRoleToMember(member.id, $event)">
-                      <option value="" disabled>Select role</option>
-                      @for (role of roles(); track role.id) {
-                        <option [value]="role.id">{{ role.name }}</option>
-                      }
-                    </select>
                   } @else {
                     <span class="status-badge"
                       style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">
@@ -143,7 +133,13 @@
                 </td>
                 <td class="text-secondary font-medium">{{ member.joinedAt | date:'mediumDate' }}</td>
                 <td class="table-actions">
-                  @if (authService.hasPermission('Permissions.Members.Remove') && member.userId !== activeOrg()?.ownerId)
+                  @if (authService.hasPermission('Permissions.Roles.Assign') && member.userId !== activeOrg()?.ownerId && member.userId !== authService.currentUser()?.id) {
+                  <button class="icon-btn row-action-btn" style="color: #64748b;" title="Change Role"
+                    (click)="openChangeRoleModal(member)">
+                    <span class="material-symbols-outlined icon">manage_accounts</span>
+                  </button>
+                  }
+                  @if (authService.hasPermission('Permissions.Members.Remove') && member.userId !== activeOrg()?.ownerId && member.userId !== authService.currentUser()?.id)
                   {
                   <button class="icon-btn row-action-btn text-error" title="Remove Member"
                     (click)="removeMember(member.id)">
@@ -283,3 +279,41 @@
   }
 
 </div>
+
+<!-- ── Change Role Modal ── -->
+@if (isChangeRoleModalOpen()) {
+<div class="apple-modal-overlay">
+  <div class="apple-modal" style="max-width: 400px; width: 90vw;">
+    <div class="modal-header">
+      <h2 class="modal-title">Change Role</h2>
+      <button class="icon-btn" (click)="closeChangeRoleModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 24px;">
+      <p style="margin-bottom: 16px; font-size: 14px; color: #475569;">
+        Select a new role for <strong>{{ selectedMemberToAssign()?.userName || 'this user' }}</strong>.
+      </p>
+      <div class="input-group">
+        <label>Select Role</label>
+        <select [(ngModel)]="selectedRoleIdToAssign" class="apple-input">
+          <option value="" disabled>Select role...</option>
+          @for (role of roles(); track role.id) {
+            <option [value]="role.id">{{ role.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="apple-btn-outline" (click)="closeChangeRoleModal()">Cancel</button>
+      <button class="apple-btn-filled" (click)="confirmChangeRole()" [disabled]="!selectedRoleIdToAssign() || selectedRoleIdToAssign() === getRoleIdByName(selectedMemberToAssign()?.roles?.[0]) || isAssigningRole()">
+        @if (isAssigningRole()) {
+          Saving...
+        } @else {
+          Save Changes
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}

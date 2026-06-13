@@ -102,7 +102,7 @@
 
 .collapse-toggle:hover {
   background: var(--admin-hover);
-  color: #e2e8f0;
+  color: var(--admin-accent-hover);
 }
 
 .collapse-toggle .material-symbols-outlined {
@@ -156,14 +156,14 @@
 
 .nav-item:hover {
   background: var(--admin-hover);
-  color: #e2e8f0;
+  color: var(--admin-accent-hover);
 }
 
 .nav-item.active {
   background: var(--admin-accent);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(129, 140, 248, 0.35);
 }
 
 .nav-icon {
@@ -317,7 +317,7 @@
 
 .search-bar:focus-within {
   border-color: var(--admin-accent);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.18);
 }
 
 .search-bar .material-symbols-outlined {
@@ -366,7 +366,7 @@
 
 .header-icon-btn:hover {
   background: var(--admin-hover);
-  color: #e2e8f0;
+  color: var(--admin-accent-hover);
 }
 
 .header-icon-btn .material-symbols-outlined {

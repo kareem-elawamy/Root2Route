@@ -397,25 +397,24 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  deleteProduct(id: string): void {
-    this.confirmDialog.open({
+  async deleteProduct(id: string): Promise<void> {
+    const confirmed = await this.confirmDialog.open({
       title: 'Delete Product',
       message: 'Are you sure you want to delete this product? This action cannot be undone.',
       confirmLabel: 'Delete Product',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
-      
-      this.productService.deleteProduct(id).subscribe({
-        next: () => {
-          this.toast.success('Product deleted successfully.');
-          this.loadProducts();
-        },
-        error: (err) => { 
-          console.error(err); 
-          this.toast.error('Error deleting product'); 
-        }
-      });
+    });
+    if (!confirmed) return;
+
+    this.productService.deleteProduct(id).subscribe({
+      next: () => {
+        this.toast.success('Product deleted successfully.');
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error deleting product');
+      }
     });
   }
 

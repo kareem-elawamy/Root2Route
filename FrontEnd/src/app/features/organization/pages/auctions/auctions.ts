@@ -226,25 +226,24 @@ export class AuctionsComponent implements OnInit {
     }
   }
 
-  cancelAuction(id: string): void {
-    this.confirmDialog.open({
+  async cancelAuction(id: string): Promise<void> {
+    const confirmed = await this.confirmDialog.open({
       title: 'Cancel Auction',
       message: 'Are you sure you want to cancel this auction?',
       confirmLabel: 'Cancel Auction',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
-      
-      this.auctionService.cancelAuction(id).subscribe({
-        next: () => {
-          this.toast.success('Auction cancelled successfully.');
-          this.loadAuctions();
-        },
-        error: (err) => { 
-          console.error(err); 
-          this.toast.error('Error cancelling auction'); 
-        }
-      });
+    });
+    if (!confirmed) return;
+
+    this.auctionService.cancelAuction(id).subscribe({
+      next: () => {
+        this.toast.success('Auction cancelled successfully.');
+        this.loadAuctions();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error cancelling auction');
+      }
     });
   }
 
