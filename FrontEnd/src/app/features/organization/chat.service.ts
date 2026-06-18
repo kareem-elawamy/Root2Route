@@ -39,4 +39,20 @@ export class ChatService {
   markAsRead(roomId: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/${roomId}/read`, {});
   }
+
+  startChat(command: { otherUserId: string; productId?: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/start`, command);
+  }
+
+  closeChat(roomId: string): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${roomId}/close`, {});
+  }
+
+  deleteMessage(messageId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/messages/${messageId}`);
+  }
+
+  getRoomDetails(roomId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${roomId}/details`);
+  }
 }

@@ -8,6 +8,8 @@ import { ToastService } from '../services/toast.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
+  const toast = inject(ToastService);
+  const router = inject(Router);
   const token = auth.getToken();
 
   if (!token || req.headers.has('Authorization')) {
@@ -20,9 +22,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      const toast = inject(ToastService);
-      const router = inject(Router);
-
       if (error.status === 401) {
         toast.error('Session expired. Please log in again.');
         auth.clearSession();

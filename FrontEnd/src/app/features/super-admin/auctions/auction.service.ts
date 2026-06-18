@@ -30,4 +30,36 @@ export class AuctionService {
   getCompletedAuctions(): Observable<any> {
     return this.http.get(`${this.baseUrl}/GetCompleted`);
   }
+
+  getAllAuctions(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/GetAll`);
+  }
+
+  getAuctionById(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${id}`);
+  }
+
+  getAuctionBids(auctionId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${auctionId}/bids`);
+  }
+
+  updateAuction(auctionId: string, payload: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${auctionId}/update`, payload);
+  }
+
+  placeBid(auctionId: string, amount: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${auctionId}/bid`, { amount });
+  }
+
+  checkoutWonAuction(auctionId: string, data: { shippingAddressId: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${auctionId}/checkout`, data);
+  }
+
+  getMyWonAuctions(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/my-won`);
+  }
+
+  getMyParticipatedAuctions(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/my-participated`);
+  }
 }

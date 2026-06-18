@@ -231,6 +231,86 @@ export class AuthService {
     return this.isAuthenticated();
   }
 
+  // ─── Auth Flows ─────────────────────────────────────────────────────────
+  forgotPassword(email: string): Observable<any> {
+    return new Observable((observer) => {
+      fetch(this._url + 'forget-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
+  resetPassword(data: { email: string; otp: string; newPassword: string }): Observable<any> {
+    return new Observable((observer) => {
+      fetch(this._url + 'reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
+  verifyOtp(data: { email: string; otp: string }): Observable<any> {
+    return new Observable((observer) => {
+      fetch(this._url + 'verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
+  resendOtp(email: string): Observable<any> {
+    return new Observable((observer) => {
+      fetch(this._url + 'resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
+  changePassword(data: { oldPassword: string; newPassword: string }): Observable<any> {
+    return new Observable((observer) => {
+      const token = this._token();
+      fetch(this._url + 'change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(data),
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
+  deleteAccount(): Observable<any> {
+    return new Observable((observer) => {
+      const token = this._token();
+      fetch('https://root2route.runasp.net/api/v1/users/me', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+        .then(async (res) => { const body = await res.json(); if (!res.ok) throw new Error(body?.message || 'Failed'); return body; })
+        .then((r) => { observer.next(r); observer.complete(); })
+        .catch((err: Error) => observer.error(err));
+    });
+  }
+
   // ─── Persistence ──────────────────────────────────────────────────────────
   private loadToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);

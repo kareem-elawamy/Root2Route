@@ -2,20 +2,20 @@
 
   <div class="flex justify-between items-end mb-10 pt-8">
     <div>
-      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Live Auctions</h2>
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-surface font-headline mb-2">Auctions Management</h2>
       <div class="flex items-center gap-3">
         <span
           class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
-          {{ activeLots.length }} Active Lots
+          {{ allLots().length }} Total Lots
         </span>
         <span class="text-sm text-slate-500">Updated just now</span>
       </div>
     </div>
     <div class="flex gap-3">
-      <button
+      <button (click)="exportLogs()"
         class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-50 border border-slate-200 transition-all">
-        <span class="material-symbols-outlined text-lg">filter_list</span>
-        Refine Grid
+        <span class="material-symbols-outlined text-lg">download</span>
+        Export
       </button>
       <button (click)="createNewLot()"
         class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-xl shadow-lg hover:bg-emerald-700 transition-all">
@@ -27,196 +27,118 @@
 
   <!-- Tab Switcher -->
   <div class="flex gap-2 mb-8">
+    <button (click)="switchTab('all')"
+      class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
+      [class]="activeTab() === 'all' ? 'bg-slate-800 text-white shadow-lg shadow-slate-800/30' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'">
+      All ({{ allLots().length }})
+    </button>
     <button (click)="switchTab('active')"
       class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
       [class]="activeTab() === 'active' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'">
-      Active Lots ({{ activeLots.length }})
+      Active ({{ activeLots.length }})
     </button>
     <button (click)="switchTab('completed')"
       class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
-      [class]="activeTab() === 'completed' ? 'bg-slate-800 text-white shadow-lg shadow-slate-800/30' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'">
-      Completed
+      [class]="activeTab() === 'completed' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'">
+      Completed ({{ completedLots().length }})
     </button>
   </div>
 
-  @if (activeTab() === 'active') {
-  @if (isLoading()) {
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">
-      <app-skeleton type="card" [rows]="1" [columns]="3"></app-skeleton>
+  <!-- Market Stats -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Avg. Bid Velocity</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ marketStats.velocity }}</h3>
     </div>
-  } @else if (activeLots.length === 0) {
-  <div
-    class="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 mt-8">
-    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-      <span class="material-symbols-outlined text-5xl text-slate-300">gavel</span>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Active Bidders</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ marketStats.bidders }}</h3>
     </div>
-    <h3 class="text-2xl font-extrabold text-slate-800 mb-2">No Active Auctions</h3>
-    <p class="text-slate-500 font-medium mb-8 text-center max-w-md">The marketplace is currently quiet. There are no
-      live auctions running at this moment.</p>
-    <button (click)="createNewLot()"
-      class="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20">
-      <span class="material-symbols-outlined text-xl">add_circle</span>
-      Create the First Lot
-    </button>
-  </div>
-  } @else {
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-    @for (lot of activeLots; track lot.id) {
-    <div
-      class="group relative flex flex-col bg-white rounded-[2rem] border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl">
-
-      <div class="h-56 relative overflow-hidden bg-slate-100 flex items-center justify-center">
-        @if(lot.image || lot.imageUrl || lot.picture) {
-        <img [src]="lot.image || lot.imageUrl || lot.picture" alt="Crop Image"
-          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-        } @else {
-        <span class="material-symbols-outlined text-6xl text-slate-300">local_florist</span>
-        }
-
-        <div class="absolute top-4 left-4 flex gap-2">
-          <span
-            class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{
-            lot.category || 'General' }}</span>
-          <span
-            class="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Live
-          </span>
-        </div>
-      </div>
-
-      <div class="p-8 flex-1 flex flex-col">
-        <div class="mb-6">
-          <p class="text-xs font-bold text-emerald-600 mb-1 tracking-widest uppercase">Lot #{{ lot.id }}</p>
-          <h3 class="text-2xl font-bold text-slate-800 leading-tight">{{ lot.title || lot.name || 'Unnamed Lot' }}</h3>
-        </div>
-
-        <div class="space-y-4 mb-8">
-          <div>
-            <p class="text-xs text-slate-500 font-medium mb-1">Current Highest Bid</p>
-            <p class="text-3xl font-extrabold text-slate-900 tracking-tight">${{ lot.currentBid || lot.price ||
-              lot.highestBid || 0 }}</p>
-          </div>
-
-          <div class="pt-4 border-t border-slate-100">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
-                <span class="material-symbols-outlined text-base">timer</span>
-                {{ lot.timeLeft || 'N/A' }}
-              </span>
-              <span class="text-xs font-bold {{ lot.progressClass?.split(' ')[0] || 'text-slate-500' }}">{{
-                lot.progressPercent || '0%' }}</span>
-            </div>
-            <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full rounded-full {{ lot.progressClass?.split(' ')[1] || 'bg-slate-300' }}"
-                [style.width]="lot.progressPercent || '0%'"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-auto pt-4 flex gap-3">
-          <button (click)="viewBidHistory(lot.id)"
-            class="flex-1 py-3 bg-slate-50 text-slate-700 text-sm font-bold rounded-xl border border-slate-200 hover:bg-slate-100 transition-all">
-            View Bid History
-          </button>
-          <button (click)="cancelAuction(lot)"
-            class="w-12 h-12 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all" title="Cancel Auction">
-            <span class="material-symbols-outlined">cancel</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    }
-  </div>
-  }
-
-  <section class="mt-16 grid grid-cols-12 gap-8">
-    <div
-      class="col-span-12 lg:col-span-8 p-10 bg-white border border-slate-200 rounded-[2.5rem] relative overflow-hidden shadow-sm">
-      <div class="relative z-10">
-        <h4 class="text-2xl font-bold text-slate-800 mb-6">Market Trends</h4>
-        <div class="flex items-center gap-12">
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Avg. Bid Velocity</p>
-            <p class="text-4xl font-extrabold text-emerald-600 tracking-tight">{{ marketStats.velocity }}</p>
-          </div>
-          <div class="w-[1px] h-12 bg-slate-200"></div>
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Bidders</p>
-            <p class="text-4xl font-extrabold text-slate-800 tracking-tight">{{ marketStats.bidders }}</p>
-          </div>
-          <div class="w-[1px] h-12 bg-slate-200"></div>
-          <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Vol. (24h)</p>
-            <p class="text-4xl font-extrabold text-slate-800 tracking-tight">{{ marketStats.volume }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-span-12 lg:col-span-4 p-10 bg-slate-900 rounded-[2.5rem] text-white shadow-xl shadow-slate-900/20">
-      <h4 class="text-xl font-bold mb-4">Terminal Quick Actions</h4>
-      <div class="space-y-3">
-        <button (click)="exportLogs()"
-          class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
-          <span class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-emerald-400">monitoring</span>
-            <span class="text-sm font-medium">Export Auction Logs</span>
-          </span>
-          <span
-            class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors">chevron_right</span>
-        </button>
-        <button (click)="switchTab('completed')"
-          class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
-          <span class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-emerald-400">verified_user</span>
-            <span class="text-sm font-medium">View Completed Auctions</span>
-          </span>
-          <span
-            class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors">chevron_right</span>
-        </button>
-      </div>
+    <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border-l-4 border-amber-500">
+      <p class="text-on-surface-variant text-sm font-medium mb-1">Total Volume</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface">{{ marketStats.volume }}</h3>
     </div>
   </section>
-  } <!-- end active tab -->
 
-  <!-- Completed Auctions Tab -->
-  @if (activeTab() === 'completed') {
-    @if (isLoadingCompleted()) {
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        <app-skeleton type="card" [rows]="1" [columns]="3"></app-skeleton>
+  <!-- Auction Table -->
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+    @if (isLoading()) {
+      <div class="p-6">
+        <app-skeleton type="table" [rows]="5" [columns]="5"></app-skeleton>
       </div>
-    } @else if (completedLots().length === 0) {
-      <div class="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+    } @else if (displayedLots.length === 0) {
+      <div class="flex flex-col items-center justify-center py-24">
         <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-          <span class="material-symbols-outlined text-5xl text-slate-300">done_all</span>
+          <span class="material-symbols-outlined text-5xl text-slate-300">gavel</span>
         </div>
-        <h3 class="text-2xl font-extrabold text-slate-800 mb-2">No Completed Auctions</h3>
-        <p class="text-slate-500 font-medium text-center max-w-md">No auctions have been completed yet.</p>
+        <h3 class="text-2xl font-extrabold text-slate-800 mb-2">No Auctions Found</h3>
+        <p class="text-slate-500 font-medium text-center max-w-md">No auctions match the current filter.</p>
       </div>
     } @else {
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
-            <tr>
-              <th class="px-6 py-4">Auction</th>
-              <th class="px-6 py-4">Product</th>
-              <th class="px-6 py-4">Final Price</th>
-              <th class="px-6 py-4">End Date</th>
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest font-bold">
+          <tr>
+            <th class="px-6 py-4">Auction</th>
+            <th class="px-6 py-4">Current Bid</th>
+            <th class="px-6 py-4">Time Left</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (lot of displayedLots; track lot.id) {
+            <tr class="hover:bg-slate-50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                    @if(lot.image) {
+                      <img [src]="lot.image" alt="{{lot.title}}" class="w-full h-full object-cover">
+                    } @else {
+                      <span class="material-symbols-outlined text-slate-300 text-xl">local_florist</span>
+                    }
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">{{ lot.title }}</p>
+                    <p class="text-xs text-slate-500">{{ lot.category }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="text-sm font-extrabold text-emerald-700">${{ lot.currentBid }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-col gap-1">
+                  <span class="text-xs font-bold {{ lot.progressClass?.split(' ')[0] || 'text-slate-500' }}">{{ lot.timeLeft }}</span>
+                  <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full {{ lot.progressClass?.split(' ')[1] || 'bg-slate-300' }}"
+                      [style.width]="lot.progressPercent || '0%'"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ lot.statusClass }}">
+                  {{ lot.statusLabel }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button (click)="viewBidHistory(lot.id)"
+                    class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors" title="View Bids">
+                    <span class="material-symbols-outlined text-sm">visibility</span>
+                  </button>
+                  @if (lot.statusStr === 'Upcoming' || lot.statusStr === 'Ongoing') {
+                    <button (click)="cancelAuction(lot)"
+                      class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors" title="Cancel Auction">
+                      <span class="material-symbols-outlined text-sm">cancel</span>
+                    </button>
+                  }
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            @for (lot of completedLots(); track lot.id) {
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-6 py-4 text-sm font-bold text-slate-800">{{ lot.title }}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">{{ lot.productName || lot.title }}</td>
-                <td class="px-6 py-4 text-sm font-extrabold text-emerald-700">${{ lot.finalPrice }}</td>
-                <td class="px-6 py-4 text-xs text-slate-500">{{ lot.endDate | date:'mediumDate' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+          }
+        </tbody>
+      </table>
     }
-  }
+  </div>
 
 </div>

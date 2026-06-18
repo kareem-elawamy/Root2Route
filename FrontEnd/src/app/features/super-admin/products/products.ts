@@ -33,19 +33,15 @@ export class Products implements OnInit {
   productRejectionReason = signal('');
 
   filteredProducts = computed(() => {
-    const query = this.searchQuery().toLowerCase();
     const status = this.statusFilter();
     
+    // Pending, Approved, Rejected are handled server-side.
+    // Only apply client-side sub-filtering for sale-type filters.
     return this.products().filter(p => {
-      const matchesSearch = p.name?.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query) || p.id?.toLowerCase().includes(query);
-      const matchesStatus = status === 'All' 
-        || (status === 'Pending' && p.statusValue === 0)
-        || (status === 'Approved' && p.statusValue === 1)
-        || (status === 'Rejected' && p.statusValue === 2)
-        || (status === 'Direct Sale' && p.isAvailableForDirectSale)
-        || (status === 'Auction' && p.isAvailableForAuction)
-        || (status === 'Inactive' && !p.isAvailableForDirectSale && !p.isAvailableForAuction);
-      return matchesSearch && matchesStatus;
+      if (status === 'Direct Sale') return p.isAvailableForDirectSale;
+      if (status === 'Auction') return p.isAvailableForAuction;
+      if (status === 'Inactive') return !p.isAvailableForDirectSale && !p.isAvailableForAuction;
+      return true; // 'All', 'Pending', 'Approved', 'Rejected' → already filtered server-side
     });
   });
   
@@ -81,12 +77,29 @@ export class Products implements OnInit {
     };
   });
 
+  // Pagination
+  currentPage = signal(1);
+  totalPages = signal(1);
+  pageSize = 50;
+
   ngOnInit() {
     this.loadProducts();
   }
 
   loadProducts() {
-    this.productService.getAllProducts(1, 50).subscribe({
+    this.isLoading.set(true);
+
+    // Map frontend filter to backend status enum (0=Pending, 1=Approved, 2=Rejected)
+    let apiStatus: number | undefined = undefined;
+    const filter = this.statusFilter();
+    if (filter === 'Pending') apiStatus = 0;
+    else if (filter === 'Approved') apiStatus = 1;
+    else if (filter === 'Rejected') apiStatus = 2;
+    // 'All', 'Direct Sale', 'Auction', 'Inactive' → no server-side status filter
+
+    const searchTerm = this.searchQuery() || undefined;
+
+    this.productService.getAllProducts(this.currentPage(), this.pageSize, searchTerm, apiStatus).subscribe({
       next: (response: any) => {
         const data = response.data || response.items || response || [];
         const items = Array.isArray(data) ? data : [];
@@ -122,7 +135,11 @@ export class Products implements OnInit {
 
         this.products.set(processed);
 
-        this.stats.total = response.totalCount || this.products().length;
+        // Pagination
+        const totalCount = response.totalCount || response.total || this.products().length;
+        this.totalPages.set(Math.ceil(totalCount / this.pageSize) || 1);
+
+        this.stats.total = totalCount;
         this.stats.lowStock = this.products().filter((p: any) => p.stockQuantity < 10).length;
         this.stats.activeAuctions = this.products().filter((p: any) => p.isAvailableForAuction).length;
         this.stats.pending = this.products().filter((p: any) => p.statusValue === 0).length;
@@ -138,6 +155,22 @@ export class Products implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onFilterChange() {
+    this.currentPage.set(1);
+    this.loadProducts();
+  }
+
+  onSearchChange() {
+    this.currentPage.set(1);
+    this.loadProducts();
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+    this.loadProducts();
   }
 
   async deleteProduct(product: any) {

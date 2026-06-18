@@ -92,13 +92,13 @@
               placeholder="Search products..." 
               class="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow w-full md:w-64"
               [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
+              (ngModelChange)="searchQuery.set($event); onSearchChange()"
             >
           </div>
           <select 
             class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow font-medium text-slate-700"
             [ngModel]="statusFilter()"
-            (ngModelChange)="statusFilter.set($event)"
+            (ngModelChange)="statusFilter.set($event); onFilterChange()"
           >
             <option value="All">All Statuses</option>
             <option value="Pending">⏳ Pending</option>
@@ -197,6 +197,23 @@
         </table>
       }
     </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="px-6 py-4 border-t border-slate-100 bg-white flex items-center justify-between">
+        <p class="text-sm text-slate-500 font-medium">Page {{ currentPage() }} of {{ totalPages() }}</p>
+        <div class="flex items-center gap-2">
+          <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() <= 1"
+            class="px-3 py-1.5 text-sm font-bold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            ← Previous
+          </button>
+          <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages()"
+            class="px-3 py-1.5 text-sm font-bold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            Next →
+          </button>
+        </div>
+      </div>
+    }
   </div>
 </div>
 

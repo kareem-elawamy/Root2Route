@@ -90,7 +90,12 @@
               <p style="margin: 2px 0 0; font-size: 12px; font-weight: 500; color: #006B3D;">Active Now</p>
             </div>
           </div>
-
+          <button (click)="closeChatRoom()" title="Close Conversation"
+                  style="width: 36px; height: 36px; border-radius: 50%; background: #fef2f2; color: #dc2626; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
+                  onmouseover="this.style.background='#dc2626'; this.style.color='white'"
+                  onmouseout="this.style.background='#fef2f2'; this.style.color='#dc2626'">
+            <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+          </button>
         </div>
 
         <!-- Messages Area -->
@@ -137,10 +142,20 @@
                   </div>
                 }
                 
-                <p style="margin: 6px 0 0; font-size: 10px; text-align: right;"
-                   [style.color]="msg.isMine ? 'rgba(255,255,255,0.6)' : '#86868b'">
-                  {{ msg.createdAt | date:'shortTime' }}
-                </p>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 6px;">
+                  <p style="margin: 0; font-size: 10px;"
+                     [style.color]="msg.isMine ? 'rgba(255,255,255,0.6)' : '#86868b'">
+                    {{ msg.createdAt | date:'shortTime' }}
+                  </p>
+                  @if (msg.isMine) {
+                    <button (click)="deleteMsg(msg.id)" title="Delete message"
+                            style="width: 18px; height: 18px; border: none; background: none; cursor: pointer; opacity: 0.5; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
+                      <span class="material-symbols-outlined" style="font-size: 14px;"
+                            [style.color]="msg.isMine ? 'rgba(255,255,255,0.7)' : '#dc2626'">delete</span>
+                    </button>
+                  }
+                </div>
               </div>
             </div>
           }

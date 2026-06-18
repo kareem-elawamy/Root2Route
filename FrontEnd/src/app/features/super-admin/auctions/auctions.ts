@@ -16,7 +16,7 @@ export class Auctions implements OnInit {
   private toastService = inject(ToastService);
   private confirmDialog = inject(ConfirmDialogService);
 
-  activeTab = signal<'active' | 'completed'>('active');
+  activeTab = signal<'all' | 'active' | 'completed'>('all');
 
 
   isLoading = signal(true);
@@ -28,6 +28,7 @@ export class Auctions implements OnInit {
     volume: '$0'
   };
 
+  allLots = signal<any[]>([]);
   activeLots: any[] = [];
   completedLots = signal<any[]>([]);
   isLoadingCompleted = signal(false);
@@ -38,14 +39,15 @@ export class Auctions implements OnInit {
 
   loadAuctions() {
     this.isLoading.set(true);
-    this.auctionService.getActiveAuctions().subscribe({
+    // Use getAllAuctions to get ALL statuses (Upcoming, Ongoing, Completed, Cancelled)
+    this.auctionService.getAllAuctions().subscribe({
       next: (response: any) => {
         const actualData = response.data || response;
 
         // ربط لستة المزادات (بنتأكد إنها مصفوفة)
         const items = actualData.activeLots || (Array.isArray(actualData) ? actualData : []);
 
-        this.activeLots = items.map((lot: any) => {
+        const processed = items.map((lot: any) => {
           // حساب الوقت المتبقي
           const now = new Date();
           const end = new Date(lot.endDate);
@@ -55,7 +57,7 @@ export class Auctions implements OnInit {
           let progressPercent = '0%';
           let progressClass = 'text-slate-500 bg-slate-300';
           
-          if (end > now) {
+          if (end > now && lot.status !== 'Cancelled') {
             const diffMs = end.getTime() - now.getTime();
             const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
             const diffDays = Math.floor(diffHrs / 24);
@@ -87,6 +89,16 @@ export class Auctions implements OnInit {
             progressClass = 'text-slate-500 bg-slate-500';
           }
 
+          // Map auction status — backend sends as STRING: "Upcoming", "Ongoing", "Completed", "Cancelled"
+          const statusStr = (lot.status || 'Upcoming').toString();
+          const statusMap: Record<string, {label: string, class: string}> = {
+            'Upcoming': { label: 'Upcoming', class: 'bg-blue-100 text-blue-700' },
+            'Ongoing': { label: 'Ongoing', class: 'bg-emerald-100 text-emerald-700' },
+            'Completed': { label: 'Completed', class: 'bg-slate-100 text-slate-600' },
+            'Cancelled': { label: 'Cancelled', class: 'bg-rose-100 text-rose-700' }
+          };
+          const statusInfo = statusMap[statusStr] || { label: statusStr, class: 'bg-slate-100 text-slate-600' };
+
           // Resolve image URL
           let resolvedImage = lot.image || lot.imageUrl || lot.picture || '';
           if (resolvedImage && !resolvedImage.startsWith('http')) {
@@ -104,8 +116,15 @@ export class Auctions implements OnInit {
             progressPercent: progressPercent,
             progressClass: progressClass,
             category: lot.productName || 'General',
+            statusStr,
+            statusLabel: statusInfo.label,
+            statusClass: statusInfo.class,
           };
         });
+
+        this.allLots.set(processed);
+        this.activeLots = processed.filter((l: any) => l.statusStr === 'Ongoing');
+        this.completedLots.set(processed.filter((l: any) => l.statusStr === 'Completed'));
 
         // ربط الإحصائيات لو الباك إند بيبعتها
         if (actualData.marketStats) {
@@ -113,14 +132,12 @@ export class Auctions implements OnInit {
           this.marketStats.bidders = actualData.marketStats.bidders || '0';
           this.marketStats.volume = actualData.marketStats.volume || '$0';
         } else {
-          // Calculate dummy stats based on active lots
-          this.marketStats.bidders = items.length > 0 ? (items.length * 3).toString() : '0';
-          const volume = items.reduce((sum: number, lot: any) => sum + (lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0), 0);
+          // Calculate stats based on all lots
+          this.marketStats.bidders = processed.length > 0 ? (processed.length * 3).toString() : '0';
+          const volume = processed.reduce((sum: number, lot: any) => sum + (lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0), 0);
           this.marketStats.volume = `$${volume.toLocaleString()}`;
-          this.marketStats.velocity = items.length > 0 ? '+12%' : '0%';
+          this.marketStats.velocity = this.activeLots.length > 0 ? '+12%' : '0%';
         }
-
-        console.log('Active Auctions:', this.activeLots);
 
         this.isLoading.set(false);
 
@@ -132,6 +149,13 @@ export class Auctions implements OnInit {
     });
   }
 
+  get displayedLots(): any[] {
+    const tab = this.activeTab();
+    if (tab === 'active') return this.activeLots;
+    if (tab === 'completed') return this.completedLots();
+    return this.allLots(); // 'all'
+  }
+
   viewBidHistory(lotId: string) {
     this.toastService.info('Bid history feature is coming soon!');
     console.log(`Opening bid history for lot: ${lotId}`);
@@ -141,31 +165,8 @@ export class Auctions implements OnInit {
     this.toastService.info('Auction creation form is coming soon!');
   }
 
-  switchTab(tab: 'active' | 'completed') {
+  switchTab(tab: 'all' | 'active' | 'completed') {
     this.activeTab.set(tab);
-    if (tab === 'completed' && this.completedLots().length === 0) {
-      this.loadCompletedAuctions();
-    }
-  }
-
-  loadCompletedAuctions() {
-    this.isLoadingCompleted.set(true);
-    this.auctionService.getCompletedAuctions().subscribe({
-      next: (response: any) => {
-        const data = response.data || response;
-        const items = Array.isArray(data) ? data : (data.items || data.completedLots || []);
-        this.completedLots.set(items.map((lot: any) => ({
-          ...lot,
-          title: lot.title || lot.productName || 'Unnamed',
-          finalPrice: lot.currentHighestBid || lot.startPrice || 0
-        })));
-        this.isLoadingCompleted.set(false);
-      },
-      error: (err: any) => {
-        console.error('Error fetching completed auctions', err);
-        this.isLoadingCompleted.set(false);
-      }
-    });
   }
   
   exportLogs() {

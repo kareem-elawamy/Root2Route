@@ -10,13 +10,17 @@ export class ProductService {
   
   private baseUrl = 'https://root2route.runasp.net/api/v1/product';
 
-  getAllProducts(pageNumber: number = 1, pageSize: number = 10, search?: string): Observable<any> {
+  getAllProducts(pageNumber: number = 1, pageSize: number = 10, search?: string, status?: number): Observable<any> {
     let params = new HttpParams()
       .set('PageNumber', pageNumber.toString())
       .set('PageSize', pageSize.toString());
       
     if (search) {
       params = params.set('Search', search);
+    }
+
+    if (status !== undefined && status !== null) {
+      params = params.set('Status', status.toString());
     }
 
     return this.http.get(`${this.baseUrl}/GetAll`, { params });

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { OrganizationService } from './organization.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { StatChartComponent, ChartDataset } from '../../../shared/components/stat-chart/stat-chart.component';
 
 @Component({
   selector: 'app-organizations',
   standalone: true,
-  imports: [CommonModule, FormsModule, SkeletonComponent],
+  imports: [CommonModule, FormsModule, SkeletonComponent, StatChartComponent],
   templateUrl: './organizations.html'
 })
 export class Organizations implements OnInit {
@@ -57,6 +58,22 @@ export class Organizations implements OnInit {
       pending: { count: pending, percent: Math.round((pending / total) * 100) },
       rejected: { count: rejected, percent: Math.round((rejected / total) * 100) },
     };
+  });
+
+  // Chart.js Doughnut Data
+  orgChartLabels = ['Approved', 'Pending', 'Rejected / Suspended'];
+
+  orgChartDatasets = computed((): ChartDataset[] => {
+    const cd = this.chartData();
+    return [
+      {
+        label: 'Organizations',
+        data: [cd.approved.count, cd.pending.count, cd.rejected.count],
+        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 3,
+      },
+    ];
   });
 
   // New state for approve/reject flow
