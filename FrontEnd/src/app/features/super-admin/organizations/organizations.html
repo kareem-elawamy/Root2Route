@@ -171,77 +171,130 @@
       </div>
     </section>
 
+    <!-- Organization Statistics -->
     <section class="space-y-4">
-      <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Compliance Files</h4>
+      <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Organization Statistics</h4>
+      @if (orgStats()) {
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-indigo-50 p-4 rounded-xl text-center">
+            <p class="text-2xl font-black text-indigo-700">{{ orgStats().memberCount ?? orgStats().membersCount ?? 0 }}</p>
+            <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1">Members</p>
+          </div>
+          <div class="bg-emerald-50 p-4 rounded-xl text-center">
+            <p class="text-2xl font-black text-emerald-700">{{ orgStats().productCount ?? orgStats().productsCount ?? 0 }}</p>
+            <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">Products</p>
+          </div>
+          <div class="bg-amber-50 p-4 rounded-xl text-center">
+            <p class="text-2xl font-black text-amber-700">${{ orgStats().totalRevenue ?? orgStats().revenue ?? 0 }}</p>
+            <p class="text-[10px] font-bold text-amber-500 uppercase tracking-wider mt-1">Revenue</p>
+          </div>
+        </div>
+      } @else {
+        <div class="grid grid-cols-3 gap-3">
+          <div class="animate-pulse bg-slate-100 h-20 rounded-xl"></div>
+          <div class="animate-pulse bg-slate-100 h-20 rounded-xl"></div>
+          <div class="animate-pulse bg-slate-100 h-20 rounded-xl"></div>
+        </div>
+      }
+    </section>
 
-      @if (selectedOrg.files && selectedOrg.files.length > 0) {
-      @for (file of selectedOrg.files; track file.name) {
-      <div
+    <section class="space-y-4">
+      <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Compliance Document</h4>
+
+      @if (selectedOrg.complianceFileUrl) {
+      <a [href]="'https://root2route.runasp.net' + selectedOrg.complianceFileUrl" target="_blank"
         class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors group">
         <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mr-4">
           <span class="material-symbols-outlined text-indigo-600">description</span>
         </div>
         <div class="flex-1">
-          <p class="text-xs font-bold text-slate-800">{{ file.name }}</p>
-          <p class="text-[10px] text-slate-500">{{ file.size }} • {{ file.details }}</p>
+          <p class="text-xs font-bold text-slate-800">Compliance Document</p>
+          <p class="text-[10px] text-slate-500">Click to view or download</p>
         </div>
         <span
-          class="material-symbols-outlined text-slate-300 group-hover:text-indigo-500 transition-colors">download</span>
-      </div>
-      }
+          class="material-symbols-outlined text-slate-300 group-hover:text-indigo-500 transition-colors">open_in_new</span>
+      </a>
       } @else {
       <div
         class="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
         <span class="material-symbols-outlined text-slate-300 mb-2">folder_off</span>
-        <p class="text-sm text-slate-500 font-medium">No compliance files available.</p>
+        <p class="text-sm text-slate-500 font-medium">No compliance document uploaded.</p>
       </div>
       }
     </section>
+
+    <!-- Rejection Reason (if rejected) -->
+    @if (selectedOrg.statusValue === 2 && selectedOrg.rejectionReason) {
+    <section class="space-y-2">
+      <h4 class="text-xs font-bold uppercase text-rose-500 tracking-wider">Rejection Reason</h4>
+      <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl">
+        <p class="text-sm text-rose-700 leading-relaxed">{{ selectedOrg.rejectionReason }}</p>
+      </div>
+    </section>
+    }
 
   </div>
 
   <div class="p-6 bg-slate-50 border-t border-slate-100 mt-auto">
 
-    <!-- Action Form (only show if pending) -->
-    @if (selectedOrg.statusValue === 0) {
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div class="mb-5">
-          <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rejection Reason <span class="text-slate-400 font-normal lowercase">(required if rejecting)</span></label>
-          <textarea 
-            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
-            rows="3" 
-            placeholder="Explain why this application cannot be approved..."
-            [ngModel]="rejectionReason()" 
-            (ngModelChange)="rejectionReason.set($event)">
-          </textarea>
-        </div>
+    <!-- Current Status Banner -->
+    <div class="flex items-center gap-3 mb-4 p-3 rounded-xl border"
+      [class]="selectedOrg.statusValue === 1 ? 'bg-emerald-50 border-emerald-200' : selectedOrg.statusValue === 2 ? 'bg-rose-50 border-rose-200' : selectedOrg.statusValue === 3 ? 'bg-slate-100 border-slate-300' : 'bg-amber-50 border-amber-200'">
+      <span class="material-symbols-outlined text-lg"
+        [class]="selectedOrg.statusValue === 1 ? 'text-emerald-600' : selectedOrg.statusValue === 2 ? 'text-rose-600' : selectedOrg.statusValue === 3 ? 'text-slate-600' : 'text-amber-600'">
+        {{ selectedOrg.statusValue === 1 ? 'verified' : selectedOrg.statusValue === 2 ? 'cancel' : selectedOrg.statusValue === 3 ? 'block' : 'schedule' }}
+      </span>
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider"
+          [class]="selectedOrg.statusValue === 1 ? 'text-emerald-700' : selectedOrg.statusValue === 2 ? 'text-rose-700' : selectedOrg.statusValue === 3 ? 'text-slate-700' : 'text-amber-700'">
+          Currently {{ selectedOrg.status }}
+        </p>
+        <p class="text-[10px] text-slate-500">You can change the status below.</p>
+      </div>
+    </div>
 
-        <div class="flex gap-3">
+    <!-- Action Form (always visible) -->
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <div class="mb-5">
+        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Reason <span class="text-slate-400 font-normal lowercase">(required for rejection/suspension)</span></label>
+        <textarea 
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+          rows="3" 
+          placeholder="Explain the reason for this status change..."
+          [ngModel]="rejectionReason()" 
+          (ngModelChange)="rejectionReason.set($event)">
+        </textarea>
+      </div>
+
+      <div class="flex gap-3">
+        @if (selectedOrg.statusValue !== 1) {
           <button (click)="approveOrg()" [disabled]="isProcessing()"
             class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
             @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
             <span class="material-symbols-outlined text-sm">check</span>
             Approve
           </button>
-          
+        }
+        
+        @if (selectedOrg.statusValue !== 2) {
           <button (click)="rejectOrg()" [disabled]="isProcessing()"
             class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-rose-500 text-rose-600 font-bold py-3 px-4 rounded-xl hover:bg-rose-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
             <span class="material-symbols-outlined text-sm">close</span>
             Reject
           </button>
-        </div>
+        }
+
+        @if (selectedOrg.statusValue !== 3) {
+          <button (click)="suspendOrg()" [disabled]="isProcessing()"
+            class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-slate-400 text-slate-600 font-bold py-3 px-4 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            <span class="material-symbols-outlined text-sm">block</span>
+            Suspend
+          </button>
+        }
       </div>
-    } @else {
-      <!-- If already approved/rejected, show status instead of buttons -->
-      <div class="w-full flex flex-col items-center justify-center p-6 bg-white border border-slate-200 rounded-2xl">
-        <span class="material-symbols-outlined text-3xl mb-2 {{ selectedOrg.statusValue === 1 ? 'text-indigo-500' : 'text-rose-500' }}">
-          {{ selectedOrg.statusValue === 1 ? 'verified' : 'cancel' }}
-        </span>
-        <p class="text-sm font-bold text-slate-700">Application {{ selectedOrg.status }}</p>
-        <p class="text-xs text-slate-500 mt-1">No further action required.</p>
-      </div>
-    }
+    </div>
   </div>
   </div>
 </div>

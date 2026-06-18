@@ -19,7 +19,7 @@
       <p class="stat-value">${{ overviewStats().platformFees }}</p>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" style="cursor: pointer" routerLink="/admin-dashboard/organizations">
       <div class="stat-icon-bg"><span class="material-symbols-outlined">domain_add</span></div>
       <p class="stat-label">Pending Organizations</p>
       <p class="stat-value">{{ overviewStats().pendingOrganizations }}</p>
@@ -56,8 +56,9 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
   <!-- Pending Organizations -->
   <div class="data-section">
-    <div class="data-header">
+    <div class="data-header" style="display: flex; align-items: center; justify-content: space-between;">
       <h3 class="data-title">Pending Organization Approvals</h3>
+      <a routerLink="/admin-dashboard/organizations" class="text-xs font-bold hover:underline" style="color: var(--admin-accent)">View All →</a>
     </div>
     <div class="table-container">
       @if (isLoading()) {
@@ -102,8 +103,9 @@
 
   <!-- Pending Products -->
   <div class="data-section">
-    <div class="data-header">
+    <div class="data-header" style="display: flex; align-items: center; justify-content: space-between;">
       <h3 class="data-title">Pending Products</h3>
+      <a routerLink="/admin-dashboard/products" class="text-xs font-bold hover:underline" style="color: var(--admin-accent)">View All →</a>
     </div>
     <div class="table-container">
       @if (isLoading()) {

@@ -26,6 +26,12 @@ export class Products implements OnInit {
   searchQuery = signal('');
   statusFilter = signal('All');
 
+  // Review drawer
+  isReviewDrawerOpen = signal(false);
+  selectedProduct = signal<any>(null);
+  isStatusProcessing = signal(false);
+  productRejectionReason = signal('');
+
   filteredProducts = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const status = this.statusFilter();
@@ -33,6 +39,9 @@ export class Products implements OnInit {
     return this.products().filter(p => {
       const matchesSearch = p.name?.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query) || p.id?.toLowerCase().includes(query);
       const matchesStatus = status === 'All' 
+        || (status === 'Pending' && p.statusValue === 0)
+        || (status === 'Approved' && p.statusValue === 1)
+        || (status === 'Rejected' && p.statusValue === 2)
         || (status === 'Direct Sale' && p.isAvailableForDirectSale)
         || (status === 'Auction' && p.isAvailableForAuction)
         || (status === 'Inactive' && !p.isAvailableForDirectSale && !p.isAvailableForAuction);
@@ -43,7 +52,10 @@ export class Products implements OnInit {
   stats = {
     total: 0,
     lowStock: 0,
-    activeAuctions: 0
+    activeAuctions: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
   };
 
   chartData = computed(() => {
@@ -88,13 +100,23 @@ export class Products implements OnInit {
               : `https://root2route.runasp.net/${imageUrl}`;
           }
 
+          // Map actual product status (0=Pending, 1=Approved, 2=Rejected)
+          const statusValue = product.status ?? 0;
+          const statusMap: Record<number, {label: string, class: string}> = {
+            0: { label: 'Pending', class: 'bg-amber-100 text-amber-700' },
+            1: { label: 'Approved', class: 'bg-emerald-100 text-emerald-700' },
+            2: { label: 'Rejected', class: 'bg-rose-100 text-rose-700' }
+          };
+          const statusInfo = statusMap[statusValue] || statusMap[0];
+
           return {
             ...product,
             mainImageUrl: imageUrl,
             displayPrice: product.isAvailableForDirectSale ? product.directSalePrice : product.startBiddingPrice,
             priceLabel: product.isAvailableForDirectSale ? 'Direct Sale' : 'Auction Starting',
-            statusLabel: product.isAvailableForDirectSale || product.isAvailableForAuction ? 'Active' : 'Inactive',
-            statusClass: product.isAvailableForDirectSale || product.isAvailableForAuction ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'
+            statusValue: statusValue,
+            statusLabel: statusInfo.label,
+            statusClass: statusInfo.class
           };
         });
 
@@ -103,6 +125,9 @@ export class Products implements OnInit {
         this.stats.total = response.totalCount || this.products().length;
         this.stats.lowStock = this.products().filter((p: any) => p.stockQuantity < 10).length;
         this.stats.activeAuctions = this.products().filter((p: any) => p.isAvailableForAuction).length;
+        this.stats.pending = this.products().filter((p: any) => p.statusValue === 0).length;
+        this.stats.approved = this.products().filter((p: any) => p.statusValue === 1).length;
+        this.stats.rejected = this.products().filter((p: any) => p.statusValue === 2).length;
 
         this.isLoading.set(false);
 
@@ -251,6 +276,68 @@ export class Products implements OnInit {
         console.error(err);
         this.toast.error('Failed to update product.');
         this.isProcessing.set(false);
+      }
+    });
+  }
+
+  // ── Review Drawer ──
+  openReviewDrawer(product: any) {
+    this.selectedProduct.set(product);
+    this.productRejectionReason.set('');
+    this.isReviewDrawerOpen.set(true);
+  }
+
+  closeReviewDrawer() {
+    this.isReviewDrawerOpen.set(false);
+    this.selectedProduct.set(null);
+    this.productRejectionReason.set('');
+  }
+
+  approveProduct() {
+    const product = this.selectedProduct();
+    if (!product) return;
+
+    this.isStatusProcessing.set(true);
+    this.productService.changeStatus(product.id, 1).subscribe({
+      next: () => {
+        this.toast.success(`Product "${product.name}" approved successfully.`);
+        this.loadProducts();
+        setTimeout(() => {
+          this.isStatusProcessing.set(false);
+          this.closeReviewDrawer();
+        }, 500);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isStatusProcessing.set(false);
+        this.toast.error('Error approving product.');
+      }
+    });
+  }
+
+  rejectProduct() {
+    const product = this.selectedProduct();
+    if (!product) return;
+
+    if (!this.productRejectionReason().trim()) {
+      this.toast.error('Rejection reason is required.');
+      return;
+    }
+
+    this.isStatusProcessing.set(true);
+    this.productService.changeStatus(product.id, 2).subscribe({
+      next: () => {
+        this.toast.success(`Product "${product.name}" rejected.`);
+        this.loadProducts();
+        setTimeout(() => {
+          this.isStatusProcessing.set(false);
+          this.closeReviewDrawer();
+        }, 500);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isStatusProcessing.set(false);
+        this.toast.error('Error rejecting product.');
       }
     });
   }

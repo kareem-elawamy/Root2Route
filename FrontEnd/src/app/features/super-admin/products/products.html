@@ -101,6 +101,9 @@
             (ngModelChange)="statusFilter.set($event)"
           >
             <option value="All">All Statuses</option>
+            <option value="Pending">⏳ Pending</option>
+            <option value="Approved">✅ Approved</option>
+            <option value="Rejected">❌ Rejected</option>
             <option value="Direct Sale">Direct Sale</option>
             <option value="Auction">Auction</option>
             <option value="Inactive">Inactive</option>
@@ -173,6 +176,10 @@
                   </td>
                   <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button (click)="openReviewDrawer(product); $event.stopPropagation()"
+                        class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors" title="Review Status">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                      </button>
                       <button (click)="openEditDrawer(product); $event.stopPropagation()"
                         class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors" title="Edit Product">
                         <span class="material-symbols-outlined text-sm">edit</span>
@@ -262,6 +269,131 @@
         Save Changes
       </button>
     </div>
+  </div>
+</div>
+}
+
+<!-- Product Review Drawer -->
+@if (isReviewDrawerOpen() && selectedProduct()) {
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeReviewDrawer()">
+  
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative animate-in fade-in zoom-in-95 duration-200" (click)="$event.stopPropagation()">
+
+  <div class="p-8 pb-4">
+    <div class="flex items-center justify-between mb-6">
+      <button (click)="closeReviewDrawer()"
+        class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <span
+        class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest {{ selectedProduct().statusClass }}">
+        {{ selectedProduct().statusLabel }}
+      </span>
+    </div>
+    <h2 class="font-headline font-extrabold text-2xl mb-1">Product Review</h2>
+    <p class="text-slate-500 text-sm font-medium">{{ selectedProduct().name || 'Unnamed Product' }}</p>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-8 space-y-6">
+
+    <!-- Product Image -->
+    @if (selectedProduct().mainImageUrl) {
+      <div class="w-full h-48 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+        <img [src]="selectedProduct().mainImageUrl" alt="{{ selectedProduct().name }}" class="w-full h-full object-cover">
+      </div>
+    }
+
+    <!-- Product Info Grid -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-slate-50 p-4 rounded-xl">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">Stock Quantity</h4>
+        <p class="text-lg font-bold text-slate-800">{{ selectedProduct().stockQuantity || 0 }} {{ selectedProduct().weightUnit || 'Units' }}</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-xl">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">Price</h4>
+        <p class="text-lg font-bold text-emerald-700">${{ selectedProduct().displayPrice || 0 }}</p>
+        <p class="text-[10px] text-slate-400 uppercase font-bold">{{ selectedProduct().priceLabel }}</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-xl">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">Product Type</h4>
+        <p class="text-sm font-bold text-slate-800">{{ selectedProduct().productType || 'General' }}</p>
+      </div>
+      <div class="bg-slate-50 p-4 rounded-xl">
+        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">Sale Channels</h4>
+        <div class="flex gap-2 mt-1">
+          @if (selectedProduct().isAvailableForDirectSale) {
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Direct</span>
+          }
+          @if (selectedProduct().isAvailableForAuction) {
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Auction</span>
+          }
+          @if (!selectedProduct().isAvailableForDirectSale && !selectedProduct().isAvailableForAuction) {
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">None</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-2">Description</h4>
+      <p class="text-sm text-slate-700 leading-relaxed">{{ selectedProduct().description || 'No description provided.' }}</p>
+    </div>
+
+  </div>
+
+  <!-- Action Footer -->
+  <div class="p-6 bg-slate-50 border-t border-slate-100 mt-auto">
+
+    <!-- Current Status Banner -->
+    <div class="flex items-center gap-3 mb-4 p-3 rounded-xl border"
+      [class]="selectedProduct().statusValue === 1 ? 'bg-emerald-50 border-emerald-200' : selectedProduct().statusValue === 2 ? 'bg-rose-50 border-rose-200' : 'bg-amber-50 border-amber-200'">
+      <span class="material-symbols-outlined text-lg"
+        [class]="selectedProduct().statusValue === 1 ? 'text-emerald-600' : selectedProduct().statusValue === 2 ? 'text-rose-600' : 'text-amber-600'">
+        {{ selectedProduct().statusValue === 1 ? 'check_circle' : selectedProduct().statusValue === 2 ? 'cancel' : 'schedule' }}
+      </span>
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wider"
+          [class]="selectedProduct().statusValue === 1 ? 'text-emerald-700' : selectedProduct().statusValue === 2 ? 'text-rose-700' : 'text-amber-700'">
+          Currently {{ selectedProduct().statusLabel }}
+        </p>
+        <p class="text-[10px] text-slate-500">You can change the product status below.</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <div class="mb-5">
+        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rejection Reason <span class="text-slate-400 font-normal lowercase">(required if rejecting)</span></label>
+        <textarea 
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+          rows="3" 
+          placeholder="Explain why this product cannot be approved..."
+          [ngModel]="productRejectionReason()" 
+          (ngModelChange)="productRejectionReason.set($event)">
+        </textarea>
+      </div>
+
+      <div class="flex gap-3">
+        @if (selectedProduct().statusValue !== 1) {
+          <button (click)="approveProduct()" [disabled]="isStatusProcessing()"
+            class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isStatusProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            <span class="material-symbols-outlined text-sm">check</span>
+            Approve
+          </button>
+        }
+        
+        @if (selectedProduct().statusValue !== 2) {
+          <button (click)="rejectProduct()" [disabled]="isStatusProcessing()"
+            class="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-rose-500 text-rose-600 font-bold py-3 px-4 rounded-xl hover:bg-rose-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isStatusProcessing()) { <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> }
+            <span class="material-symbols-outlined text-sm">close</span>
+            Reject
+          </button>
+        }
+      </div>
+    </div>
+  </div>
   </div>
 </div>
 }

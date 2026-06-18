@@ -62,6 +62,7 @@ export class Organizations implements OnInit {
   // New state for approve/reject flow
   rejectionReason = signal('');
   isProcessing = signal(false);
+  orgStats = signal<any>(null);
 
   ngOnInit() {
     this.loadOrganizations();
@@ -96,6 +97,8 @@ export class Organizations implements OnInit {
             initial: (org.name ? org.name.charAt(0) : '?').toUpperCase(),
             bgClass: 'bg-emerald-100 text-emerald-700',
             date: org.createdAt ? new Date(org.createdAt).toLocaleDateString() : 'N/A',
+            complianceFileUrl: org.complianceFileUrl || null,
+            rejectionReason: org.rejectionReason || null,
             details: {
               acreage: 'N/A',
               crop: 'N/A',
@@ -125,6 +128,18 @@ export class Organizations implements OnInit {
     this.selectedOrg = org;
     this.isDrawerOpen = true;
     this.rejectionReason.set('');
+    this.orgStats.set(null);
+
+    // Load organization statistics
+    this.orgService.getOrgStatistics(org.id).subscribe({
+      next: (response: any) => {
+        const data = response.data || response;
+        this.orgStats.set(data);
+      },
+      error: (err: any) => {
+        console.error('Failed to load org statistics', err);
+      }
+    });
   }
 
   closeDetails() {
@@ -138,7 +153,12 @@ export class Organizations implements OnInit {
 
     this.isProcessing.set(true);
 
-    this.orgService.approveOrganization(this.selectedOrg.id).subscribe({
+    // Use the dashboard approve endpoint for pending orgs, or the general status endpoint for re-approval
+    const request$ = this.selectedOrg.statusValue === 0
+      ? this.orgService.approveOrganization(this.selectedOrg.id)
+      : this.orgService.updateStatus(this.selectedOrg.id, 1);
+
+    request$.subscribe({
       next: () => {
         this.toast.success(`Approved ${this.selectedOrg.name} successfully.`);
         this.loadOrganizations();
@@ -165,7 +185,12 @@ export class Organizations implements OnInit {
 
     this.isProcessing.set(true);
 
-    this.orgService.rejectOrganization(this.selectedOrg.id, this.rejectionReason()).subscribe({
+    // Use the dashboard reject endpoint for pending orgs, or the general status endpoint for re-rejection
+    const request$ = this.selectedOrg.statusValue === 0
+      ? this.orgService.rejectOrganization(this.selectedOrg.id, this.rejectionReason())
+      : this.orgService.updateStatus(this.selectedOrg.id, 2);
+
+    request$.subscribe({
       next: () => {
         this.toast.success(`Rejected ${this.selectedOrg.name} successfully.`);
         this.loadOrganizations();
@@ -178,6 +203,33 @@ export class Organizations implements OnInit {
         console.error(err);
         this.isProcessing.set(false);
         this.toast.error('Error rejecting organization.');
+      }
+    });
+  }
+
+  suspendOrg() {
+    if (!this.selectedOrg) return;
+
+    if (!this.rejectionReason().trim()) {
+      this.toast.error('Suspension reason is required.');
+      return;
+    }
+
+    this.isProcessing.set(true);
+
+    this.orgService.updateStatus(this.selectedOrg.id, 3).subscribe({
+      next: () => {
+        this.toast.success(`Suspended ${this.selectedOrg.name} successfully.`);
+        this.loadOrganizations();
+        setTimeout(() => {
+          this.isProcessing.set(false);
+          this.closeDetails();
+        }, 500);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isProcessing.set(false);
+        this.toast.error('Error suspending organization.');
       }
     });
   }

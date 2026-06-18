@@ -2,101 +2,177 @@
   <div class="mb-12">
     <h1 class="text-4xl font-extrabold text-on-surface tracking-tight mb-2">System Configuration & Audit</h1>
     <p class="text-on-surface-variant max-w-2xl">Manage platform-wide financial parameters, infrastructure settings, and
-      monitor administrative activity across the Emerald Field ecosystem.</p>
+      monitor administrative activity across the Root2Route ecosystem.</p>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <!-- Sidebar Tabs -->
     <div class="lg:col-span-3 space-y-2">
-      <button
-        class="w-full flex items-center gap-3 px-5 py-4 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 text-left transition-all">
+      <button (click)="switchTab('financials')"
+        class="w-full flex items-center gap-3 px-5 py-4 rounded-xl text-left transition-all"
+        [class]="activeTab() === 'financials' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
         <span class="material-symbols-outlined">payments</span>
         <span class="font-semibold">Financials</span>
       </button>
-      <button
-        class="w-full flex items-center gap-3 px-5 py-4 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-xl text-left transition-all">
+      <button (click)="switchTab('general')"
+        class="w-full flex items-center gap-3 px-5 py-4 rounded-xl text-left transition-all"
+        [class]="activeTab() === 'general' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
         <span class="material-symbols-outlined">settings</span>
         <span class="font-semibold">General</span>
       </button>
-      <button
-        class="w-full flex items-center gap-3 px-5 py-4 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high rounded-xl text-left transition-all">
+      <button (click)="switchTab('auditLogs')"
+        class="w-full flex items-center gap-3 px-5 py-4 rounded-xl text-left transition-all"
+        [class]="activeTab() === 'auditLogs' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
         <span class="material-symbols-outlined">history</span>
         <span class="font-semibold">Audit Logs</span>
       </button>
     </div>
 
+    <!-- Tab Content -->
     <div class="lg:col-span-9 space-y-8">
-      <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold">Platform Fee Structure</h2>
-          <span
-            class="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">Active
-            Configuration</span>
-        </div>
-        <div class="grid md:grid-cols-2 gap-8">
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-on-surface-variant ml-1">PlatformFeePercentage</label>
-            <div class="relative">
-              <input
-                class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-5 pr-12 text-lg font-bold focus:ring-2 focus:ring-primary transition-all"
-                type="text" [ngModel]="platformFeePercentage()" (ngModelChange)="platformFeePercentage.set($event)" />
-              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">%</span>
-            </div>
-            <p class="text-xs text-on-surface-variant/60 ml-1">Commission taken from each farm-to-table transaction.</p>
-          </div>
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-on-surface-variant ml-1">StandardShippingFee</label>
-            <div class="relative">
-              <input disabled
-                class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-10 pr-5 text-lg font-bold focus:ring-2 focus:ring-primary transition-all opacity-60"
-                type="text" [value]="financialSettings.standardShippingFee" />
-              <span class="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">$</span>
-            </div>
-            <p class="text-xs text-on-surface-variant/60 ml-1">Flat rate for regional logistics fulfillment (Coming soon).</p>
-          </div>
-        </div>
 
-        @if (actionMessage()) {
-          <div class="mt-4 p-4 rounded-xl text-sm font-semibold flex items-center gap-2"
-               [class.bg-emerald-100]="actionMessage()?.type === 'success'"
-               [class.text-emerald-800]="actionMessage()?.type === 'success'"
-               [class.bg-rose-100]="actionMessage()?.type === 'error'"
-               [class.text-rose-800]="actionMessage()?.type === 'error'">
-            <span class="material-symbols-outlined">{{ actionMessage()?.type === 'success' ? 'check_circle' : 'error' }}</span>
-            {{ actionMessage()?.text }}
+      <!-- ═══════ FINANCIALS TAB ═══════ -->
+      @if (activeTab() === 'financials') {
+        <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold">Platform Fee Structure</h2>
+            <span
+              class="text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">Active
+              Configuration</span>
           </div>
-        }
-      </section>
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-on-surface-variant ml-1">PlatformFeePercentage</label>
+              <div class="relative">
+                <input
+                  class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-5 pr-12 text-lg font-bold focus:ring-2 focus:ring-primary transition-all"
+                  type="text" [ngModel]="platformFeePercentage()" (ngModelChange)="platformFeePercentage.set($event)" />
+                <span class="absolute right-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">%</span>
+              </div>
+              <p class="text-xs text-on-surface-variant/60 ml-1">Commission taken from each farm-to-table transaction.</p>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-on-surface-variant ml-1">StandardShippingFee</label>
+              <div class="relative">
+                <input disabled
+                  class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-10 pr-5 text-lg font-bold focus:ring-2 focus:ring-primary transition-all opacity-60"
+                  type="text" [value]="financialSettings.standardShippingFee" />
+                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-xl">$</span>
+              </div>
+              <p class="text-xs text-on-surface-variant/60 ml-1">Flat rate for regional logistics fulfillment (Coming soon).</p>
+            </div>
+          </div>
 
-      <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold">General System Settings</h2>
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-medium">Maintenance Mode</span>
-            <div class="w-12 h-6 bg-surface-container-highest rounded-full relative opacity-60 cursor-not-allowed">
-              <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+          @if (actionMessage()) {
+            <div class="mt-4 p-4 rounded-xl text-sm font-semibold flex items-center gap-2"
+                 [class.bg-emerald-100]="actionMessage()?.type === 'success'"
+                 [class.text-emerald-800]="actionMessage()?.type === 'success'"
+                 [class.bg-rose-100]="actionMessage()?.type === 'error'"
+                 [class.text-rose-800]="actionMessage()?.type === 'error'">
+                <span class="material-symbols-outlined">{{ actionMessage()?.type === 'success' ? 'check_circle' : 'error' }}</span>
+                {{ actionMessage()?.text }}
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ═══════ GENERAL TAB ═══════ -->
+      @if (activeTab() === 'general') {
+        <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold">General System Settings</h2>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium">Maintenance Mode</span>
+              <div class="w-12 h-6 bg-surface-container-highest rounded-full relative opacity-60 cursor-not-allowed">
+                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="space-y-6 opacity-60 pointer-events-none">
-          <div class="space-y-2">
-            <label class="text-sm font-semibold text-on-surface-variant ml-1">Support Email Address</label>
-            <input class="w-full bg-surface-container-low border-none rounded-xl py-4 px-5" type="email"
-              [value]="generalSettings.supportEmail" disabled />
-          </div>
-          <div class="space-y-4">
-            <label class="text-sm font-semibold text-on-surface-variant ml-1">API Key Management</label>
-            <div class="flex items-center gap-3 p-4 bg-surface-container-low rounded-xl">
-              <span class="material-symbols-outlined text-on-surface-variant">key</span>
-              <code class="flex-1 text-sm font-mono truncate">{{ generalSettings.apiKey }}</code>
-              <span class="material-symbols-outlined text-on-surface-variant cursor-pointer">content_copy</span>
+
+          <div class="p-6 bg-amber-50 border border-amber-200 rounded-xl mb-6">
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-amber-600">info</span>
+              <div>
+                <p class="text-sm font-bold text-amber-800">Configuration Endpoint Not Available</p>
+                <p class="text-xs text-amber-700 mt-1">A backend <code class="bg-amber-100 px-1 rounded">GET /settings</code> endpoint is needed to fetch and persist these values. Currently display-only.</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+
+          <div class="space-y-6 opacity-60 pointer-events-none">
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-on-surface-variant ml-1">Support Email Address</label>
+              <input class="w-full bg-surface-container-low border-none rounded-xl py-4 px-5" type="email"
+                value="support@root2route.com" disabled />
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-on-surface-variant ml-1">Maintenance Mode</label>
+              <input class="w-full bg-surface-container-low border-none rounded-xl py-4 px-5" type="text"
+                value="Off" disabled />
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- ═══════ AUDIT LOGS TAB ═══════ -->
+      @if (activeTab() === 'auditLogs') {
+        <section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold">Recent Audit Activity</h2>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+              Last 10 entries
+            </span>
+          </div>
+
+          @if (isLoadingLogs()) {
+            <div class="space-y-4">
+              @for (i of [1,2,3,4,5]; track i) {
+                <div class="animate-pulse flex items-center gap-4 p-4 rounded-xl bg-slate-50">
+                  <div class="w-10 h-10 rounded-full bg-slate-200"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 bg-slate-200 rounded w-1/3"></div>
+                    <div class="h-2 bg-slate-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (auditLogs().length === 0) {
+            <div class="flex flex-col items-center justify-center p-12 text-center">
+              <span class="material-symbols-outlined text-4xl text-slate-300 mb-3">history</span>
+              <p class="text-slate-500 font-medium">No audit log entries found.</p>
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (log of auditLogs(); track log.id) {
+                <div class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors border border-slate-100">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    [class]="getActionClass(log.action)">
+                    <span class="material-symbols-outlined text-sm">{{ getActionIcon(log.action) }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-sm font-bold text-slate-800">{{ log.userFullName || 'System' }}</span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                        [class]="getActionClass(log.action)">
+                        {{ log.action }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-500">
+                      <span class="font-medium text-slate-700">{{ log.entityName }}</span>
+                      • {{ log.createdAt | date:'medium' }}
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
     </div>
   </div>
 </div>
 
+@if (activeTab() === 'financials') {
 <button
   (click)="saveFee()"
   [disabled]="isSaving()"
@@ -109,3 +185,4 @@
     <span class="font-bold tracking-tight">Save Changes</span>
   }
 </button>
+}

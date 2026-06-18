@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuctionService } from './auction.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
 @Component({
   selector: 'app-auctions',
@@ -13,6 +14,9 @@ import { ToastService } from '../../../core/services/toast.service';
 export class Auctions implements OnInit {
   private auctionService = inject(AuctionService);
   private toastService = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
+
+  activeTab = signal<'active' | 'completed'>('active');
 
 
   isLoading = signal(true);
@@ -25,6 +29,8 @@ export class Auctions implements OnInit {
   };
 
   activeLots: any[] = [];
+  completedLots = signal<any[]>([]);
+  isLoadingCompleted = signal(false);
 
   ngOnInit() {
     this.loadAuctions();
@@ -128,19 +134,86 @@ export class Auctions implements OnInit {
 
   viewBidHistory(lotId: string) {
     this.toastService.info('Bid history feature is coming soon!');
-    console.log(`فتح سجل المزايدات للمحصول رقم: ${lotId}`);
+    console.log(`Opening bid history for lot: ${lotId}`);
   }
 
   createNewLot() {
     this.toastService.info('Auction creation form is coming soon!');
-    console.log('جاري فتح شاشة إضافة مزاد جديد...');
+  }
+
+  switchTab(tab: 'active' | 'completed') {
+    this.activeTab.set(tab);
+    if (tab === 'completed' && this.completedLots().length === 0) {
+      this.loadCompletedAuctions();
+    }
+  }
+
+  loadCompletedAuctions() {
+    this.isLoadingCompleted.set(true);
+    this.auctionService.getCompletedAuctions().subscribe({
+      next: (response: any) => {
+        const data = response.data || response;
+        const items = Array.isArray(data) ? data : (data.items || data.completedLots || []);
+        this.completedLots.set(items.map((lot: any) => ({
+          ...lot,
+          title: lot.title || lot.productName || 'Unnamed',
+          finalPrice: lot.currentHighestBid || lot.startPrice || 0
+        })));
+        this.isLoadingCompleted.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error fetching completed auctions', err);
+        this.isLoadingCompleted.set(false);
+      }
+    });
   }
   
   exportLogs() {
-    this.toastService.info('Exporting logs... Please wait.');
+    const data = this.activeLots;
+    if (!data.length) {
+      this.toastService.error('No auctions to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Title', 'Current Bid', 'Start Price', 'Time Left', 'Category'];
+    const rows = data.map((lot: any) => [
+      lot.id || '',
+      `"${(lot.title || '').replace(/"/g, '""')}"`,
+      lot.currentBid || 0,
+      lot.startPrice || 0,
+      lot.timeLeft || '',
+      `"${(lot.category || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `auctions_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    this.toastService.success('Auction data exported successfully.');
   }
   
-  verifyBidders() {
-    this.toastService.info('Verification module is under maintenance.');
+  async cancelAuction(lot: any) {
+    const confirmed = await this.confirmDialog.open({
+      title: 'Cancel Auction',
+      message: `Are you sure you want to cancel the auction for "${lot.title}"? This action cannot be undone.`,
+      confirmLabel: 'Cancel Auction',
+      isDestructive: true
+    });
+    if (!confirmed) return;
+
+    this.auctionService.cancelAuction(lot.id).subscribe({
+      next: () => {
+        this.toastService.success('Auction cancelled successfully.');
+        this.loadAuctions();
+      },
+      error: (err: any) => {
+        console.error(err);
+        const msg = err?.error?.message || err?.error?.Message || 'Error cancelling auction.';
+        this.toastService.error(msg);
+      }
+    });
   }
 }

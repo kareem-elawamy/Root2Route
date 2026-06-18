@@ -26,4 +26,8 @@ export class AuctionService {
   cancelAuction(auctionId: string): Observable<any> {
     return this.http.put(`${this.baseUrl}/${auctionId}/cancel`, {});
   }
+
+  getCompletedAuctions(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/GetCompleted`);
+  }
 }
