@@ -6,6 +6,8 @@ import { OrgLayoutComponent } from './layouts/org-layout-component/org-layout-co
 // 🟢 استدعينا السايد بار هنا بره خالص
 import { roleGuard } from './core/guards/role.guard';
 
+import { superAdminGuard } from './core/guards/super-admin.guard';
+
 export const routes: Routes = [
   { path: '', canActivate: [roleGuard], children: [] },
   {
@@ -17,7 +19,7 @@ export const routes: Routes = [
   // 🟢 التعديل السحري هنا 🟢
  {
     path: 'admin-dashboard',
-    canActivate: [authGuard],
+    canActivate: [authGuard, superAdminGuard],
     // بنرميه على ملف الراوتر بتاع السوبر أدمن وهو يتصرف
     loadChildren: () => import('./features/super-admin/super-admin.routes').then((m) => m.superAdminRoutes),
   },

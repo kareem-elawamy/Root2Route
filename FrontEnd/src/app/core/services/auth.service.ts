@@ -6,6 +6,7 @@ import { LoginData } from '../model/auth/loginData';
 import { LoginResponse } from '../model/auth/loginResponse';
 import { ResponseData } from '../model/response/responseData';
 import { OrgContextService } from './org-context.service';
+import { UltraAlert } from '@kareem_elawamy/ultra-alert';
 
 export type { AuthUser, LoginData };
 
@@ -173,22 +174,22 @@ export class AuthService {
           this.refreshToken(firstOrgId).subscribe({
             next: () => {
               // After successful refresh, roles will be updated. Now we can navigate safely.
-              this.router.navigate(['/company-dashboard/overview']);
+              this.router.navigate(['/company-dashboard']);
             },
             error: (err) => {
               console.error('Failed to refresh token for org:', err);
-              alert('Refresh Token Failed: ' + err.message);
+              UltraAlert.error('Refresh Token Failed: ' + err.message);
               this.router.navigate(['/unauthorized']);
             }
           });
         } else {
           // If the user has no organizations, they can't access company-dashboard
-          this.router.navigate(['/company-dashboard/overview']);
+          this.router.navigate(['/user/invitations']);
         }
       },
       error: (err) => {
         console.error('Failed to load orgs during login:', err);
-        alert('Load Orgs Failed: ' + err.message);
+        UltraAlert.error('Load Orgs Failed: ' + err.message);
         this.router.navigate(['/unauthorized']);
       },
     });

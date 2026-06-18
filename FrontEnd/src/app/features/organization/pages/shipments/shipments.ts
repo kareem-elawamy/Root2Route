@@ -153,25 +153,24 @@ export class ShipmentsComponent implements OnInit {
     });
   }
 
-  markAsDelivered(shipmentId: string) {
-    this.confirmDialog.open({
+  async markAsDelivered(shipmentId: string) {
+    const confirmed = await this.confirmDialog.open({
       title: 'Mark as Delivered',
       message: 'Are you sure you want to mark this shipment as Delivered?',
       confirmLabel: 'Mark Delivered',
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
-      
-      this.shipmentsService.updateShipmentStatus(shipmentId, 3).subscribe({
-        next: () => {
-          this.toast.success('Shipment marked as delivered!');
-          const org = this.activeOrg();
-          if (org) this.loadShipments(org.id);
-        },
-        error: (error: any) => {
-          console.error('Error updating status', error);
-          this.toast.error('Failed to update shipment status.');
-        }
-      });
+    });
+    if (!confirmed) return;
+
+    this.shipmentsService.updateShipmentStatus(shipmentId, 3).subscribe({
+      next: () => {
+        this.toast.success('Shipment marked as delivered!');
+        const org = this.activeOrg();
+        if (org) this.loadShipments(org.id);
+      },
+      error: (error: any) => {
+        console.error('Error updating status', error);
+        this.toast.error('Failed to update shipment status.');
+      }
     });
   }
 }

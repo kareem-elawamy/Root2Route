@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { OrgContextService } from '../../../../core/services/org-context.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DashboardService } from '../../dashboard.service';
+import { ReportService } from '../../report.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
@@ -33,6 +34,8 @@ export class OverviewComponent implements OnInit {
   selectedDateRange = signal('Last 30 Days');
   isDateDropdownOpen = signal(false);
   isHelpOpen = signal(false);
+  isExportDropdownOpen = signal(false);
+  isExporting = signal(false);
 
   constructor() {
     effect(() => {
@@ -170,32 +173,54 @@ export class OverviewComponent implements OnInit {
     this.isHelpOpen.set(false);
   }
 
-  exportReport(): void {
-    const orders = this.recentOrders();
-    if (!orders || orders.length === 0) {
-      this.toast.warning("No data to export.");
+  // ── Export Dropdown ──
+  private readonly reportService = inject(ReportService);
+
+  toggleExportDropdown(): void {
+    this.isExportDropdownOpen.update(v => !v);
+    if (this.isExportDropdownOpen()) {
+      this.isDateDropdownOpen.set(false);
+    }
+  }
+
+  closeExportDropdown(): void {
+    this.isExportDropdownOpen.set(false);
+  }
+
+  exportReport(type: 'orders' | 'products' | 'financial', format: 'csv' | 'pdf'): void {
+    const org = this.activeOrg();
+    if (!org?.id) {
+      this.toast.warning('No organization selected.');
       return;
     }
-    
-    // Create CSV content
-    const headers = ["Order ID", "Product", "Amount", "Status"];
-    const rows = orders.map(o => [
-      o.orderId,
-      `"${o.buyerName}"`,
-      o.totalAmount,
-      this.getStatusLabel(o.status)
-    ]);
-    
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-      
-    // Download
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `organization_report_${new Date().getTime()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    this.isExporting.set(true);
+    this.isExportDropdownOpen.set(false);
+
+    const exportMap: Record<string, () => import('rxjs').Observable<Blob>> = {
+      'orders-csv': () => this.reportService.exportOrdersCsv(org.id),
+      'orders-pdf': () => this.reportService.exportOrdersPdf(org.id),
+      'products-csv': () => this.reportService.exportProductsCsv(org.id),
+      'products-pdf': () => this.reportService.exportProductsPdf(org.id),
+      'financial-csv': () => this.reportService.exportFinancialCsv(org.id),
+      'financial-pdf': () => this.reportService.exportFinancialPdf(org.id),
+    };
+
+    const key = `${type}-${format}`;
+    const ext = format === 'csv' ? 'csv' : 'pdf';
+    const filename = `${type}_report_${new Date().toISOString().slice(0, 10)}.${ext}`;
+
+    exportMap[key]().subscribe({
+      next: (blob: Blob) => {
+        this.reportService.triggerDownload(blob, filename);
+        this.isExporting.set(false);
+        this.toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} ${format.toUpperCase()} exported!`);
+      },
+      error: (err: any) => {
+        console.error('Export failed', err);
+        this.isExporting.set(false);
+        this.toast.error('Export failed. Please try again.');
+      }
+    });
   }
 }

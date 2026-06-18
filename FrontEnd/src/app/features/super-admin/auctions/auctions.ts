@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuctionService } from './auction.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-auctions',
@@ -11,6 +12,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 })
 export class Auctions implements OnInit {
   private auctionService = inject(AuctionService);
+  private toastService = inject(ToastService);
 
 
   isLoading = signal(true);
@@ -79,8 +81,17 @@ export class Auctions implements OnInit {
             progressClass = 'text-slate-500 bg-slate-500';
           }
 
+          // Resolve image URL
+          let resolvedImage = lot.image || lot.imageUrl || lot.picture || '';
+          if (resolvedImage && !resolvedImage.startsWith('http')) {
+            resolvedImage = resolvedImage.startsWith('/')
+              ? `https://root2route.runasp.net${resolvedImage}`
+              : `https://root2route.runasp.net/${resolvedImage}`;
+          }
+
           return {
             ...lot,
+            image: resolvedImage,
             title: lot.title || lot.productName || 'Unnamed Lot',
             currentBid: lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0,
             timeLeft: timeLeftStr,
@@ -116,10 +127,20 @@ export class Auctions implements OnInit {
   }
 
   viewBidHistory(lotId: string) {
+    this.toastService.info('Bid history feature is coming soon!');
     console.log(`فتح سجل المزايدات للمحصول رقم: ${lotId}`);
   }
 
   createNewLot() {
+    this.toastService.info('Auction creation form is coming soon!');
     console.log('جاري فتح شاشة إضافة مزاد جديد...');
+  }
+  
+  exportLogs() {
+    this.toastService.info('Exporting logs... Please wait.');
+  }
+  
+  verifyBidders() {
+    this.toastService.info('Verification module is under maintenance.');
   }
 }

@@ -141,7 +141,7 @@
     <div class="col-span-12 lg:col-span-4 p-10 bg-slate-900 rounded-[2.5rem] text-white shadow-xl shadow-slate-900/20">
       <h4 class="text-xl font-bold mb-4">Terminal Quick Actions</h4>
       <div class="space-y-3">
-        <button
+        <button (click)="exportLogs()"
           class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
           <span class="flex items-center gap-3">
             <span class="material-symbols-outlined text-emerald-400">monitoring</span>
@@ -150,7 +150,7 @@
           <span
             class="material-symbols-outlined text-white/50 group-hover:text-white transition-colors">chevron_right</span>
         </button>
-        <button
+        <button (click)="verifyBidders()"
           class="w-full flex items-center justify-between p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-colors group">
           <span class="flex items-center gap-3">
             <span class="material-symbols-outlined text-emerald-400">verified_user</span>

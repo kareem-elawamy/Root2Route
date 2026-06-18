@@ -43,6 +43,10 @@
         <span class="material-symbols-outlined nav-icon">group</span>
         @if (!sidebarCollapsed()) { <span class="nav-label">Users</span> }
       </a>
+      <a class="nav-item" routerLink="/admin-dashboard/plants" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">psychiatry</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Plants</span> }
+      </a>
 
       <!-- Section: Commerce -->
       @if (!sidebarCollapsed()) {
@@ -63,16 +67,6 @@
         @if (!sidebarCollapsed()) { <span class="nav-label">Transactions</span> }
       </a>
 
-      <!-- Section: Intelligence -->
-      @if (!sidebarCollapsed()) {
-        <span class="nav-section-label">Intelligence</span>
-      } @else {
-        <div class="nav-divider"></div>
-      }
-      <a class="nav-item" routerLink="/admin-dashboard/ai-lab" routerLinkActive="active">
-        <span class="material-symbols-outlined nav-icon">science</span>
-        @if (!sidebarCollapsed()) { <span class="nav-label">AI Lab</span> }
-      </a>
       <a class="nav-item" routerLink="/admin-dashboard/reports" routerLinkActive="active">
         <span class="material-symbols-outlined nav-icon">analytics</span>
         @if (!sidebarCollapsed()) { <span class="nav-label">Reports</span> }

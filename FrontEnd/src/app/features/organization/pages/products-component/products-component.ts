@@ -142,7 +142,14 @@ export class ProductsComponent implements OnInit {
           products = data.items;
         }
 
-        this.allProducts = products.map((p: any): Product => ({
+        this.allProducts = products.map((p: any): Product => {
+          let imageUrl = p.imageUrl || (p.images && p.images.length > 0 ? p.images[0] : '');
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = imageUrl.startsWith('/')
+              ? `https://root2route.runasp.net${imageUrl}`
+              : `https://root2route.runasp.net/${imageUrl}`;
+          }
+          return {
           id:        p.id,
           name:      p.name      || 'Unnamed Product',
           sku:       p.sku || p.barcode || 'N/A',
@@ -151,9 +158,10 @@ export class ProductsComponent implements OnInit {
           stock:     p.stockQuantity ?? p.stock ?? 0,
           dateAdded: p.dateAdded || p.createdOn || new Date().toLocaleDateString(),
           status:    this.mapStatus(p.status),
-          imageUrl:  p.imageUrl  || (p.images && p.images.length > 0 ? p.images[0] : ''),
+          imageUrl:  imageUrl,
           originalData: p
-        }));
+          };
+        });
         
         this.filterProducts();
       },
@@ -397,25 +405,24 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  deleteProduct(id: string): void {
-    this.confirmDialog.open({
+  async deleteProduct(id: string): Promise<void> {
+    const confirmed = await this.confirmDialog.open({
       title: 'Delete Product',
       message: 'Are you sure you want to delete this product? This action cannot be undone.',
       confirmLabel: 'Delete Product',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
-      
-      this.productService.deleteProduct(id).subscribe({
-        next: () => {
-          this.toast.success('Product deleted successfully.');
-          this.loadProducts();
-        },
-        error: (err) => { 
-          console.error(err); 
-          this.toast.error('Error deleting product'); 
-        }
-      });
+    });
+    if (!confirmed) return;
+
+    this.productService.deleteProduct(id).subscribe({
+      next: () => {
+        this.toast.success('Product deleted successfully.');
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error deleting product');
+      }
     });
   }
 

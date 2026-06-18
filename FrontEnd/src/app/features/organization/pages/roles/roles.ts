@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect, signal } from '@angular/core';
+import { Component, OnInit, inject, effect, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MembersService } from '../../members.service';
@@ -26,6 +26,22 @@ export class RolesComponent implements OnInit {
   
   roles = signal<any[]>([]);
   systemPermissions = signal<string[]>([]);
+  groupedPermissions = computed(() => {
+    const perms = this.systemPermissions();
+    const groups: { [key: string]: string[] } = {};
+    for (const p of perms) {
+      const parts = p.split('.');
+      const groupName = parts.length > 1 ? parts[1] : 'General';
+      if (!groups[groupName]) {
+        groups[groupName] = [];
+      }
+      groups[groupName].push(p);
+    }
+    return Object.keys(groups).map(key => ({
+      groupName: key,
+      permissions: groups[key]
+    }));
+  });
   
   isCreateModalOpen = signal(false);
   isCreating = signal(false);
@@ -172,25 +188,24 @@ export class RolesComponent implements OnInit {
     this.isCreateModalOpen.set(true);
   }
 
-  deleteRole(roleId: string) {
-    this.confirmDialog.open({
+  async deleteRole(roleId: string) {
+    const confirmed = await this.confirmDialog.open({
       title: 'Delete Role',
       message: 'Are you sure you want to delete this role? Members with this role will be unassigned.',
       confirmLabel: 'Delete',
       isDestructive: true
-    }).subscribe((confirmed: any) => {
-      if (!confirmed) return;
-      this.membersService.deleteRole(roleId).subscribe({
-        next: () => {
-          this.toast.success('Role deleted successfully.');
-          const org = this.activeOrg();
-          if (org) this.loadRoles(org.id);
-        },
-        error: (err: any) => {
-          console.error('Error deleting role', err);
-          this.toast.error('Failed to delete role.');
-        }
-      });
+    });
+    if (!confirmed) return;
+    this.membersService.deleteRole(roleId).subscribe({
+      next: () => {
+        this.toast.success('Role deleted successfully.');
+        const org = this.activeOrg();
+        if (org) this.loadRoles(org.id);
+      },
+      error: (err: any) => {
+        console.error('Error deleting role', err);
+        this.toast.error('Failed to delete role.');
+      }
     });
   }
 

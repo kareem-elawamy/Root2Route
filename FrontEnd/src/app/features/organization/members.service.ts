@@ -46,8 +46,8 @@ export class MembersService {
   }
 
   changeOrganizationOwner(orgId: string, newOwnerId: string): Observable<any> {
-    const body = { newOwnerId };
-    return this.http.put(`https://root2route.runasp.net/api/v1/organizations/${orgId}/change-owner`, body);
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.put(`https://root2route.runasp.net/api/v1/organizations/${orgId}/change-owner`, `"${newOwnerId}"`, { headers });
   }
 
   getMyInvitations(): Observable<any> {

@@ -159,78 +159,79 @@ label, .font-label {
 .theme-admin {
   /* ── Core Palette ── */
   --admin-accent:        #6366f1;  /* Indigo 500 */
-  --admin-accent-hover:  #818cf8;  /* Indigo 400 */
-  --admin-accent-muted:  #a5b4fc;  /* Indigo 300 */
+  --admin-accent-hover:  #4f46e5;  /* Indigo 600 */
+  --admin-accent-muted:  #c7d2fe;  /* Indigo 200 */
 
-  /* ── Surfaces ── */
-  --admin-surface:       #0f172a;  /* Slate 900 */
-  --admin-on-surface:    #e2e8f0;  /* Slate 200 */
-  --admin-sidebar-bg:    #0c1222;  /* Darker than surface */
-  --admin-header-bg:     rgba(15, 23, 42, 0.85);
-  --admin-card-bg:       #1e293b;  /* Slate 800 */
-  --admin-input-bg:      #1e293b;
+  /* ── Surfaces — Light Mode ── */
+  --admin-surface:       #f8fafc;  /* Very light gray/blue background */
+  --admin-on-surface:    #0f172a;  /* Dark slate for text */
+  --admin-sidebar-bg:    #ffffff;  /* Pure white sidebar */
+  --admin-header-bg:     rgba(255, 255, 255, 0.90);
+  --admin-card-bg:       #ffffff;  /* Pure white cards */
+  --admin-input-bg:      #ffffff;
 
   /* ── Text ── */
-  --admin-muted:         #64748b;  /* Slate 500 */
-  --admin-nav-text:      #94a3b8;  /* Slate 400 */
+  --admin-muted:         #64748b;  /* Muted slate */
+  --admin-nav-text:      #475569;  /* Slate text for nav */
 
   /* ── Borders ── */
-  --admin-border:        #1e293b;
+  --admin-border:        #e2e8f0;  /* Light slate border */
 
   /* ── Interactive ── */
-  --admin-hover:         rgba(255, 255, 255, 0.04);
+  --admin-hover:         rgba(99, 102, 241, 0.08);  /* Light indigo tint for hover */
 
   /* ── Override Material Design tokens for child components ── */
   --color-primary:                  #6366f1;
   --color-on-primary:               #ffffff;
-  --color-primary-container:        #312e81;
-  --color-on-primary-container:     #e0e7ff;
-  --color-surface:                  #0f172a;
-  --color-on-surface:               #e2e8f0;
-  --color-surface-variant:          #334155;
-  --color-on-surface-variant:       #94a3b8;
-  --color-surface-container-lowest: #0c1222;
-  --color-surface-container-low:    #1e293b;
-  --color-surface-container:        #1e293b;
-  --color-surface-container-high:   #334155;
-  --color-surface-container-highest:#475569;
-  --color-background:               #0f172a;
-  --color-on-background:            #e2e8f0;
-  --color-outline:                  #475569;
-  --color-outline-variant:          #334155;
-  --color-error:                    #f87171;
-  --color-on-error:                 #1e1e1e;
-  --color-error-container:          rgba(239, 68, 68, 0.15);
-  --color-on-error-container:       #fca5a5;
-  --color-tertiary:                 #a78bfa;
+  --color-primary-container:        #e0e7ff;
+  --color-on-primary-container:     #312e81;
+  --color-primary-fixed-variant:    #4f46e5;
+  --color-surface:                  #f8fafc;
+  --color-on-surface:               #0f172a;
+  --color-surface-variant:          #f1f5f9;
+  --color-on-surface-variant:       #475569;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low:    #f8fafc;
+  --color-surface-container:        #f1f5f9;
+  --color-surface-container-high:   #e2e8f0;
+  --color-surface-container-highest:#cbd5e1;
+  --color-background:               #f8fafc;
+  --color-on-background:            #0f172a;
+  --color-outline:                  #cbd5e1;
+  --color-outline-variant:          #e2e8f0;
+  --color-error:                    #ef4444;
+  --color-on-error:                 #ffffff;
+  --color-error-container:          #fee2e2;
+  --color-on-error-container:       #991b1b;
+  --color-tertiary:                 #8b5cf6;
   --color-on-tertiary:              #ffffff;
-  --color-tertiary-container:       #4c1d95;
-  --color-secondary:                #818cf8;
+  --color-tertiary-container:       #ede9fe;
+  --color-secondary:                #6366f1;
   --color-on-secondary:             #ffffff;
-  --color-secondary-container:      #312e81;
+  --color-secondary-container:      #e0e7ff;
 }
 
 /* ── Admin-scoped focus ring override: indigo instead of green ── */
 .theme-admin *:focus-visible {
-  outline-color: #6366f1 !important;
+  outline-color: #818cf8 !important;
 }
 
 .theme-admin input:focus,
 .theme-admin textarea:focus,
 .theme-admin select:focus {
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2) !important;
 }
 
 .theme-admin input,
 .theme-admin textarea,
 .theme-admin select {
-  accent-color: #6366f1;
+  accent-color: #818cf8;
 }
 
 .theme-admin input[type="checkbox"],
 .theme-admin input[type="radio"] {
-  accent-color: #6366f1;
+  accent-color: #818cf8;
 }
 
 /* ─── Org Owner Component CSS (imported at global level for hot-reload) ─── */

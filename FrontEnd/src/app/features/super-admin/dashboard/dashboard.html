@@ -12,23 +12,17 @@
       <p class="stat-label">Gross Revenue</p>
       <p class="stat-value">${{ overviewStats().grossRevenue }}</p>
     </div>
-    
+
     <div class="stat-card stat-card-highlight">
       <div class="stat-icon-bg"><span class="material-symbols-outlined">account_balance</span></div>
       <p class="stat-label">Platform Fees (Net)</p>
       <p class="stat-value">${{ overviewStats().platformFees }}</p>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon-bg"><span class="material-symbols-outlined">domain_add</span></div>
       <p class="stat-label">Pending Organizations</p>
       <p class="stat-value">{{ overviewStats().pendingOrganizations }}</p>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon-bg"><span class="material-symbols-outlined">psychiatry</span></div>
-      <p class="stat-label">Total ML Diagnoses</p>
-      <p class="stat-value">{{ overviewStats().totalMLDiagnoses }}</p>
     </div>
   </div>
 
@@ -39,196 +33,115 @@
     </div>
     <div class="bg-surface-container-lowest p-8 rounded-2xl border border-slate-200">
       @if (financials().length === 0) {
-        <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-          <span class="material-symbols-outlined text-4xl mb-2 opacity-50">bar_chart</span>
-          <p class="font-medium">No financial data available yet.</p>
-        </div>
+      <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+        <span class="material-symbols-outlined text-4xl mb-2 opacity-50">bar_chart</span>
+        <p class="font-medium">No financial data available yet.</p>
+      </div>
       } @else {
-        <!-- Fallback list until chart is fully implemented in Sprint 3 -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          @for (fin of financials(); track fin.month) {
-            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <p class="text-xs font-bold text-slate-500 uppercase">{{ fin.month }}</p>
-              <p class="text-lg font-black text-emerald-700 mt-1">${{ fin.platformFees }}</p>
-              <p class="text-xs text-slate-400">Gross: ${{ fin.grossRevenue }}</p>
-            </div>
-          }
+      <!-- Fallback list until chart is fully implemented in Sprint 3 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @for (fin of financials(); track fin.month) {
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+          <p class="text-xs font-bold text-slate-500 uppercase">{{ fin.month }}</p>
+          <p class="text-lg font-black text-emerald-700 mt-1">${{ fin.platformFees }}</p>
+          <p class="text-xs text-slate-400">Gross: ${{ fin.grossRevenue }}</p>
         </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+  <!-- Pending Organizations -->
+  <div class="data-section">
+    <div class="data-header">
+      <h3 class="data-title">Pending Organization Approvals</h3>
+    </div>
+    <div class="table-container">
+      @if (isLoading()) {
+      <app-skeleton type="table" [rows]="4" [columns]="3"></app-skeleton>
+      } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Organization</th>
+            <th>Type</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (organizations().length === 0) {
+          <tr>
+            <td colspan="3" class="px-6 py-8 text-center text-slate-400">No pending organizations.</td>
+          </tr>
+          } @else {
+          @for (org of organizations(); track org.name) {
+          <tr class="table-row">
+            <td>
+              <div class="org-info">
+                <span class="org-name">{{ org.name || 'Unnamed Org' }}</span>
+                <span class="org-email block text-xs text-slate-500">{{ org.contactEmail || 'No email' }}</span>
+              </div>
+            </td>
+            <td><span class="org-type">{{ org.type === 0 ? 'Farm' : org.type === 1 ? 'Restaurant' : org.type === 2 ?
+                'Factory' : 'Tradesman' }}</span></td>
+            <td class="text-right">
+              <a routerLink="/admin-dashboard/organizations" class="font-bold text-xs hover:underline"
+                style="color: var(--admin-accent)">Review</a>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
       }
     </div>
   </div>
 
-  <!-- ML Intelligence Panel -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-    <!-- Top Diseases -->
-    <div class="data-section">
-      <div class="data-header">
-        <h3 class="data-title">Top Detected Diseases</h3>
-      </div>
-      <div class="bg-surface-container-lowest p-6 rounded-2xl border border-slate-200">
-        @if (topDiseases().length === 0) {
-          <p class="text-slate-400 text-center py-8">No ML data yet.</p>
-        } @else {
-          <div class="space-y-4">
-            @for (disease of topDiseases(); track disease.diseaseName) {
-              <div>
-                <div class="flex justify-between text-sm font-bold text-slate-700 mb-1">
-                  <span>{{ disease.diseaseName }}</span>
-                  <span>{{ disease.percentage }}%</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-2">
-                  <div class="bg-indigo-500 h-2 rounded-full" [style.width]="disease.percentage + '%'"></div>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1">{{ disease.count }} cases detected</p>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- ML Accuracy Trend -->
-    <div class="data-section">
-      <div class="data-header">
-        <h3 class="data-title">ML Accuracy Trend (Last 14 days)</h3>
-      </div>
-      <div class="bg-surface-container-lowest p-6 rounded-2xl border border-slate-200">
-        @if (mlAccuracyTrend().length === 0) {
-          <p class="text-slate-400 text-center py-8">No accuracy data available.</p>
-        } @else {
-          <div class="space-y-3">
-            @for (trend of mlAccuracyTrend(); track trend.date) {
-              <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                <span class="text-sm font-medium text-slate-600">{{ trend.date | date:'MMM dd' }}</span>
-                <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold">{{ trend.accuracy }}%</span>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-
-  <!-- Disease Heatmap (Table fallback for Sprint 1) -->
-  <div class="data-section mt-8">
+  <!-- Pending Products -->
+  <div class="data-section">
     <div class="data-header">
-      <h3 class="data-title">Regional Disease Heatmap</h3>
+      <h3 class="data-title">Pending Products</h3>
     </div>
-    <div class="bg-surface-container-lowest rounded-2xl border border-slate-200 overflow-hidden">
-      <table class="w-full text-left">
-        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest">
+    <div class="table-container">
+      @if (isLoading()) {
+      <app-skeleton type="table" [rows]="4" [columns]="3"></app-skeleton>
+      } @else {
+      <table class="data-table">
+        <thead>
           <tr>
-            <th class="px-6 py-3">Region</th>
-            <th class="px-6 py-3">Coordinates</th>
-            <th class="px-6 py-3 text-right">Cases Detected</th>
+            <th>Product</th>
+            <th>Organization</th>
+            <th class="text-right">Action</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
-          @if (heatmapData().length === 0) {
-            <tr>
-              <td colspan="3" class="px-6 py-8 text-center text-slate-400">No regional data available yet. Map coming in Sprint 3.</td>
-            </tr>
+        <tbody>
+          @if (pendingProducts().length === 0) {
+          <tr>
+            <td colspan="3" class="px-6 py-8 text-center text-slate-400">No pending products.</td>
+          </tr>
           } @else {
-            @for (region of heatmapData(); track region.region) {
-              <tr class="hover:bg-slate-50">
-                <td class="px-6 py-4 text-sm font-bold text-slate-700">{{ region.region }}</td>
-                <td class="px-6 py-4 text-xs text-slate-500">{{ region.lat }}, {{ region.lng }}</td>
-                <td class="px-6 py-4 text-sm font-bold text-indigo-600 text-right">{{ region.count }}</td>
-              </tr>
-            }
+          @for (product of pendingProducts(); track product.id) {
+          <tr class="table-row">
+            <td>
+              <div class="org-info">
+                <span class="org-name">{{ product.name }}</span>
+                <span class="block text-xs text-slate-500">{{ product.category }}</span>
+              </div>
+            </td>
+            <td><span class="text-sm font-medium text-slate-600">{{ product.orgName }}</span></td>
+            <td class="text-right">
+              <a routerLink="/admin-dashboard/products" class="font-bold text-xs hover:underline"
+                style="color: var(--admin-accent)">Review</a>
+            </td>
+          </tr>
+          }
           }
         </tbody>
       </table>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-    <!-- Pending Organizations -->
-    <div class="data-section">
-      <div class="data-header">
-        <h3 class="data-title">Pending Organization Approvals</h3>
-      </div>
-      <div class="table-container">
-        @if (isLoading()) {
-          <app-skeleton type="table" [rows]="4" [columns]="3"></app-skeleton>
-        } @else {
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Organization</th>
-                <th>Type</th>
-                <th class="text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (organizations().length === 0) {
-                <tr>
-                  <td colspan="3" class="px-6 py-8 text-center text-slate-400">No pending organizations.</td>
-                </tr>
-              } @else {
-                @for (org of organizations(); track org.name) {
-                <tr class="table-row">
-                  <td>
-                    <div class="org-info">
-                      <span class="org-name">{{ org.name || 'Unnamed Org' }}</span>
-                      <span class="org-email block text-xs text-slate-500">{{ org.contactEmail || 'No email' }}</span>
-                    </div>
-                  </td>
-                  <td><span class="org-type">{{ org.type === 0 ? 'Farm' : org.type === 1 ? 'Restaurant' : org.type === 2 ? 'Factory' : 'Tradesman' }}</span></td>
-                  <td class="text-right">
-                    <a routerLink="/admin-dashboard/organizations" class="text-indigo-600 font-bold text-xs hover:underline">Review</a>
-                  </td>
-                </tr>
-                }
-              }
-            </tbody>
-          </table>
-        }
-      </div>
-    </div>
-
-    <!-- Pending Products -->
-    <div class="data-section">
-      <div class="data-header">
-        <h3 class="data-title">Pending Products</h3>
-      </div>
-      <div class="table-container">
-        @if (isLoading()) {
-          <app-skeleton type="table" [rows]="4" [columns]="3"></app-skeleton>
-        } @else {
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Organization</th>
-                <th class="text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (pendingProducts().length === 0) {
-                <tr>
-                  <td colspan="3" class="px-6 py-8 text-center text-slate-400">No pending products.</td>
-                </tr>
-              } @else {
-                @for (product of pendingProducts(); track product.id) {
-                <tr class="table-row">
-                  <td>
-                    <div class="org-info">
-                      <span class="org-name">{{ product.name }}</span>
-                      <span class="block text-xs text-slate-500">{{ product.category }}</span>
-                    </div>
-                  </td>
-                  <td><span class="text-sm font-medium text-slate-600">{{ product.orgName }}</span></td>
-                  <td class="text-right">
-                    <a routerLink="/admin-dashboard/products" class="text-indigo-600 font-bold text-xs hover:underline">Review</a>
-                  </td>
-                </tr>
-                }
-              }
-            </tbody>
-          </table>
-        }
-      </div>
+      }
     </div>
   </div>
 </div>

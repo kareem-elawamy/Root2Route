@@ -43,10 +43,31 @@
         </div>
         }
       </div>
-      <button class="apple-btn-filled" (click)="exportReport()">
-        <span class="material-symbols-outlined icon">download</span>
-        Export
-      </button>
+      <div style="position: relative;">
+        <button class="apple-btn-filled" (click)="toggleExportDropdown()" [disabled]="isExporting()">
+          <span class="material-symbols-outlined icon">download</span>
+          {{ isExporting() ? 'Exporting...' : 'Export' }}
+        </button>
+        @if (isExportDropdownOpen()) {
+        <!-- Click away overlay -->
+        <div class="popover-backdrop" (click)="closeExportDropdown()" style="position: fixed; inset: 0; z-index: 40; background: transparent;"></div>
+        <div class="apple-dropdown" style="top: 48px; right: 0; min-width: 200px; z-index: 50;">
+          <div class="dropdown-header" style="padding: 8px 16px; font-size: 12px; font-weight: 600; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px;">Orders</div>
+          <button class="dropdown-item" (click)="exportReport('orders', 'csv')">Download CSV</button>
+          <button class="dropdown-item" (click)="exportReport('orders', 'pdf')">Download PDF</button>
+          
+          <div class="dropdown-divider" style="height: 1px; background: #e5e5ea; margin: 4px 0;"></div>
+          <div class="dropdown-header" style="padding: 8px 16px; font-size: 12px; font-weight: 600; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px;">Products</div>
+          <button class="dropdown-item" (click)="exportReport('products', 'csv')">Download CSV</button>
+          <button class="dropdown-item" (click)="exportReport('products', 'pdf')">Download PDF</button>
+
+          <div class="dropdown-divider" style="height: 1px; background: #e5e5ea; margin: 4px 0;"></div>
+          <div class="dropdown-header" style="padding: 8px 16px; font-size: 12px; font-weight: 600; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px;">Financial Summary</div>
+          <button class="dropdown-item" (click)="exportReport('financial', 'csv')">Download CSV</button>
+          <button class="dropdown-item" (click)="exportReport('financial', 'pdf')">Download PDF</button>
+        </div>
+        }
+      </div>
     </div>
   </header>
 

@@ -40,6 +40,11 @@ export class MembersComponent implements OnInit {
     expiryDate: this.getDefaultExpiryDate()
   };
 
+  isChangeRoleModalOpen = signal(false);
+  selectedMemberToAssign = signal<any>(null);
+  selectedRoleIdToAssign = signal<string>('');
+  isAssigningRole = signal(false);
+
   getDefaultExpiryDate(): string {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -136,49 +141,47 @@ export class MembersComponent implements OnInit {
     });
   }
 
-  removeMember(memberId: string) {
-    this.confirmDialog.open({
+  async removeMember(memberId: string) {
+    const confirmed = await this.confirmDialog.open({
       title: 'Remove Member',
       message: 'Are you sure you want to remove this member?',
       confirmLabel: 'Remove',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
+    });
+    if (!confirmed) return;
 
-      this.membersService.removeMember(memberId).subscribe({
-        next: () => {
-          this.toast.success('Member removed successfully!');
-          const org = this.activeOrg();
-          if (org) this.loadMembers(org.id);
-        },
-        error: (error: any) => {
-          console.error('Error removing member', error);
-          this.toast.error('Failed to remove member.');
-        }
-      });
+    this.membersService.removeMember(memberId).subscribe({
+      next: () => {
+        this.toast.success('Member removed successfully!');
+        const org = this.activeOrg();
+        if (org) this.loadMembers(org.id);
+      },
+      error: (error: any) => {
+        console.error('Error removing member', error);
+        this.toast.error('Failed to remove member.');
+      }
     });
   }
 
-  revokeInvitation(invitationId: string) {
-    this.confirmDialog.open({
+  async revokeInvitation(invitationId: string) {
+    const confirmed = await this.confirmDialog.open({
       title: 'Revoke Invitation',
       message: 'Are you sure you want to revoke this invitation?',
       confirmLabel: 'Revoke',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
+    });
+    if (!confirmed) return;
 
-      this.membersService.revokeInvitation(invitationId).subscribe({
-        next: () => {
-          this.toast.success('Invitation revoked successfully!');
-          const org = this.activeOrg();
-          if (org) this.loadInvitations(org.id);
-        },
-        error: (error: any) => {
-          console.error('Error revoking invitation', error);
-          this.toast.error('Failed to revoke invitation.');
-        }
-      });
+    this.membersService.revokeInvitation(invitationId).subscribe({
+      next: () => {
+        this.toast.success('Invitation revoked successfully!');
+        const org = this.activeOrg();
+        if (org) this.loadInvitations(org.id);
+      },
+      error: (error: any) => {
+        console.error('Error revoking invitation', error);
+        this.toast.error('Failed to revoke invitation.');
+      }
     });
   }
 
@@ -194,40 +197,46 @@ export class MembersComponent implements OnInit {
     this.isHelpOpen.set(false);
   }
 
+  getRoleIdByName(name: string | undefined): string {
+    if (!name) return '';
+    const role = this.roles().find(r => r.name === name);
+    return role ? role.id : '';
+  }
+
   getStatusText(status: number | string): string {
     if (typeof status === 'string') return status;
     switch(status) {
       case 0: return 'Pending';
       case 1: return 'Accepted';
-      case 2: return 'Expired';
-      case 3: return 'Revoked';
+      case 2: return 'Rejected';
+      case 3: return 'Expired';
+      case 4: return 'Revoked';
       default: return 'Unknown';
     }
   }
 
-  changeOwner(memberId: string) {
+  async changeOwner(memberId: string) {
     const org = this.activeOrg();
     if (!org) return;
 
-    this.confirmDialog.open({
+    const confirmed = await this.confirmDialog.open({
       title: 'Transfer Ownership',
       message: 'Are you sure you want to transfer ownership to this member? You will lose Owner privileges.',
       confirmLabel: 'Transfer',
       isDestructive: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
+    });
+    if (!confirmed) return;
 
-      this.membersService.changeOrganizationOwner(org.id, memberId).subscribe({
-        next: () => {
-          this.toast.success('Ownership transferred successfully! Please login again to refresh permissions.');
-          this.authService.clearSession();
-          window.location.href = '/login';
-        },
-        error: (err: any) => {
-          console.error(err);
-          this.toast.error('Error transferring ownership.');
-        }
-      });
+    this.membersService.changeOrganizationOwner(org.id, memberId).subscribe({
+      next: () => {
+        this.toast.success('Ownership transferred successfully! Please login again to refresh permissions.');
+        this.authService.clearSession();
+        window.location.href = '/auth/login';
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.toast.error('Error transferring ownership.');
+      }
     });
   }
 
@@ -277,17 +286,37 @@ export class MembersComponent implements OnInit {
     return `conic-gradient(${gradientParts.join(', ')})`;
   }
 
-  assignRoleToMember(memberId: string, roleId: string) {
-    if (!roleId) return;
-    this.membersService.assignRoleToMember(memberId, roleId).subscribe({
+  openChangeRoleModal(member: any) {
+    this.selectedMemberToAssign.set(member);
+    const currentRoleId = this.getRoleIdByName(member.roles?.[0]);
+    this.selectedRoleIdToAssign.set(currentRoleId || '');
+    this.isChangeRoleModalOpen.set(true);
+  }
+
+  closeChangeRoleModal() {
+    this.isChangeRoleModalOpen.set(false);
+    this.selectedMemberToAssign.set(null);
+    this.selectedRoleIdToAssign.set('');
+  }
+
+  confirmChangeRole() {
+    const member = this.selectedMemberToAssign();
+    const roleId = this.selectedRoleIdToAssign();
+    if (!member || !roleId) return;
+
+    this.isAssigningRole.set(true);
+    this.membersService.assignRoleToMember(member.id, roleId).subscribe({
       next: () => {
         this.toast.success('Role assigned successfully.');
         const org = this.activeOrg();
         if (org) this.loadMembers(org.id);
+        this.isAssigningRole.set(false);
+        this.closeChangeRoleModal();
       },
       error: (err: any) => {
         console.error('Error assigning role', err);
         this.toast.error('Failed to assign role.');
+        this.isAssigningRole.set(false);
       }
     });
   }

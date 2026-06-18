@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrganizationService } from './organization.service';
@@ -23,15 +23,45 @@ export class Organizations implements OnInit {
   stats = {
     total: '0',
     pending: '0',
-    suspended: '0'
+    rejected: '0'
   };
 
   organizations = signal<any[]>([]);
 
+  // Filtering
+  searchQuery = signal('');
+  statusFilter = signal('All');
+
+  filteredOrganizations = computed(() => {
+    const query = this.searchQuery().toLowerCase();
+    const status = this.statusFilter();
+    
+    return this.organizations().filter(org => {
+      const matchesSearch = org.name.toLowerCase().includes(query) || org.email.toLowerCase().includes(query);
+      const matchesStatus = status === 'All' || org.status === status;
+      return matchesSearch && matchesStatus;
+    });
+  });
+
+  // Chart Data (Status Distribution)
+  chartData = computed(() => {
+    const orgs = this.organizations();
+    const total = orgs.length || 1; // Prevent div by 0
+    
+    const approved = orgs.filter(o => o.statusValue === 1).length;
+    const pending = orgs.filter(o => o.statusValue === 0).length;
+    const rejected = orgs.filter(o => o.statusValue === 2 || o.statusValue === 3).length;
+
+    return {
+      approved: { count: approved, percent: Math.round((approved / total) * 100) },
+      pending: { count: pending, percent: Math.round((pending / total) * 100) },
+      rejected: { count: rejected, percent: Math.round((rejected / total) * 100) },
+    };
+  });
+
   // New state for approve/reject flow
   rejectionReason = signal('');
   isProcessing = signal(false);
-  actionResult = signal<{type: 'success' | 'error', message: string} | null>(null);
 
   ngOnInit() {
     this.loadOrganizations();
@@ -47,7 +77,7 @@ export class Organizations implements OnInit {
         const processed = items.map((org: any) => {
           const statusMap = ['Pending', 'Approved', 'Rejected', 'Suspended'];
           const typeMap = ['Farm', 'Restaurant', 'Factory', 'Tradesman'];
-          
+
           const statusStr = statusMap[org.organizationStatus] || 'Unknown';
           let statusClass = 'bg-slate-100 text-slate-600';
           if (org.organizationStatus === 0) statusClass = 'bg-amber-100 text-amber-700'; // Pending
@@ -65,7 +95,7 @@ export class Organizations implements OnInit {
             statusClass: statusClass,
             initial: (org.name ? org.name.charAt(0) : '?').toUpperCase(),
             bgClass: 'bg-emerald-100 text-emerald-700',
-            date: 'N/A', // Update if API returns created date
+            date: org.createdAt ? new Date(org.createdAt).toLocaleDateString() : 'N/A',
             details: {
               acreage: 'N/A',
               crop: 'N/A',
@@ -78,13 +108,14 @@ export class Organizations implements OnInit {
 
         this.stats.total = this.organizations().length.toString();
         this.stats.pending = this.organizations().filter(org => org.statusValue === 0).length.toString();
-        this.stats.suspended = this.organizations().filter(org => org.statusValue === 3).length.toString();
+        this.stats.rejected = this.organizations().filter(org => org.statusValue === 2).length.toString();
 
         this.isLoading.set(false);
 
       },
       error: (error: any) => {
         console.error('Error fetching organizations', error);
+        this.toast.error('Failed to load organizations.');
         this.isLoading.set(false);
       }
     });
@@ -94,63 +125,59 @@ export class Organizations implements OnInit {
     this.selectedOrg = org;
     this.isDrawerOpen = true;
     this.rejectionReason.set('');
-    this.actionResult.set(null);
   }
 
   closeDetails() {
     this.isDrawerOpen = false;
     this.selectedOrg = null;
     this.rejectionReason.set('');
-    this.actionResult.set(null);
   }
 
   approveOrg() {
     if (!this.selectedOrg) return;
-    
+
     this.isProcessing.set(true);
-    this.actionResult.set(null);
 
     this.orgService.approveOrganization(this.selectedOrg.id).subscribe({
       next: () => {
-        this.actionResult.set({ type: 'success', message: `Approved ${this.selectedOrg.name} successfully.` });
+        this.toast.success(`Approved ${this.selectedOrg.name} successfully.`);
         this.loadOrganizations();
         setTimeout(() => {
           this.isProcessing.set(false);
           this.closeDetails();
-        }, 1500);
+        }, 500);
       },
       error: (err: any) => {
         console.error(err);
         this.isProcessing.set(false);
-        this.actionResult.set({ type: 'error', message: 'Error approving organization.' });
+        this.toast.error('Error approving organization.');
       }
     });
   }
 
   rejectOrg() {
     if (!this.selectedOrg) return;
-    
+
     if (!this.rejectionReason().trim()) {
-      this.actionResult.set({ type: 'error', message: 'Rejection reason is required.' });
+      this.toast.error('Rejection reason is required.');
       return;
     }
 
     this.isProcessing.set(true);
-    this.actionResult.set(null);
 
     this.orgService.rejectOrganization(this.selectedOrg.id, this.rejectionReason()).subscribe({
       next: () => {
-        this.actionResult.set({ type: 'success', message: `Rejected ${this.selectedOrg.name} successfully.` });
+        this.toast.success(`Rejected ${this.selectedOrg.name} successfully.`);
         this.loadOrganizations();
         setTimeout(() => {
           this.isProcessing.set(false);
           this.closeDetails();
-        }, 1500);
+        }, 500);
       },
       error: (err: any) => {
         console.error(err);
         this.isProcessing.set(false);
-        this.actionResult.set({ type: 'error', message: 'Error rejecting organization.' });
+        this.toast.error('Error rejecting organization.');
       }
     });
   }
