@@ -81,8 +81,17 @@ export class Auctions implements OnInit {
             progressClass = 'text-slate-500 bg-slate-500';
           }
 
+          // Resolve image URL
+          let resolvedImage = lot.image || lot.imageUrl || lot.picture || '';
+          if (resolvedImage && !resolvedImage.startsWith('http')) {
+            resolvedImage = resolvedImage.startsWith('/')
+              ? `https://root2route.runasp.net${resolvedImage}`
+              : `https://root2route.runasp.net/${resolvedImage}`;
+          }
+
           return {
             ...lot,
+            image: resolvedImage,
             title: lot.title || lot.productName || 'Unnamed Lot',
             currentBid: lot.currentHighestBid > 0 ? lot.currentHighestBid : lot.startPrice || 0,
             timeLeft: timeLeftStr,

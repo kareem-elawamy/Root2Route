@@ -142,7 +142,14 @@ export class ProductsComponent implements OnInit {
           products = data.items;
         }
 
-        this.allProducts = products.map((p: any): Product => ({
+        this.allProducts = products.map((p: any): Product => {
+          let imageUrl = p.imageUrl || (p.images && p.images.length > 0 ? p.images[0] : '');
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = imageUrl.startsWith('/')
+              ? `https://root2route.runasp.net${imageUrl}`
+              : `https://root2route.runasp.net/${imageUrl}`;
+          }
+          return {
           id:        p.id,
           name:      p.name      || 'Unnamed Product',
           sku:       p.sku || p.barcode || 'N/A',
@@ -151,9 +158,10 @@ export class ProductsComponent implements OnInit {
           stock:     p.stockQuantity ?? p.stock ?? 0,
           dateAdded: p.dateAdded || p.createdOn || new Date().toLocaleDateString(),
           status:    this.mapStatus(p.status),
-          imageUrl:  p.imageUrl  || (p.images && p.images.length > 0 ? p.images[0] : ''),
+          imageUrl:  imageUrl,
           originalData: p
-        }));
+          };
+        });
         
         this.filterProducts();
       },

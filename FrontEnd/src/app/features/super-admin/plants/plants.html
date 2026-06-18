@@ -76,7 +76,7 @@
                   <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden {{ plant.bgClass }}">
                       @if (plant.imageUrl) {
-                        <img [src]="'https://root2route.runasp.net' + plant.imageUrl" alt="{{plant.name}}" class="w-full h-full object-cover">
+                        <img [src]="plant.imageUrl" alt="{{plant.name}}" class="w-full h-full object-cover">
                       } @else {
                         {{ plant.initial }}
                       }

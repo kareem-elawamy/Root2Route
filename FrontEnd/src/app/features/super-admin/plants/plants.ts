@@ -94,8 +94,15 @@ export class Plants implements OnInit {
         const items = Array.isArray(rawData) ? rawData : [];
 
         const processed = items.map((plant: any) => {
+          let imageUrl = plant.imageUrl || '';
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = imageUrl.startsWith('/')
+              ? `https://root2route.runasp.net${imageUrl}`
+              : `https://root2route.runasp.net/${imageUrl}`;
+          }
           return {
             ...plant,
+            imageUrl,
             initial: (plant.name ? plant.name.charAt(0) : '?').toUpperCase(),
             bgClass: 'bg-emerald-100 text-emerald-700'
           };

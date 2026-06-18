@@ -26,6 +26,7 @@
               }
             ],
             "styles": [
+              "node_modules/@kareem_elawamy/ultra-alert/dist/ultra-alert.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "src/styles.css"
             ]
