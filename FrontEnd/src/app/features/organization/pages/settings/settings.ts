@@ -75,7 +75,6 @@ export class SettingsComponent implements OnInit {
     const formVals = this.settingsForm.value;
     
     const formData = new FormData();
-    formData.append('OrganizationId', org.id);
     formData.append('Name', formVals.name);
     formData.append('Description', formVals.description || '');
     formData.append('Address', formVals.address || '');
@@ -87,7 +86,7 @@ export class SettingsComponent implements OnInit {
       formData.append('Logo', this.selectedLogoFile);
     }
 
-    this.orgApi.updateOrganization(formData).subscribe({
+    this.orgApi.updateOrganization(org.id, formData).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.toast.success('Settings updated successfully!');
