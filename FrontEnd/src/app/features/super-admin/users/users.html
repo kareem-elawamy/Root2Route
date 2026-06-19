@@ -72,6 +72,10 @@
       <button class="chip" [class.active]="filterStatus() === 'all'" (click)="onFilterChange('all')">All</button>
       <button class="chip" [class.active]="filterStatus() === 'active'" (click)="onFilterChange('active')">Active</button>
       <button class="chip" [class.active]="filterStatus() === 'blocked'" (click)="onFilterChange('blocked')">Blocked</button>
+      <button class="chip" style="background: #10b981; color: white; border-color: #10b981;" (click)="exportCsv()">
+        <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 4px;">download</span>
+        Export
+      </button>
     </div>
   </div>
 

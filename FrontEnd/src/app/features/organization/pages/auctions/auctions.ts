@@ -323,4 +323,83 @@ export class AuctionsComponent implements OnInit {
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
   }
+
+  // ── Bid History Modal ──
+  isBidHistoryOpen = signal(false);
+  bidHistoryAuction = signal<any>(null);
+  bidHistoryList = signal<any[]>([]);
+  isBidsLoading = signal(false);
+
+  viewBids(auction: any): void {
+    this.bidHistoryAuction.set(auction);
+    this.isBidsLoading.set(true);
+    this.isBidHistoryOpen.set(true);
+
+    this.auctionService.getAuctionBids(auction.id).subscribe({
+      next: (res: any) => {
+        const data = res.data || res.items || res || [];
+        this.bidHistoryList.set(Array.isArray(data) ? data : []);
+        this.isBidsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading bids', err);
+        this.bidHistoryList.set([]);
+        this.isBidsLoading.set(false);
+        this.toast.error('Failed to load bid history.');
+      }
+    });
+  }
+
+  closeBidHistory(): void {
+    this.isBidHistoryOpen.set(false);
+    this.bidHistoryAuction.set(null);
+    this.bidHistoryList.set([]);
+  }
+
+  // ── Edit Auction Modal ──
+  isEditModalOpen = signal(false);
+  editingAuction = signal<any>(null);
+  isEditingAuction = signal(false);
+
+  openEditModal(auction: any): void {
+    this.editingAuction.set({ ...auction });
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+    this.editingAuction.set(null);
+  }
+
+  submitEditAuction(event: Event): void {
+    event.preventDefault();
+    const auction = this.editingAuction();
+    if (!auction) return;
+
+    const form = event.target as HTMLFormElement;
+    const payload = {
+      title: (form.elements.namedItem('editTitle') as HTMLInputElement).value,
+      startDate: (form.elements.namedItem('editStartDate') as HTMLInputElement).value,
+      endDate: (form.elements.namedItem('editEndDate') as HTMLInputElement).value,
+      startPrice: parseFloat((form.elements.namedItem('editStartPrice') as HTMLInputElement).value),
+      minimumBidIncrement: parseFloat((form.elements.namedItem('editMinBid') as HTMLInputElement).value),
+      reservePrice: parseFloat((form.elements.namedItem('editReserve') as HTMLInputElement).value) || null
+    };
+
+    this.isEditingAuction.set(true);
+    this.auctionService.updateAuction(auction.id, payload).subscribe({
+      next: () => {
+        this.isEditingAuction.set(false);
+        this.toast.success('Auction updated successfully!');
+        this.closeEditModal();
+        this.loadAuctions();
+      },
+      error: (err) => {
+        this.isEditingAuction.set(false);
+        console.error(err);
+        this.toast.error('Error updating auction.');
+      }
+    });
+  }
 }
+

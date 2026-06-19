@@ -7,6 +7,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
+vi.mock('@kareem_elawamy/ultra-alert', () => ({
+  UltraAlert: {
+    toast: vi.fn().mockResolvedValue({})
+  }
+}));
+
 describe('ChatComponent', () => {
   let component: ChatComponent;
   let fixture: ComponentFixture<ChatComponent>;

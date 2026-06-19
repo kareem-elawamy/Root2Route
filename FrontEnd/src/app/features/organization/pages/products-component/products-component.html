@@ -182,7 +182,8 @@
               <div class="apple-dropdown action-dropdown">
                 @if (auth.hasPermission('Permissions.Market.EditProduct')) {
                 <button class="dropdown-item" (click)="openEditModal(product)">
-                  <span class="material-symbols-outlined icon">edit</span> Edit
+                  <span class="material-symbols-outlined icon">edit</span> 
+                  {{ product.status === 'Rejected' ? 'Edit & Resubmit' : 'Edit' }}
                 </button>
                 }
                 @if (auth.hasPermission('Permissions.Market.EditProduct') && auth.hasPermission('Permissions.Market.DeleteProduct')) {
@@ -197,6 +198,17 @@
               }
             </td>
           </tr>
+          <!-- Rejection Reason Banner -->
+          @if (product.status === 'Rejected' && product.rejectionReason) {
+          <tr>
+            <td colspan="7" style="padding: 0 24px 12px 24px; border: none;">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; font-size: 12px; color: #b91c1c;">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #ef4444;">error</span>
+                <strong>Rejection Reason:</strong> {{ product.rejectionReason }}
+              </div>
+            </td>
+          </tr>
+          }
           }
 
           @empty {

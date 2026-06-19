@@ -19,6 +19,7 @@ export interface Product {
   dateAdded: string;
   status: string;
   imageUrl: string;
+  rejectionReason?: string;
   originalData?: any;
 }
 
@@ -159,6 +160,7 @@ export class ProductsComponent implements OnInit {
           dateAdded: p.dateAdded || p.createdOn || new Date().toLocaleDateString(),
           status:    this.mapStatus(p.status),
           imageUrl:  imageUrl,
+          rejectionReason: p.rejectionReason || null,
           originalData: p
           };
         });

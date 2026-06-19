@@ -71,6 +71,29 @@
     </div>
   </header>
 
+  <!-- Organization Status Banner -->
+  @if (activeOrg()?.organizationStatus === 0) {
+  <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; margin-bottom: 24px; background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: 16px;">
+    <span class="material-symbols-outlined" style="font-size: 24px; color: #d97706;">schedule</span>
+    <div style="flex: 1;">
+      <p style="margin: 0; font-weight: 700; font-size: 14px; color: #92400e;">Organization Under Review</p>
+      <p style="margin: 4px 0 0; font-size: 12px; color: #a16207;">Your organization is being reviewed by the admin. You cannot add products or create auctions until it's approved.</p>
+    </div>
+  </div>
+  }
+  @if (activeOrg()?.organizationStatus === 2) {
+  <div style="display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; margin-bottom: 24px; background: linear-gradient(135deg, #fef2f2, #fecaca); border: 1px solid #ef4444; border-radius: 16px;">
+    <span class="material-symbols-outlined" style="font-size: 24px; color: #dc2626;">cancel</span>
+    <div style="flex: 1;">
+      <p style="margin: 0; font-weight: 700; font-size: 14px; color: #991b1b;">Organization Rejected</p>
+      @if (activeOrg()?.rejectionReason) {
+      <p style="margin: 4px 0 0; font-size: 12px; color: #b91c1c;"><strong>Reason:</strong> {{ activeOrg()?.rejectionReason }}</p>
+      }
+      <p style="margin: 4px 0 0; font-size: 12px; color: #b91c1c;">Please update your organization details and resubmit. Go to <a routerLink="/company-dashboard/settings" style="color: #dc2626; font-weight: 700; text-decoration: underline;">Settings</a> to make changes.</p>
+    </div>
+  </div>
+  }
+
   <!-- KPI Metrics Grid -->
   <div class="kpi-grid">
     @for (metric of metrics(); track metric.title) {

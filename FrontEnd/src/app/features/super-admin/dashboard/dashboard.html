@@ -19,45 +19,45 @@
       <p class="stat-value">${{ overviewStats().platformFees }}</p>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" style="cursor: pointer" routerLink="/admin-dashboard/organizations">
       <div class="stat-icon-bg"><span class="material-symbols-outlined">domain_add</span></div>
       <p class="stat-label">Pending Organizations</p>
       <p class="stat-value">{{ overviewStats().pendingOrganizations }}</p>
     </div>
   </div>
 
-  <!-- Financials (Placeholder for chart) -->
-  <div class="data-section mt-8">
-    <div class="data-header">
-      <h3 class="data-title">Revenue & Fees Trend</h3>
-    </div>
-    <div class="bg-surface-container-lowest p-8 rounded-2xl border border-slate-200">
-      @if (financials().length === 0) {
-      <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-        <span class="material-symbols-outlined text-4xl mb-2 opacity-50">bar_chart</span>
-        <p class="font-medium">No financial data available yet.</p>
-      </div>
-      } @else {
-      <!-- Fallback list until chart is fully implemented in Sprint 3 -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        @for (fin of financials(); track fin.month) {
-        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-          <p class="text-xs font-bold text-slate-500 uppercase">{{ fin.month }}</p>
-          <p class="text-lg font-black text-emerald-700 mt-1">${{ fin.platformFees }}</p>
-          <p class="text-xs text-slate-400">Gross: ${{ fin.grossRevenue }}</p>
+  <!-- Revenue & Fees Chart -->
+  <div class="mt-8">
+    @if (financials().length === 0) {
+      <div class="data-section">
+        <div class="data-header">
+          <h3 class="data-title">Revenue & Fees Trend</h3>
         </div>
-        }
+        <div class="bg-surface-container-lowest p-8 rounded-2xl border border-slate-200">
+          <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">bar_chart</span>
+            <p class="font-medium">No financial data available yet.</p>
+          </div>
+        </div>
       </div>
-      }
-    </div>
+    } @else {
+      <app-stat-chart
+        chartTitle="Revenue & Fees Trend"
+        chartType="line"
+        [chartLabels]="revenueChartLabels()"
+        [chartDatasets]="revenueChartDatasets()"
+        chartHeight="300px"
+      />
+    }
   </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
   <!-- Pending Organizations -->
   <div class="data-section">
-    <div class="data-header">
+    <div class="data-header" style="display: flex; align-items: center; justify-content: space-between;">
       <h3 class="data-title">Pending Organization Approvals</h3>
+      <a routerLink="/admin-dashboard/organizations" class="text-xs font-bold hover:underline" style="color: var(--admin-accent)">View All →</a>
     </div>
     <div class="table-container">
       @if (isLoading()) {
@@ -102,8 +102,9 @@
 
   <!-- Pending Products -->
   <div class="data-section">
-    <div class="data-header">
+    <div class="data-header" style="display: flex; align-items: center; justify-content: space-between;">
       <h3 class="data-title">Pending Products</h3>
+      <a routerLink="/admin-dashboard/products" class="text-xs font-bold hover:underline" style="color: var(--admin-accent)">View All →</a>
     </div>
     <div class="table-container">
       @if (isLoading()) {
@@ -142,6 +143,86 @@
         </tbody>
       </table>
       }
+    </div>
+  </div>
+</div>
+
+<!-- ML Insights Section -->
+<div class="dashboard-container" style="margin-top: 0;">
+  <div class="data-section mt-8">
+    <div class="data-header">
+      <h3 class="data-title">🤖 ML / AI Insights</h3>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+    <!-- Top Diseases -->
+    <div class="data-section">
+      <div class="data-header">
+        <h3 class="data-title" style="font-size: 14px;">Top Detected Diseases</h3>
+      </div>
+      <div class="table-container">
+        @if (topDiseases().length === 0) {
+          <div style="padding: 32px; text-align: center; color: #94a3b8;">
+            <span class="material-symbols-outlined" style="font-size: 32px; opacity: 0.4;">bug_report</span>
+            <p style="margin: 8px 0 0; font-size: 13px;">No disease data yet.</p>
+          </div>
+        } @else {
+          @for (disease of topDiseases(); track disease.name) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+              <span style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ disease.name }}</span>
+              <span style="font-size: 12px; font-weight: 800; color: #dc2626; background: #fef2f2; padding: 2px 10px; border-radius: 12px;">{{ disease.count }}</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Accuracy Trend -->
+    <div class="data-section">
+      <div class="data-header">
+        <h3 class="data-title" style="font-size: 14px;">ML Accuracy Trend (14d)</h3>
+      </div>
+      <div class="table-container">
+        @if (accuracyTrend().length === 0) {
+          <div style="padding: 32px; text-align: center; color: #94a3b8;">
+            <span class="material-symbols-outlined" style="font-size: 32px; opacity: 0.4;">monitoring</span>
+            <p style="margin: 8px 0 0; font-size: 13px;">No accuracy data yet.</p>
+          </div>
+        } @else {
+          @for (point of accuracyTrend(); track point.date) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #f1f5f9;">
+              <span style="font-size: 12px; color: #64748b;">{{ point.date }}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #059669;">{{ point.accuracy }}%</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Disease Heatmap -->
+    <div class="data-section">
+      <div class="data-header">
+        <h3 class="data-title" style="font-size: 14px;">Disease Heatmap (Regions)</h3>
+      </div>
+      <div class="table-container">
+        @if (diseaseHeatmap().length === 0) {
+          <div style="padding: 32px; text-align: center; color: #94a3b8;">
+            <span class="material-symbols-outlined" style="font-size: 32px; opacity: 0.4;">map</span>
+            <p style="margin: 8px 0 0; font-size: 13px;">No heatmap data yet.</p>
+          </div>
+        } @else {
+          @for (region of diseaseHeatmap(); track region.region) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #f1f5f9;">
+              <div>
+                <span style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ region.region }}</span>
+                <span style="font-size: 11px; color: #94a3b8; margin-left: 8px;">{{ region.diseaseName }}</span>
+              </div>
+              <span style="font-size: 12px; font-weight: 700; color: #f59e0b;">{{ region.count }} cases</span>
+            </div>
+          }
+        }
+      </div>
     </div>
   </div>
 </div>

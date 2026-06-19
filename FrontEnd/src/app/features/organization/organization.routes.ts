@@ -96,4 +96,11 @@ export const organizationRoutes: Routes = [
         (m) => m.SettingsComponent
       ),
    },
+   {
+     path: 'plant-analysis',
+     loadComponent: () =>
+       import('./pages/plant-analysis/plant-analysis').then(
+         (m) => m.PlantAnalysisComponent
+       ),
+   },
 ];

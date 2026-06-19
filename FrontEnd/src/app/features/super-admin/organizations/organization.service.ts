@@ -37,7 +37,12 @@ export class OrganizationService {
   }
 
   // Update an existing organization
-  updateOrganization(data: FormData): Observable<any> {
-    return this.http.put(`${this.baseUrl}`, data);
+  updateOrganization(id: string, data: FormData): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, data);
+  }
+
+  // Get organization statistics (member count, product count, etc.)
+  getOrgStatistics(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${id}/statistics`);
   }
 }

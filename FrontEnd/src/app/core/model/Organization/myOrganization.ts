@@ -8,4 +8,6 @@ export interface MyOrganization {
   contactPhone?: string;
   logoPath?: string;
   type?: number;
+  organizationStatus?: number;
+  rejectionReason?: string;
 }

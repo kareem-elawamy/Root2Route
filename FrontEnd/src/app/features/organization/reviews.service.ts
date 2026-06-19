@@ -16,4 +16,8 @@ export class ReviewsService {
       .set('pageSize', pageSize.toString());
     return this.http.get(`${this.baseUrl}/organization/${orgId}`, { params });
   }
+
+  addReview(payload: { organizationId: string; orderId: string; rating: number; comment?: string }): Observable<any> {
+    return this.http.post(this.baseUrl, payload);
+  }
 }

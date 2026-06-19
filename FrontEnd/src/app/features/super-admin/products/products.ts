@@ -26,24 +26,32 @@ export class Products implements OnInit {
   searchQuery = signal('');
   statusFilter = signal('All');
 
+  // Review drawer
+  isReviewDrawerOpen = signal(false);
+  selectedProduct = signal<any>(null);
+  isStatusProcessing = signal(false);
+  productRejectionReason = signal('');
+
   filteredProducts = computed(() => {
-    const query = this.searchQuery().toLowerCase();
     const status = this.statusFilter();
     
+    // Pending, Approved, Rejected are handled server-side.
+    // Only apply client-side sub-filtering for sale-type filters.
     return this.products().filter(p => {
-      const matchesSearch = p.name?.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query) || p.id?.toLowerCase().includes(query);
-      const matchesStatus = status === 'All' 
-        || (status === 'Direct Sale' && p.isAvailableForDirectSale)
-        || (status === 'Auction' && p.isAvailableForAuction)
-        || (status === 'Inactive' && !p.isAvailableForDirectSale && !p.isAvailableForAuction);
-      return matchesSearch && matchesStatus;
+      if (status === 'Direct Sale') return p.isAvailableForDirectSale;
+      if (status === 'Auction') return p.isAvailableForAuction;
+      if (status === 'Inactive') return !p.isAvailableForDirectSale && !p.isAvailableForAuction;
+      return true; // 'All', 'Pending', 'Approved', 'Rejected' → already filtered server-side
     });
   });
   
   stats = {
     total: 0,
     lowStock: 0,
-    activeAuctions: 0
+    activeAuctions: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
   };
 
   chartData = computed(() => {
@@ -69,12 +77,29 @@ export class Products implements OnInit {
     };
   });
 
+  // Pagination
+  currentPage = signal(1);
+  totalPages = signal(1);
+  pageSize = 50;
+
   ngOnInit() {
     this.loadProducts();
   }
 
   loadProducts() {
-    this.productService.getAllProducts(1, 50).subscribe({
+    this.isLoading.set(true);
+
+    // Map frontend filter to backend status enum (0=Pending, 1=Approved, 2=Rejected)
+    let apiStatus: number | undefined = undefined;
+    const filter = this.statusFilter();
+    if (filter === 'Pending') apiStatus = 0;
+    else if (filter === 'Approved') apiStatus = 1;
+    else if (filter === 'Rejected') apiStatus = 2;
+    // 'All', 'Direct Sale', 'Auction', 'Inactive' → no server-side status filter
+
+    const searchTerm = this.searchQuery() || undefined;
+
+    this.productService.getAllProducts(this.currentPage(), this.pageSize, searchTerm, apiStatus).subscribe({
       next: (response: any) => {
         const data = response.data || response.items || response || [];
         const items = Array.isArray(data) ? data : [];
@@ -88,21 +113,38 @@ export class Products implements OnInit {
               : `https://root2route.runasp.net/${imageUrl}`;
           }
 
+          // Map actual product status (0=Pending, 1=Approved, 2=Rejected)
+          const statusValue = product.status ?? 0;
+          const statusMap: Record<number, {label: string, class: string}> = {
+            0: { label: 'Pending', class: 'bg-amber-100 text-amber-700' },
+            1: { label: 'Approved', class: 'bg-emerald-100 text-emerald-700' },
+            2: { label: 'Rejected', class: 'bg-rose-100 text-rose-700' }
+          };
+          const statusInfo = statusMap[statusValue] || statusMap[0];
+
           return {
             ...product,
             mainImageUrl: imageUrl,
             displayPrice: product.isAvailableForDirectSale ? product.directSalePrice : product.startBiddingPrice,
             priceLabel: product.isAvailableForDirectSale ? 'Direct Sale' : 'Auction Starting',
-            statusLabel: product.isAvailableForDirectSale || product.isAvailableForAuction ? 'Active' : 'Inactive',
-            statusClass: product.isAvailableForDirectSale || product.isAvailableForAuction ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'
+            statusValue: statusValue,
+            statusLabel: statusInfo.label,
+            statusClass: statusInfo.class
           };
         });
 
         this.products.set(processed);
 
-        this.stats.total = response.totalCount || this.products().length;
+        // Pagination
+        const totalCount = response.totalCount || response.total || this.products().length;
+        this.totalPages.set(Math.ceil(totalCount / this.pageSize) || 1);
+
+        this.stats.total = totalCount;
         this.stats.lowStock = this.products().filter((p: any) => p.stockQuantity < 10).length;
         this.stats.activeAuctions = this.products().filter((p: any) => p.isAvailableForAuction).length;
+        this.stats.pending = this.products().filter((p: any) => p.statusValue === 0).length;
+        this.stats.approved = this.products().filter((p: any) => p.statusValue === 1).length;
+        this.stats.rejected = this.products().filter((p: any) => p.statusValue === 2).length;
 
         this.isLoading.set(false);
 
@@ -113,6 +155,22 @@ export class Products implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onFilterChange() {
+    this.currentPage.set(1);
+    this.loadProducts();
+  }
+
+  onSearchChange() {
+    this.currentPage.set(1);
+    this.loadProducts();
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+    this.loadProducts();
   }
 
   async deleteProduct(product: any) {
@@ -251,6 +309,68 @@ export class Products implements OnInit {
         console.error(err);
         this.toast.error('Failed to update product.');
         this.isProcessing.set(false);
+      }
+    });
+  }
+
+  // ── Review Drawer ──
+  openReviewDrawer(product: any) {
+    this.selectedProduct.set(product);
+    this.productRejectionReason.set('');
+    this.isReviewDrawerOpen.set(true);
+  }
+
+  closeReviewDrawer() {
+    this.isReviewDrawerOpen.set(false);
+    this.selectedProduct.set(null);
+    this.productRejectionReason.set('');
+  }
+
+  approveProduct() {
+    const product = this.selectedProduct();
+    if (!product) return;
+
+    this.isStatusProcessing.set(true);
+    this.productService.changeStatus(product.id, 1).subscribe({
+      next: () => {
+        this.toast.success(`Product "${product.name}" approved successfully.`);
+        this.loadProducts();
+        setTimeout(() => {
+          this.isStatusProcessing.set(false);
+          this.closeReviewDrawer();
+        }, 500);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isStatusProcessing.set(false);
+        this.toast.error('Error approving product.');
+      }
+    });
+  }
+
+  rejectProduct() {
+    const product = this.selectedProduct();
+    if (!product) return;
+
+    if (!this.productRejectionReason().trim()) {
+      this.toast.error('Rejection reason is required.');
+      return;
+    }
+
+    this.isStatusProcessing.set(true);
+    this.productService.changeStatus(product.id, 2).subscribe({
+      next: () => {
+        this.toast.success(`Product "${product.name}" rejected.`);
+        this.loadProducts();
+        setTimeout(() => {
+          this.isStatusProcessing.set(false);
+          this.closeReviewDrawer();
+        }, 500);
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isStatusProcessing.set(false);
+        this.toast.error('Error rejecting product.');
       }
     });
   }

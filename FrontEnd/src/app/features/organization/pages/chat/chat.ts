@@ -174,4 +174,36 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  closeChatRoom() {
+    const room = this.activeRoom();
+    if (!room) return;
+    this.chatService.closeChat(room.id).subscribe({
+      next: () => {
+        this.toast.success('Chat room closed.');
+        this.activeRoom.set(null);
+        this.activeRoom$.next(null);
+        this.messages.set([]);
+        this.loadRooms();
+      },
+      error: (error: any) => {
+        console.error('Error closing chat room', error);
+        this.toast.error('Failed to close chat room.');
+      }
+    });
+  }
+
+  deleteMsg(messageId: string) {
+    this.chatService.deleteMessage(messageId).subscribe({
+      next: () => {
+        this.toast.success('Message deleted.');
+        const room = this.activeRoom();
+        if (room) this.loadHistory(room.id);
+      },
+      error: (error: any) => {
+        console.error('Error deleting message', error);
+        this.toast.error('Failed to delete message.');
+      }
+    });
+  }
 }

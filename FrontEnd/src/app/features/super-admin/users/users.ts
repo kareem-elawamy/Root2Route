@@ -147,4 +147,32 @@ export class Users implements OnInit {
   getUserInitial(user: any): string {
     return (user.fullName || user.email || '?').charAt(0).toUpperCase();
   }
+
+  exportCsv() {
+    const items = this.users();
+    if (!items.length) {
+      this.toast.error('No users to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Full Name', 'Email', 'Phone', 'Organizations', 'Joined', 'Status'];
+    const rows = items.map((u: any) => [
+      u.id || '',
+      `"${(u.fullName || '').replace(/"/g, '""')}"`,
+      u.email || '',
+      u.phoneNumber || '',
+      u.organizationCount || 0,
+      u.createdAt || '',
+      (u.isDeleted || u.isBlocked) ? 'Blocked' : 'Active'
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `users_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    this.toast.success('Users exported successfully.');
+  }
 }
