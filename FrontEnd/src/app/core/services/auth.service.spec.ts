@@ -3,6 +3,12 @@ import { AuthService } from './auth.service';
 import { OrgContextService } from './org-context.service';
 import { Router } from '@angular/router';
 
+vi.mock('@kareem_elawamy/ultra-alert', () => ({
+  UltraAlert: {
+    toast: vi.fn().mockResolvedValue({})
+  }
+}));
+
 describe('AuthService', () => {
   let service: AuthService;
   let routerSpy: { navigate: any };
