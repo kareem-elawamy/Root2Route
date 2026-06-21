@@ -1,22 +1,29 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaymentService } from '../../../core/services/payment.service';
+import { PaytabsService } from '../../../core/services/paytabs.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { StatChartComponent, ChartDataset } from '../../../shared/components/stat-chart/stat-chart.component';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, SkeletonComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, SkeletonComponent, PaginationComponent, StatChartComponent],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
 export class Transactions implements OnInit {
   private paymentService = inject(PaymentService);
+  private paytabsService = inject(PaytabsService);
   private toast = inject(ToastService);
 
+  // Tabs state
+  activeTab = signal<'ledger' | 'analytics'>('ledger');
+
+  // Ledger state
   payments = signal<any[]>([]);
   isLoading = signal(true);
   dateFrom = signal('');
@@ -29,8 +36,78 @@ export class Transactions implements OnInit {
 
   stats = signal({ totalVolume: 0, platformFees: 0, completed: 0, pending: 0 });
 
+  // Analytics state
+  isAnalyticsLoading = signal(false);
+  analyticsFrom = signal('');
+  analyticsTo = signal('');
+  analyticsData = signal<any>(null);
+
+  // Computeds for PayTabs analytics charts
+  chartLabels = computed(() => {
+    const data = this.analyticsData();
+    if (!data || !data.dailyBreakdown) return [];
+    return data.dailyBreakdown.map((item: any) => item.date);
+  });
+
+  chartDatasets = computed((): ChartDataset[] => {
+    const data = this.analyticsData();
+    if (!data || !data.dailyBreakdown) return [];
+    
+    // Revenue line dataset
+    return [
+      {
+        label: 'Gross Volume (EGP)',
+        data: data.dailyBreakdown.map((item: any) => item.revenue || 0),
+        borderColor: '#34d399',
+        backgroundColor: 'rgba(52, 211, 153, 0.08)',
+        fill: true,
+        tension: 0.4
+      }
+    ];
+  });
+
+  methodChartLabels = computed(() => {
+    const data = this.analyticsData();
+    if (!data || !data.paymentMethodBreakdown) return [];
+    return data.paymentMethodBreakdown.map((item: any) => item.method || 'Unknown');
+  });
+
+  methodChartDatasets = computed((): ChartDataset[] => {
+    const data = this.analyticsData();
+    if (!data || !data.paymentMethodBreakdown) return [];
+    
+    return [
+      {
+        label: 'Transactions Count',
+        data: data.paymentMethodBreakdown.map((item: any) => item.count || 0),
+        backgroundColor: [
+          'rgba(99, 102, 241, 0.6)', // Indigo
+          'rgba(52, 211, 153, 0.6)', // Green
+          'rgba(251, 191, 36, 0.6)', // Yellow
+          'rgba(239, 68, 68, 0.6)'    // Red
+        ],
+        borderColor: [
+          '#6366f1',
+          '#34d399',
+          '#fbbf24',
+          '#ef4444'
+        ],
+        borderWidth: 1
+      }
+    ];
+  });
+
   ngOnInit() {
     this.loadPayments();
+    
+    // Set default dates for analytics: past 30 days
+    const today = new Date();
+    const past30Days = new Date();
+    past30Days.setDate(today.getDate() - 30);
+    
+    this.analyticsTo.set(today.toISOString().slice(0, 10));
+    this.analyticsFrom.set(past30Days.toISOString().slice(0, 10));
+    this.loadAnalytics();
   }
 
   loadPayments() {
@@ -44,7 +121,7 @@ export class Transactions implements OnInit {
     ).subscribe({
       next: (response: any) => {
         const data = response.data || response;
-        const items = data.items || data.payments || (Array.isArray(data) ? data : []);
+        const items = data.data || data.items || data.payments || (Array.isArray(data) ? data : []);
         this.payments.set(items);
         this.totalCount.set(data.totalCount || items.length);
         this.totalPages.set(Math.ceil(this.totalCount() / this.pageSize) || 1);
@@ -62,6 +139,31 @@ export class Transactions implements OnInit {
       error: (err: any) => {
         console.error('Error loading payments', err);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadAnalytics() {
+    if (!this.analyticsFrom() || !this.analyticsTo()) return;
+
+    this.isAnalyticsLoading.set(true);
+    
+    // Convert to ISO-8601 start/end of day string representation
+    const fromDate = new Date(this.analyticsFrom());
+    fromDate.setHours(0, 0, 0, 0);
+    const toDate = new Date(this.analyticsTo());
+    toDate.setHours(23, 59, 59, 999);
+
+    this.paytabsService.getSuperAdminAnalytics(fromDate.toISOString(), toDate.toISOString()).subscribe({
+      next: (res: any) => {
+        const data = res.data || res;
+        this.analyticsData.set(data);
+        this.isAnalyticsLoading.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error loading analytics', err);
+        this.toast.error('Failed to load PayTabs analytics data.');
+        this.isAnalyticsLoading.set(false);
       }
     });
   }

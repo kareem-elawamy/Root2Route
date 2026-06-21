@@ -1,0 +1,125 @@
+<div class="p-6 max-w-6xl mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Wallet & Withdrawals</h1>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Wallet Balance Card -->
+    <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg col-span-1">
+      <h2 class="text-lg font-medium opacity-90">Available Balance</h2>
+      <p class="text-4xl font-bold mt-2">{{ activeOrg?.walletBalance || 0 | number:'1.2-2' }} EGP</p>
+      <p class="text-sm mt-4 opacity-80">This balance reflects your earnings after platform fees.</p>
+    </div>
+
+    <!-- Request Withdrawal Form -->
+    <div class="bg-white rounded-2xl p-6 shadow-md col-span-2 border border-gray-100">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Request Withdrawal</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Amount (EGP)</label>
+          <input type="number" [(ngModel)]="amountToWithdraw" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border" placeholder="e.g. 1000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+          <input type="text" [(ngModel)]="bankName" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border" placeholder="e.g. CIB">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+          <input type="text" [(ngModel)]="accountName" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border" placeholder="Name on account">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Account Number / IBAN</label>
+          <input type="text" [(ngModel)]="accountNumber" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border" placeholder="Account Number">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Swift Code (Optional)</label>
+          <input type="text" [(ngModel)]="swiftCode" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border" placeholder="SWIFT">
+        </div>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button 
+          (click)="requestWithdrawal()" 
+          [disabled]="isRequesting"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow transition disabled:opacity-50">
+          <span *ngIf="isRequesting">Processing...</span>
+          <span *ngIf="!isRequesting">Submit Request</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayTabs Analytics -->
+  <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100 mb-8" *ngIf="analyticsData">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">PayTabs Revenue Analytics (Last 30 Days)</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Total Volume</p>
+        <p class="text-2xl font-bold text-gray-800">{{ analyticsData.totalVolume | number:'1.2-2' }} EGP</p>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Successful TX</p>
+        <p class="text-2xl font-bold text-green-600">{{ analyticsData.successfulTransactions }}</p>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Failed TX</p>
+        <p class="text-2xl font-bold text-red-600">{{ analyticsData.failedTransactions }}</p>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Refunded TX</p>
+        <p class="text-2xl font-bold text-yellow-600">{{ analyticsData.refundedTransactions }}</p>
+      </div>
+    </div>
+    <div class="h-64">
+      <canvas baseChart
+              [data]="lineChartData"
+              [options]="lineChartOptions"
+              type="line">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- Withdrawals History -->
+  <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-100">
+      <h2 class="text-xl font-bold text-gray-800">Withdrawal History</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
+            <th class="p-4 border-b">ID</th>
+            <th class="p-4 border-b">Date</th>
+            <th class="p-4 border-b">Amount</th>
+            <th class="p-4 border-b">Bank</th>
+            <th class="p-4 border-b">Status</th>
+            <th class="p-4 border-b">Admin Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="isLoading">
+            <td colspan="6" class="p-8 text-center text-gray-500">Loading history...</td>
+          </tr>
+          <tr *ngIf="!isLoading && withdrawals.length === 0">
+            <td colspan="6" class="p-8 text-center text-gray-500">No withdrawal requests found.</td>
+          </tr>
+          <tr *ngFor="let w of withdrawals" class="hover:bg-gray-50 border-b border-gray-50">
+            <td class="p-4 text-sm text-gray-600">...{{ w.id.substring(w.id.length - 8) }}</td>
+            <td class="p-4 text-sm text-gray-600">{{ w.requestDate | date:'mediumDate' }}</td>
+            <td class="p-4 text-sm font-bold text-gray-800">{{ w.amount | number:'1.2-2' }} EGP</td>
+            <td class="p-4 text-sm text-gray-600">{{ w.bankName }}<br><span class="text-xs text-gray-400">{{ w.accountNumber }}</span></td>
+            <td class="p-4">
+              <span [ngClass]="{
+                'bg-yellow-100 text-yellow-800': w.status === 'Pending',
+                'bg-green-100 text-green-800': w.status === 'Approved' || w.status === 'Processed',
+                'bg-red-100 text-red-800': w.status === 'Rejected'
+              }" class="px-3 py-1 rounded-full text-xs font-bold uppercase">
+                {{ w.status }}
+              </span>
+            </td>
+            <td class="p-4 text-sm text-gray-500">{{ w.adminNote || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

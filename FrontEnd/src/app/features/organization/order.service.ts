@@ -18,9 +18,14 @@ export class OrderService {
     return this.http.get(`${this.baseUrl}/Received/${organizationId}`, { params });
   }
 
-  changeStatus(command: { orderId: string; status: string; currentUserId: string; note?: string }): Observable<any> {
+  changeStatus(orderId: string, newStatus: number, note?: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.put(`${this.baseUrl}/ChangeStatus`, command, { headers });
+    const body = { orderId, newStatus, note };
+    return this.http.put(`${this.baseUrl}/ChangeStatus`, body, { headers });
+  }
+
+  getOrderById(orderId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${orderId}`);
   }
 
   cancelOrder(orderId: string): Observable<any> {

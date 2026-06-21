@@ -66,6 +66,10 @@
         <span class="material-symbols-outlined nav-icon">receipt_long</span>
         @if (!sidebarCollapsed()) { <span class="nav-label">Transactions</span> }
       </a>
+      <a class="nav-item" routerLink="/admin-dashboard/withdrawals" routerLinkActive="active">
+        <span class="material-symbols-outlined nav-icon">account_balance_wallet</span>
+        @if (!sidebarCollapsed()) { <span class="nav-label">Withdrawals</span> }
+      </a>
 
       <a class="nav-item" routerLink="/admin-dashboard/reports" routerLinkActive="active">
         <span class="material-symbols-outlined nav-icon">analytics</span>

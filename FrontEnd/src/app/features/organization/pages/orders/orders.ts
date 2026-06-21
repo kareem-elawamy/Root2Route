@@ -29,6 +29,13 @@ export class OrdersComponent implements OnInit {
   isHelpOpen = signal(false);
   isLoading = signal(true);
 
+  // Drawer state
+  isDrawerOpen = signal(false);
+  selectedOrder = signal<any | null>(null);
+  selectedNewStatus = signal<number>(0);
+  statusNote = signal<string>('');
+  isUpdatingStatus = signal(false);
+
   stats = {
     total: 0,
     pending: 0,
@@ -108,8 +115,8 @@ export class OrdersComponent implements OnInit {
         this.allOrders = mappedItems;
 
         this.stats.total = items.length;
-        this.stats.pending = items.filter((o: any) => o.status === 'Pending' || o.status === 'Processing').length;
-        this.stats.completed = items.filter((o: any) => o.status === 'Completed' || o.status === 'Shipped').length;
+        this.stats.pending = items.filter((o: any) => o.status === 'Pending' || o.status === 'Processing' || o.status === 'Confirmed' || o.status === 'Shipped').length;
+        this.stats.completed = items.filter((o: any) => o.status === 'Completed' || o.status === 'Delivered').length;
         this.stats.cancelled = items.filter((o: any) => o.status === 'Cancelled').length;
 
         this.filterOrders();
@@ -125,12 +132,77 @@ export class OrdersComponent implements OnInit {
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       'Pending': 'status-pending',
+      'Confirmed': 'status-processing',
       'Processing': 'status-processing',
       'Shipped': 'status-shipped',
+      'Delivered': 'status-completed',
       'Completed': 'status-completed',
       'Cancelled': 'status-cancelled'
     };
     return map[status] ?? 'status-default';
+  }
+
+  getStatusNumber(status: string): number {
+    const map: Record<string, number> = {
+      'Pending': 0,
+      'Confirmed': 1,
+      'Shipped': 2,
+      'Delivered': 3,
+      'Cancelled': 4,
+      'Processing': 5
+    };
+    return map[status] ?? 0;
+  }
+
+  openDetail(order: any): void {
+    this.selectedOrder.set(order);
+    this.selectedNewStatus.set(this.getStatusNumber(order.status));
+    this.statusNote.set('');
+    this.isDrawerOpen.set(true);
+
+    this.orderService.getOrderById(order.id).subscribe({
+      next: (response: any) => {
+        const fullDetails = response.data || response;
+        if (fullDetails) {
+          this.selectedOrder.set({
+            ...fullDetails,
+            statusClass: this.getStatusClass(fullDetails.status)
+          });
+          this.selectedNewStatus.set(this.getStatusNumber(fullDetails.status));
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching full order details:', err);
+      }
+    });
+  }
+
+  closeDetail(): void {
+    this.isDrawerOpen.set(false);
+    this.selectedOrder.set(null);
+  }
+
+  updateStatus(): void {
+    const order = this.selectedOrder();
+    if (!order) return;
+
+    this.isUpdatingStatus.set(true);
+    this.orderService.changeStatus(order.id, this.selectedNewStatus(), this.statusNote()).subscribe({
+      next: (res) => {
+        this.toast.success('Order status updated successfully');
+        this.closeDetail();
+        const activeOrg = this.activeOrg();
+        if (activeOrg && activeOrg.id) {
+          this.loadOrders(activeOrg.id);
+        }
+        this.isUpdatingStatus.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to update status', err);
+        this.toast.error('Failed to update order status');
+        this.isUpdatingStatus.set(false);
+      }
+    });
   }
 
   toggleFilterDropdown(event: Event): void {
@@ -148,6 +220,8 @@ export class OrdersComponent implements OnInit {
     const filter = this.activeFilter();
     if (filter === 'All') {
       this.orders = [...this.allOrders];
+    } else if (filter === 'Completed') {
+      this.orders = this.allOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered');
     } else {
       this.orders = this.allOrders.filter(o => o.status === filter);
     }

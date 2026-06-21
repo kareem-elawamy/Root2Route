@@ -1,0 +1,225 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Withdrawal Requests</h1>
+      <p class="page-subtitle">Manage organization funds withdrawals and payouts</p>
+    </div>
+  </div>
+
+  <!-- Filters & Tabs -->
+  <div class="toolbar">
+    <div class="tabs-wrapper">
+      <button 
+        [class.active-tab]="filterStatus() === 'Pending'" 
+        (click)="filterStatus.set('Pending')" 
+        class="tab-btn">
+        Pending Requests ({{ pendingWithdrawals().length }})
+      </button>
+      <button 
+        [class.active-tab]="filterStatus() === 'Recent'" 
+        (click)="filterStatus.set('Recent')" 
+        class="tab-btn">
+        Recent Session Actions ({{ recentActions().length }})
+      </button>
+    </div>
+    <button class="refresh-btn" (click)="loadPending()" [disabled]="isLoading()">
+      <span class="material-symbols-outlined" [class.spin]="isLoading()">refresh</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  @if (isLoading()) {
+    <app-skeleton type="table" [rows]="5" [columns]="6"></app-skeleton>
+  } @else {
+    <!-- PENDING REQUESTS -->
+    @if (filterStatus() === 'Pending') {
+      @if (pendingWithdrawals().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">account_balance_wallet</span>
+          <h3>No Pending Withdrawals</h3>
+          <p>Organizations have not submitted any pending payout requests.</p>
+        </div>
+      } @else {
+        <div class="withdrawals-grid">
+          @for (w of pendingWithdrawals(); track w.id) {
+            <div class="withdrawal-card">
+              <div class="card-header">
+                <div class="org-identity">
+                  <div class="org-avatar">
+                    {{ w.organization?.name?.substring(0, 2) || 'OR' }}
+                  </div>
+                  <div>
+                    <h3 class="org-title">{{ w.organization?.name || 'Unknown Organization' }}</h3>
+                    <p class="request-date">Requested: {{ w.requestedAt | date:'medium' }}</p>
+                  </div>
+                </div>
+                <div class="amount-badge">
+                  {{ w.amount | number:'1.2-2' }} EGP
+                </div>
+              </div>
+
+              <div class="card-body">
+                <h4 class="details-section-title">Recipient Bank Details</h4>
+                <div class="bank-details-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Bank Name</span>
+                    <span class="detail-value">{{ w.bankName }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Account Name</span>
+                    <span class="detail-value">{{ w.accountName }}</span>
+                  </div>
+                  <div class="detail-item col-span-2">
+                    <span class="detail-label">Account Number / IBAN</span>
+                    <span class="detail-value highlight-value">{{ w.accountNumber }}</span>
+                  </div>
+                  @if (w.swiftCode) {
+                    <div class="detail-item">
+                      <span class="detail-label">SWIFT Code</span>
+                      <span class="detail-value">{{ w.swiftCode }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <button 
+                  (click)="openNoteModal(w, 'reject')" 
+                  [disabled]="isActioning()"
+                  class="btn-reject">
+                  <span class="material-symbols-outlined">close</span>
+                  Reject
+                </button>
+                <button 
+                  (click)="openNoteModal(w, 'approve')" 
+                  [disabled]="isActioning()"
+                  class="btn-approve">
+                  <span class="material-symbols-outlined">check</span>
+                  Approve Request
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- RECENT SESSION ACTIONS -->
+    @if (filterStatus() === 'Recent') {
+      @if (recentActions().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">history</span>
+          <h3>No Session Activity</h3>
+          <p>Actions taken in this admin session will appear here.</p>
+        </div>
+      } @else {
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Organization</th>
+                <th>Bank Info</th>
+                <th>Amount</th>
+                <th>Action Taken</th>
+                <th>Status</th>
+                <th>Admin Note</th>
+                <th>Payout Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (act of recentActions(); track act.id) {
+                <tr class="table-row">
+                  <td>
+                    <span class="font-bold text-slate-800">{{ act.organization?.name }}</span>
+                  </td>
+                  <td>
+                    <div class="text-xs text-slate-500">
+                      <strong>{{ act.bankName }}</strong><br>
+                      {{ act.accountNumber }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="font-bold">{{ act.amount | number:'1.2-2' }} EGP</span>
+                  </td>
+                  <td>
+                    <span class="text-xs text-slate-400">{{ act.actionDate | date:'shortTime' }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [ngClass]="{
+                      'status-approved': act.status === 'Approved',
+                      'status-rejected': act.status === 'Rejected',
+                      'status-completed': act.status === 'Processed'
+                    }">
+                      {{ act.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-sm italic text-slate-500">{{ act.adminNote || 'None' }}</span>
+                  </td>
+                  <td>
+                    @if (act.status === 'Approved') {
+                      <button 
+                        (click)="processWithdrawal(act)" 
+                        [disabled]="isActioning()"
+                        class="btn-process-payout">
+                        <span class="material-symbols-outlined">paid</span>
+                        Mark Paid
+                      </button>
+                    } @else if (act.status === 'Processed') {
+                      <span class="completed-text">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Completed
+                      </span>
+                    } @else {
+                      <span class="text-slate-400">-</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  }
+</div>
+
+<!-- Note Overlay Modal -->
+@if (showNoteModal()) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ actionType() === 'approve' ? 'Approve' : 'Reject' }} Withdrawal Request</h3>
+        <button class="close-modal-btn" (click)="closeNoteModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-instruction">
+          Enter an admin note or message for the organization (optional). This will be shown on their dashboard.
+        </p>
+        <div class="selected-summary">
+          <strong>Org:</strong> {{ selectedWithdrawal()?.organization?.name }} <br>
+          <strong>Amount:</strong> {{ selectedWithdrawal()?.amount }} EGP
+        </div>
+        <textarea 
+          [(ngModel)]="adminNote" 
+          placeholder="e.g. Approved. Payment transfer processed, should reach you in 2 business days..."
+          rows="4" 
+          class="modal-textarea">
+        </textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeNoteModal()">Cancel</button>
+        <button 
+          [class.btn-confirm-approve]="actionType() === 'approve'"
+          [class.btn-confirm-reject]="actionType() === 'reject'"
+          (click)="submitAction()" 
+          [disabled]="isActioning()">
+          Confirm {{ actionType() === 'approve' ? 'Approval' : 'Rejection' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

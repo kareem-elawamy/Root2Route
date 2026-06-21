@@ -103,4 +103,12 @@ export const organizationRoutes: Routes = [
          (m) => m.PlantAnalysisComponent
        ),
    },
+   {
+     path: 'wallet',
+     canActivate: [permissionGuard('Permissions.Organization.ManageSettings')],
+     loadComponent: () =>
+       import('./pages/wallet/wallet').then(
+         (m) => m.WalletComponent
+       ),
+   },
 ];

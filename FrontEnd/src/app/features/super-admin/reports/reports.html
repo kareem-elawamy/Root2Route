@@ -1,5 +1,5 @@
 <div class="flex flex-grow overflow-hidden p-8 gap-8 bg-surface">
-  <section class="w-80 flex flex-col gap-6 shrink-0">
+  <section class="w-80 flex flex-col gap-6 shrink-0 no-print">
     <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm flex flex-col gap-6 border border-outline-variant/10">
       <div>
         <h2 class="text-lg font-bold text-emerald-900 font-headline mb-1">Report Configuration</h2>
@@ -20,7 +20,7 @@
       </div>
       <div class="space-y-3">
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Report Type</label>
-        <select class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-emerald-500/20 appearance-none cursor-pointer">
+        <select class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-emerald-500/20 appearance-none cursor-pointer" [ngModel]="selectedReportType()" (ngModelChange)="selectedReportType.set($event)">
           @for (type of reportTypes; track type) {
             <option>{{ type }}</option>
           }
@@ -32,8 +32,10 @@
           <button class="flex-1 py-2 text-xs rounded-lg bg-white text-emerald-700 shadow-sm font-bold" (click)="exportCsv()">CSV</button>
         </div>
       </div>
-      <button class="w-full mt-4 py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-[0_10px_20px_-5px_rgba(0,108,73,0.3)] hover:scale-[0.98] active:opacity-90 transition-all">
-        <span class="material-symbols-outlined text-xl animate-spin" style="font-variation-settings: 'opsz' 20">progress_activity</span>
+      <button class="w-full mt-4 py-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-[0_10px_20px_-5px_rgba(0,108,73,0.3)] hover:scale-[0.98] active:opacity-90 transition-all" [disabled]="isLoading()" (click)="generateReport()">
+        @if (isLoading()) {
+          <span class="material-symbols-outlined text-xl animate-spin" style="font-variation-settings: 'opsz' 20">progress_activity</span>
+        }
         Generate Report
       </button>
     </div>
@@ -55,14 +57,16 @@
     <div class="flex justify-between items-end">
       <div>
         <h2 class="text-3xl font-extrabold text-emerald-950 font-headline tracking-tight leading-none">Report Preview</h2>
-        <p class="text-on-surface-variant font-body mt-2">Visualizing results for October 2023 — Financial Summary</p>
+        <p class="text-on-surface-variant font-body mt-2">
+          Visualizing results @if (dateStart() || dateEnd()) { @if (dateStart()) { from {{ dateStart() }} } @if (dateEnd()) { to {{ dateEnd() }} } } @else { for all periods } — {{ selectedReportType() }}
+        </p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex gap-3 no-print">
         <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-emerald-50 transition-colors text-sm" (click)="exportCsv()">
           <span class="material-symbols-outlined text-lg">download</span>
           Download Report
         </button>
-        <button class="p-2.5 rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-colors">
+        <button class="p-2.5 rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-colors" (click)="printPage()">
           <span class="material-symbols-outlined">print</span>
         </button>
       </div>
@@ -73,33 +77,19 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-surface-container-low/50">
-              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Date</th>
-              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Transaction ID</th>
-              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Organization</th>
-              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Amount</th>
-              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Month</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Gross Revenue</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Platform Fees</th>
+              <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Net Revenue</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            @for (trx of transactions(); track trx.id) {
+            @for (trx of transactions(); track trx.month) {
               <tr class="hover:bg-slate-50/50 transition-colors">
-                <td class="px-6 py-5 text-sm text-on-surface font-medium">{{ trx.date }}</td>
-                <td class="px-6 py-5 text-sm text-slate-500 font-mono">{{ trx.id }}</td>
-                <td class="px-6 py-5">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold {{ trx.org.colorClass }}">
-                      {{ trx.org.initials }}
-                    </div>
-                    <span class="text-sm font-semibold text-emerald-900">{{ trx.org.name }}</span>
-                  </div>
-                </td>
-                <td class="px-6 py-5 text-sm font-bold text-emerald-950">{{ trx.amount }}</td>
-                <td class="px-6 py-5">
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold {{ trx.statusClass }}">
-                    <span class="w-1 h-1 rounded-full {{ trx.statusDot }}"></span>
-                    {{ trx.status }}
-                  </span>
-                </td>
+                <td class="px-6 py-5 text-sm text-on-surface font-medium">{{ trx.month }}</td>
+                <td class="px-6 py-5 text-sm font-bold text-emerald-950">{{ trx.revenue }} EGP</td>
+                <td class="px-6 py-5 text-sm font-bold text-slate-600">{{ trx.fees }} EGP</td>
+                <td class="px-6 py-5 text-sm font-bold text-emerald-700">{{ trx.revenue - trx.fees }} EGP</td>
               </tr>
             }
           </tbody>
@@ -117,11 +107,11 @@
         </div>
       </div>
       <div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
-        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Transactions</div>
-        <div class="text-2xl font-extrabold text-emerald-950">{{ summary().transactions }}</div>
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Platform Fees</div>
+        <div class="text-2xl font-extrabold text-emerald-950">{{ summary().platformFees }} EGP</div>
         <div class="mt-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
-          <span class="material-symbols-outlined text-xs">bolt</span>
-          {{ summary().transactionsAvg }}
+          <span class="material-symbols-outlined text-xs">payments</span>
+          Collected Fees
         </div>
       </div>
       <div class="bg-primary/5 rounded-2xl p-6 flex flex-col justify-center items-center text-center border border-primary/10">
