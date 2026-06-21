@@ -38,6 +38,10 @@ export const routes: Routes = [
   },
 
   {
+    path: 'payment/result',
+    loadComponent: () => import('./features/payment-result/payment-result').then((m) => m.PaymentResultComponent),
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./shared/components/unauthorized/unauthorized.component').then((m) => m.UnauthorizedComponent),
   },

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from './settings.service';
 import { DashboardService } from '../dashboard/dashboard.service';
-import { AuditLogService } from '../../../core/services/audit-log.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,10 +13,9 @@ import { AuditLogService } from '../../../core/services/audit-log.service';
 export class Settings implements OnInit {
   private settingsService = inject(SettingsService);
   private dashboardService = inject(DashboardService);
-  private auditLogService = inject(AuditLogService);
 
   // Tab navigation
-  activeTab = signal<'financials' | 'general' | 'auditLogs'>('financials');
+  activeTab = signal<'financials' | 'general'>('financials');
 
   // State signals
   platformFeePercentage = signal('3.5');
@@ -28,19 +26,12 @@ export class Settings implements OnInit {
     standardShippingFee: '12.00'
   };
 
-  // Audit logs
-  auditLogs = signal<any[]>([]);
-  isLoadingLogs = signal(false);
-
   ngOnInit() {
     this.loadCurrentFee();
   }
 
-  switchTab(tab: 'financials' | 'general' | 'auditLogs') {
+  switchTab(tab: 'financials' | 'general') {
     this.activeTab.set(tab);
-    if (tab === 'auditLogs' && this.auditLogs().length === 0) {
-      this.loadAuditLogs();
-    }
   }
 
   loadCurrentFee() {
@@ -52,22 +43,6 @@ export class Settings implements OnInit {
         }
       },
       error: (err) => console.error('Failed to load stats for fee', err)
-    });
-  }
-
-  loadAuditLogs() {
-    this.isLoadingLogs.set(true);
-    this.auditLogService.getAuditLogs(1, 10).subscribe({
-      next: (response: any) => {
-        const data = response.data || response;
-        const items = data.items || data.logs || (Array.isArray(data) ? data : []);
-        this.auditLogs.set(items);
-        this.isLoadingLogs.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load audit logs', err);
-        this.isLoadingLogs.set(false);
-      }
     });
   }
 
@@ -93,19 +68,5 @@ export class Settings implements OnInit {
         console.error(err);
       }
     });
-  }
-
-  getActionIcon(action: string): string {
-    if (action === 'Create') return 'add_circle';
-    if (action === 'Update') return 'edit';
-    if (action === 'Delete') return 'delete';
-    return 'info';
-  }
-
-  getActionClass(action: string): string {
-    if (action === 'Create') return 'bg-emerald-100 text-emerald-700';
-    if (action === 'Update') return 'bg-amber-100 text-amber-700';
-    if (action === 'Delete') return 'bg-rose-100 text-rose-700';
-    return 'bg-slate-100 text-slate-700';
   }
 }

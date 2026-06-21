@@ -1,0 +1,40 @@
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+  <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
+    
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center space-y-4">
+      <div class="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-600 font-medium">Verifying your payment...</p>
+    </div>
+
+    <div *ngIf="!isLoading && isSuccess" class="flex flex-col items-center space-y-4">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-800">Payment Successful!</h2>
+      <p class="text-gray-600">Your order #{{ paymentData?.orderId }} has been paid successfully.</p>
+      <div class="bg-gray-50 p-4 rounded-xl w-full mt-6 text-left">
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-500">Amount Paid:</span>
+          <span class="font-bold text-gray-800">{{ paymentData?.amount }} EGP</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Date:</span>
+          <span class="text-gray-800">{{ paymentData?.paidAt | date:'medium' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && !isSuccess" class="flex flex-col items-center space-y-4">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-800">Payment Failed</h2>
+      <p class="text-gray-600">{{ errorMessage }}</p>
+    </div>
+
+  </div>
+</div>

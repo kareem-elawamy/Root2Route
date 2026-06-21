@@ -35,6 +35,10 @@ export const superAdminRoutes: Routes = [
         loadComponent: () => import('./transactions/transactions').then(m => m.Transactions)
       },
       {
+        path: 'withdrawals',
+        loadComponent: () => import('./withdrawals/withdrawals').then(m => m.Withdrawals)
+      },
+      {
         path: 'audit-log',
         loadComponent: () => import('./audit-log/audit-log').then(m => m.AuditLog)
       },

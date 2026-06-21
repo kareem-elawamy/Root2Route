@@ -98,6 +98,10 @@
       </a>
       }
       @if (auth.hasPermission('Permissions.Organization.ManageSettings')) {
+      <a routerLink="/company-dashboard/wallet" routerLinkActive="active-nav" class="nav-item">
+        <span class="material-symbols-outlined nav-icon">account_balance_wallet</span>
+        <span>Wallet &amp; Analytics</span>
+      </a>
       <a routerLink="/company-dashboard/settings" routerLinkActive="active-nav" class="nav-item">
         <span class="material-symbols-outlined nav-icon">settings</span>
         <span>Settings</span>

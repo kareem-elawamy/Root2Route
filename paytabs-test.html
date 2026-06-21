@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayTabs Integration Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), #2dd4bf);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .api-url-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .api-url-group input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>PayTabs Test UI</h1>
+            <p>Authenticate and initiate payment flow</p>
+        </div>
+
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="apiUrl">Backend API Base URL</label>
+                <input type="text" id="apiUrl" class="form-control" value="https://localhost:8082" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Buyer Email (Login)</label>
+                <input type="email" id="email" class="form-control" placeholder="buyer@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label for="orderId">Order ID (GUID)</label>
+                <input type="text" id="orderId" class="form-control" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn">
+                <span class="btn-text">Pay with PayTabs</span>
+                <div class="loader" id="loader"></div>
+            </button>
+        </form>
+
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('paymentForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.querySelector('.btn-text');
+        const loader = document.getElementById('loader');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status show ${type}`;
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            btnText.style.display = isLoading ? 'none' : 'block';
+            loader.style.display = isLoading ? 'block' : 'none';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const baseUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const orderId = document.getElementById('orderId').value;
+
+            setLoading(true);
+            statusMessage.className = 'status'; // hide
+
+            try {
+                // 1. Login to get token
+                showStatus('Authenticating...', 'success');
+                const loginRes = await fetch(`${baseUrl}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userName: email, password: password })
+                });
+
+                let loginData;
+                const loginContentType = loginRes.headers.get('content-type');
+                if (loginContentType && loginContentType.includes('application/json')) {
+                    loginData = await loginRes.json();
+                } else {
+                    const text = await loginRes.text();
+                    throw new Error(`Login API returned non-JSON response (Status: ${loginRes.status}). Response: ${text.substring(0, 100)}`);
+                }
+
+                if (!loginRes.ok || !loginData.succeeded) {
+                    throw new Error(loginData.message || `Login failed with status ${loginRes.status}.`);
+                }
+
+                const token = loginData.data?.token || loginData.data?.accessToken || loginData.data;
+                if (!token) throw new Error('Token not found in login response.');
+
+                // 2. Call PayTabs Create Payment Endpoint
+                showStatus('Initiating payment with PayTabs...', 'success');
+                const paymentRes = await fetch(`${baseUrl}/api/v1/payment/paytabs/create/${orderId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                let paymentData;
+                const paymentContentType = paymentRes.headers.get('content-type');
+                if (paymentContentType && paymentContentType.includes('application/json')) {
+                    paymentData = await paymentRes.json();
+                } else {
+                    const text = await paymentRes.text();
+                    throw new Error(`Payment API returned non-JSON response (Status: ${paymentRes.status}). Response: ${text.substring(0, 100)}`);
+                }
+
+                if (!paymentRes.ok || !paymentData.succeeded) {
+                    throw new Error(paymentData.message || `Payment creation failed with status ${paymentRes.status}.`);
+                }
+
+                // 3. Redirect to payment link
+                const redirectUrl = paymentData.data?.redirectUrl || paymentData.data?.paymentUrl || paymentData.data;
+                
+                if (typeof redirectUrl === 'string' && redirectUrl.startsWith('http')) {
+                    showStatus('Redirecting to PayTabs...', 'success');
+                    window.location.href = redirectUrl;
+                } else {
+                    showStatus('Payment initiated, but no valid redirect URL was returned: ' + JSON.stringify(paymentData.data), 'success');
+                }
+
+            } catch (error) {
+                showStatus(error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html>

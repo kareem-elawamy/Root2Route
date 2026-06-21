@@ -2,109 +2,238 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Transaction Ledger</h1>
-      <p class="page-subtitle">Platform-wide payment and transaction history</p>
+      <p class="page-subtitle">Platform-wide payment tracking and gateway metrics</p>
     </div>
-    <button class="export-btn" (click)="exportCsv()">
-      <span class="material-symbols-outlined">download</span>
-      Export CSV
-    </button>
+    
+    @if (activeTab() === 'ledger') {
+      <button class="export-btn" (click)="exportCsv()">
+        <span class="material-symbols-outlined">download</span>
+        Export CSV
+      </button>
+    }
   </div>
 
-  <!-- Stats -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon bg-indigo-500/10"><span class="material-symbols-outlined text-indigo-400">payments</span></div>
-      <div class="stat-body">
-        <span class="stat-label">Total Volume</span>
-        <span class="stat-value">${{ stats().totalVolume | number:'1.2-2' }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon bg-emerald-500/10"><span class="material-symbols-outlined text-emerald-400">toll</span></div>
-      <div class="stat-body">
-        <span class="stat-label">Platform Fees</span>
-        <span class="stat-value">${{ stats().platformFees | number:'1.2-2' }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon bg-teal-500/10"><span class="material-symbols-outlined text-teal-400">check_circle</span></div>
-      <div class="stat-body">
-        <span class="stat-label">Completed</span>
-        <span class="stat-value">{{ stats().completed }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon bg-amber-500/10"><span class="material-symbols-outlined text-amber-400">schedule</span></div>
-      <div class="stat-body">
-        <span class="stat-label">Pending</span>
-        <span class="stat-value">{{ stats().pending }}</span>
-      </div>
+  <!-- Tabs switcher -->
+  <div class="tabs-toolbar mb-6">
+    <div class="tabs-wrapper">
+      <button 
+        [class.active-tab]="activeTab() === 'ledger'" 
+        (click)="activeTab.set('ledger')" 
+        class="tab-btn">
+        <span class="material-symbols-outlined nav-tab-icon">receipt_long</span>
+        Transaction Ledger
+      </button>
+      <button 
+        [class.active-tab]="activeTab() === 'analytics'" 
+        (click)="activeTab.set('analytics'); loadAnalytics()" 
+        class="tab-btn">
+        <span class="material-symbols-outlined nav-tab-icon">query_stats</span>
+        PayTabs Gateway Analytics
+      </button>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="toolbar">
-    <div class="filter-group">
-      <label>From</label>
-      <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+  <!-- LEDGER TAB -->
+  @if (activeTab() === 'ledger') {
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon bg-indigo-500/10"><span class="material-symbols-outlined text-indigo-400">payments</span></div>
+        <div class="stat-body">
+          <span class="stat-label">Total Volume</span>
+          <span class="stat-value">${{ stats().totalVolume | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-emerald-500/10"><span class="material-symbols-outlined text-emerald-400">toll</span></div>
+        <div class="stat-body">
+          <span class="stat-label">Platform Fees</span>
+          <span class="stat-value">${{ stats().platformFees | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-teal-500/10"><span class="material-symbols-outlined text-teal-400">check_circle</span></div>
+        <div class="stat-body">
+          <span class="stat-label">Completed</span>
+          <span class="stat-value">{{ stats().completed }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-amber-500/10"><span class="material-symbols-outlined text-amber-400">schedule</span></div>
+        <div class="stat-body">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value">{{ stats().pending }}</span>
+        </div>
+      </div>
     </div>
-    <div class="filter-group">
-      <label>To</label>
-      <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
-    </div>
-    <div class="filter-group">
-      <label>Status</label>
-      <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event); onFilterChange()">
-        <option value="">All</option>
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-        <option value="Failed">Failed</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- Table -->
-  @if (isLoading()) {
-    <app-skeleton type="table" [rows]="8" [columns]="6"></app-skeleton>
-  } @else if (payments().length === 0) {
-    <div class="empty-state">
-      <span class="material-symbols-outlined empty-icon">receipt_long</span>
-      <h3>No Transactions Found</h3>
-      <p>Adjust date range or status filter.</p>
+    <!-- Filters -->
+    <div class="toolbar">
+      <div class="filter-group">
+        <label>From</label>
+        <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+      </div>
+      <div class="filter-group">
+        <label>To</label>
+        <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event); onFilterChange()">
+          <option value="">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+          <option value="Failed">Failed</option>
+        </select>
+      </div>
     </div>
-  } @else {
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>User</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Status</th>
-            <th>Paid At</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (payment of payments(); track payment.id) {
+
+    <!-- Table -->
+    @if (isLoading()) {
+      <app-skeleton type="table" [rows]="8" [columns]="6"></app-skeleton>
+    } @else if (payments().length === 0) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined empty-icon">receipt_long</span>
+        <h3>No Transactions Found</h3>
+        <p>Adjust date range or status filter.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table>
+          <thead>
             <tr>
-              <td class="mono-cell">{{ payment.orderId | slice:0:8 }}...</td>
-              <td>{{ payment.userFullName || 'N/A' }}</td>
-              <td class="amount-cell">${{ payment.amount | number:'1.2-2' }}</td>
-              <td>{{ payment.paymentMethod }}</td>
-              <td><span class="status-badge" [ngClass]="getStatusClass(payment.paymentStatus)">{{ getStatusLabel(payment.paymentStatus) }}</span></td>
-              <td class="date-cell">{{ payment.paidAt | date:'medium' }}</td>
+              <th>Order ID</th>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Paid At</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (payment of payments(); track payment.id) {
+              <tr>
+                <td class="mono-cell">{{ payment.orderId | slice:0:8 }}...</td>
+                <td>{{ payment.userFullName || 'N/A' }}</td>
+                <td class="amount-cell">${{ payment.amount | number:'1.2-2' }}</td>
+                <td>{{ payment.paymentMethod }}</td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(payment.paymentStatus)">{{ getStatusLabel(payment.paymentStatus) }}</span></td>
+                <td class="date-cell">{{ payment.paidAt | date:'medium' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        [totalCount]="totalCount()"
+        (pageChange)="goToPage($event)">
+      </app-pagination>
+    }
+  }
+
+  <!-- PAYTABS GATEWAY ANALYTICS TAB -->
+  @if (activeTab() === 'analytics') {
+    <!-- Filters -->
+    <div class="toolbar mb-6">
+      <div class="filter-group">
+        <label>From Date</label>
+        <input type="date" [ngModel]="analyticsFrom()" (ngModelChange)="analyticsFrom.set($event); loadAnalytics()" />
+      </div>
+      <div class="filter-group">
+        <label>To Date</label>
+        <input type="date" [ngModel]="analyticsTo()" (ngModelChange)="analyticsTo.set($event); loadAnalytics()" />
+      </div>
+      <button class="refresh-btn align-self-end mb-1" (click)="loadAnalytics()" [disabled]="isAnalyticsLoading()">
+        <span class="material-symbols-outlined" [class.spin]="isAnalyticsLoading()">refresh</span>
+        Update
+      </button>
     </div>
 
-    <app-pagination
-      [currentPage]="currentPage()"
-      [totalPages]="totalPages()"
-      [totalCount]="totalCount()"
-      (pageChange)="goToPage($event)">
-    </app-pagination>
+    @if (isAnalyticsLoading()) {
+      <app-skeleton type="table" [rows]="6" [columns]="4"></app-skeleton>
+    } @else if (!analyticsData()) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined empty-icon">analytics</span>
+        <h3>No Analytics Loaded</h3>
+        <p>Please select a date range and click update.</p>
+      </div>
+    } @else {
+      <!-- Rich PayTabs stats grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon bg-emerald-500/10"><span class="material-symbols-outlined text-emerald-400">payments</span></div>
+          <div class="stat-body">
+            <span class="stat-label">PayTabs Revenue</span>
+            <span class="stat-value">{{ analyticsData().totalRevenue | number:'1.2-2' }} EGP</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-indigo-500/10"><span class="material-symbols-outlined text-indigo-400">toll</span></div>
+          <div class="stat-body">
+            <span class="stat-label">Fees Collected</span>
+            <span class="stat-value">{{ analyticsData().totalFees | number:'1.2-2' }} EGP</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-teal-500/10"><span class="material-symbols-outlined text-teal-400">check_circle</span></div>
+          <div class="stat-body">
+            <span class="stat-label">Success Rate</span>
+            <span class="stat-value">{{ analyticsData().successRate | number:'1.1-2' }}%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon bg-blue-500/10"><span class="material-symbols-outlined text-blue-400">receipt_long</span></div>
+          <div class="stat-body">
+            <span class="stat-label">Total Volume</span>
+            <span class="stat-value">{{ analyticsData().totalTransactions }} Tx</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Daily Breakdown line chart (spans 2 columns) -->
+        <div class="lg:col-span-2">
+          @if (chartLabels().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined empty-icon">stacked_line_chart</span>
+              <h3>No Breakdown Available</h3>
+              <p>There is no daily breakdown data for the selected period.</p>
+            </div>
+          } @else {
+            <app-stat-chart
+              chartTitle="Daily Revenue Trend (EGP)"
+              chartType="line"
+              [chartLabels]="chartLabels()"
+              [chartDatasets]="chartDatasets()"
+              chartHeight="280px"
+            />
+          }
+        </div>
+
+        <!-- Payment Methods bar chart (spans 1 column) -->
+        <div class="lg:col-span-1">
+          @if (methodChartLabels().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined empty-icon">pie_chart</span>
+              <h3>No Payment Breakdown</h3>
+              <p>No payment methods were captured in this period.</p>
+            </div>
+          } @else {
+            <app-stat-chart
+              chartTitle="Payment Gateway Methods"
+              chartType="bar"
+              [chartLabels]="methodChartLabels()"
+              [chartDatasets]="methodChartDatasets()"
+              chartHeight="280px"
+              [showLegend]="false"
+            />
+          }
+        </div>
+      </div>
+    }
   }
 </div>

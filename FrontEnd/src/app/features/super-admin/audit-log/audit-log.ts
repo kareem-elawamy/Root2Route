@@ -49,7 +49,7 @@ export class AuditLog implements OnInit {
     ).subscribe({
       next: (response: any) => {
         const data = response.data || response;
-        const items = data.items || data.logs || (Array.isArray(data) ? data : []);
+        const items = data.data || data.items || data.logs || (Array.isArray(data) ? data : []);
         this.logs.set(items);
         this.totalCount.set(data.totalCount || items.length);
         this.totalPages.set(Math.ceil(this.totalCount() / this.pageSize) || 1);

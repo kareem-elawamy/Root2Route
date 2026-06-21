@@ -44,9 +44,10 @@
             <button class="dropdown-item" (click)="setFilter('All')">All Orders</button>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item" (click)="setFilter('Pending')">Pending</button>
+            <button class="dropdown-item" (click)="setFilter('Confirmed')">Confirmed</button>
             <button class="dropdown-item" (click)="setFilter('Processing')">Processing</button>
             <button class="dropdown-item" (click)="setFilter('Shipped')">Shipped</button>
-            <button class="dropdown-item" (click)="setFilter('Completed')">Completed</button>
+            <button class="dropdown-item" (click)="setFilter('Completed')">Completed / Delivered</button>
             <button class="dropdown-item text-error" (click)="setFilter('Cancelled')">Cancelled</button>
           </div>
         }
@@ -177,10 +178,10 @@
             </td>
             <td class="text-right">
               <div class="row-actions">
-                <button class="action-btn hover-green">
+                <button class="action-btn hover-green" (click)="openDetail(order)">
                   <span class="material-symbols-outlined">visibility</span>
                 </button>
-                <button class="action-btn hover-blue">
+                <button class="action-btn hover-blue" (click)="openDetail(order)">
                   <span class="material-symbols-outlined">edit</span>
                 </button>
               </div>
@@ -208,4 +209,174 @@
     </div>
   </div>
 
+  <!-- Sliding Drawer for Order Details -->
+  @if (isDrawerOpen() && selectedOrder()) {
+    <div class="drawer-backdrop" (click)="closeDetail()"></div>
+    <div class="drawer">
+      <div class="drawer-header">
+        <div class="drawer-title-area">
+          <h3>Order Details</h3>
+          <span class="order-id">#{{ selectedOrder().id.split('-')[0] }}</span>
+        </div>
+        <button class="icon-btn close-btn" (click)="closeDetail()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Order Stats Quick View -->
+        <div class="drawer-section quick-stats">
+          <div class="stat-item">
+            <span class="stat-label">Order Date</span>
+            <span class="stat-value">{{ selectedOrder().orderDate | date:'medium' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Status</span>
+            <span class="status-badge {{ selectedOrder().statusClass }}">{{ selectedOrder().status }}</span>
+          </div>
+        </div>
+
+        <!-- Receiver Information -->
+        <div class="drawer-section">
+          <h4 class="section-title">
+            <span class="material-symbols-outlined">local_shipping</span>
+            Receiver Info
+          </h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Name</span>
+              <span class="info-value">{{ selectedOrder().receiverName || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Phone</span>
+              <span class="info-value">{{ selectedOrder().receiverPhone || 'N/A' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">Delivery Address</span>
+              <span class="info-value">
+                {{ selectedOrder().shippingCity || 'N/A' }}
+                @if (selectedOrder().shippingStreet) { , {{ selectedOrder().shippingStreet }} }
+                @if (selectedOrder().buildingNumber) { , {{ selectedOrder().buildingNumber }} }
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="drawer-section">
+          <h4 class="section-title">
+            <span class="material-symbols-outlined">inventory_2</span>
+            Order Items
+          </h4>
+          <div class="items-list">
+            @for (item of selectedOrder().items; track item.productId) {
+              <div class="item-row">
+                <div class="item-info">
+                  <span class="item-name">{{ item.productName }}</span>
+                  <span class="item-meta">{{ item.quantity }} x ${{ item.unitPrice | number:'1.2-2' }}</span>
+                </div>
+                <div class="item-total">
+                  ${{ (item.quantity * item.unitPrice) | number:'1.2-2' }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Cost Summary -->
+        <div class="drawer-section summary-section">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>${{ selectedOrder().totalAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping Fees</span>
+            <span>${{ selectedOrder().shippingFees | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span class="text-green">${{ selectedOrder().finalTotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="drawer-section">
+          <h4 class="section-title">
+            <span class="material-symbols-outlined">payments</span>
+            Payment Details
+          </h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Method</span>
+              <span class="info-value">{{ selectedOrder().paymentMethod || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Payment Status</span>
+              <span class="info-value">{{ selectedOrder().paymentStatus || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Status Actions -->
+        <div class="drawer-section status-update-section">
+          <h4 class="section-title">
+            <span class="material-symbols-outlined">edit_square</span>
+            Update Order Status
+          </h4>
+          
+          <div class="form-group">
+            <label class="form-label">New Status</label>
+            <select class="form-select" [value]="selectedNewStatus()" (change)="selectedNewStatus.set(+$any($event.target).value)">
+              <option [value]="0">Pending</option>
+              <option [value]="1">Confirmed</option>
+              <option [value]="5">Processing</option>
+              <option [value]="2">Shipped</option>
+              <option [value]="3">Delivered</option>
+              <option [value]="4">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Note / Instructions</label>
+            <textarea class="form-textarea" placeholder="Add a note or tracking number detail..." [value]="statusNote()" (input)="statusNote.set($any($event.target).value)"></textarea>
+          </div>
+
+          <button class="apple-btn-export w-full" (click)="updateStatus()" [disabled]="isUpdatingStatus()">
+            @if (isUpdatingStatus()) {
+              Updating...
+            } @else {
+              Update Status
+            }
+          </button>
+        </div>
+
+        <!-- Status History Timeline -->
+        @if (selectedOrder().statusHistory && selectedOrder().statusHistory.length > 0) {
+          <div class="drawer-section">
+            <h4 class="section-title">
+              <span class="material-symbols-outlined">history</span>
+              Status History
+            </h4>
+            <div class="timeline">
+              @for (history of selectedOrder().statusHistory; track history.changedAt) {
+                <div class="timeline-item">
+                  <div class="timeline-marker"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <span class="status-from-to">{{ history.oldStatus }} &rarr; {{ history.newStatus }}</span>
+                      <span class="timeline-date">{{ history.changedAt | date:'short' }}</span>
+                    </div>
+                    @if (history.note) {
+                      <p class="timeline-note">{{ history.note }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
 </div>

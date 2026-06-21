@@ -10,4 +10,5 @@ export interface MyOrganization {
   type?: number;
   organizationStatus?: number;
   rejectionReason?: string;
+  walletBalance?: number;
 }
