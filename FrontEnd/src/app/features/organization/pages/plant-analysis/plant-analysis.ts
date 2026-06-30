@@ -46,18 +46,18 @@ import { ToastService } from '../../../../core/services/toast.service';
             <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 800; color: #0f172a;">Analysis Result</h3>
             <div class="result-row">
               <span class="result-label">Disease</span>
-              <span class="result-value" [style.color]="result()?.isHealthy ? '#16a34a' : '#dc2626'">
-                {{ result()?.diseaseName || 'Unknown' }}
+              <span class="result-value" [style.color]="result()?.prediction?.toLowerCase()?.includes('healthy') ? '#16a34a' : '#dc2626'">
+                {{ result()?.prediction || 'Unknown' }}
               </span>
             </div>
             <div class="result-row">
               <span class="result-label">Confidence</span>
               <span class="result-value">{{ (result()?.confidence || 0) | number:'1.1-1' }}%</span>
             </div>
-            @if (result()?.treatment) {
+            @if (result()?.expertAdvice) {
               <div class="result-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                <span class="result-label">Recommended Treatment</span>
-                <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.6;">{{ result()?.treatment }}</p>
+                <span class="result-label">Expert Advice</span>
+                <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.6; white-space: pre-line;">{{ result()?.expertAdvice }}</p>
               </div>
             }
           </div>
