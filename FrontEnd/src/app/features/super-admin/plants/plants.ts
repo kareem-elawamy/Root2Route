@@ -95,10 +95,17 @@ export class Plants implements OnInit {
 
         const processed = items.map((plant: any) => {
           let imageUrl = plant.imageUrl || '';
-          if (imageUrl && !imageUrl.startsWith('http')) {
-            imageUrl = imageUrl.startsWith('/')
-              ? `https://root2route.runasp.net${imageUrl}`
-              : `https://root2route.runasp.net/${imageUrl}`;
+          if (imageUrl) {
+            // Extract the relative path from any absolute URL (e.g. http://localhost:8081/uploads/... → /uploads/...)
+            try {
+              const url = new URL(imageUrl);
+              imageUrl = `https://root2route.runasp.net${url.pathname}`;
+            } catch {
+              // It's a relative path, just prepend the base URL
+              imageUrl = imageUrl.startsWith('/')
+                ? `https://root2route.runasp.net${imageUrl}`
+                : `https://root2route.runasp.net/${imageUrl}`;
+            }
           }
           return {
             ...plant,
